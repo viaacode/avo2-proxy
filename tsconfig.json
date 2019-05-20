@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"resolveJsonModule": true,
+		"sourceRoot": ".",
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"target": "es6",
+		"noImplicitAny": false,
+		"removeComments": false,
+		"inlineSourceMap": true,
+		"sourceMap": false,
+		"moduleResolution": "node",
+		"outDir": "dist",
+		"baseUrl": "src",
+		"paths": {
+			"*": [
+				"node_modules/*",
+				"src/types/*",
+				"global.d.ts"
+			]
+		},
+		"typeRoots": [
+			"node_modules/@types"
+		]
+	},
+	"include": [
+		"src/**/*",
+		"test/**/*"
+	]
+}

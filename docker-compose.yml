@@ -1,0 +1,43 @@
+version: '3.7'
+
+x-default-logging: &default-logging
+  logging:
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+      args:
+        # Default docker-compose pinpoints to local environment
+        - NODE_ENV=local
+    image: avo2-proxy
+    container_name: avo2-proxy
+    ports:
+      # App port
+      - 3000:3000
+      # Debug port
+      - 5858:5858
+    networks:
+      - avo2-proxy
+    volumes:
+      # Delegated option for faster mounted volumes
+      - .:/app/server:delegated
+      # Because `npm install`
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      # Block local modules
+      - avo2-proxy-notused:/app/server/node_modules
+    environment:
+      - NODE_ENV=local
+    env_file: .env.local
+    init: true
+    <<: *default-logging
+
+networks:
+  avo2-proxy:
+volumes:
+  avo2-proxy-notused:
