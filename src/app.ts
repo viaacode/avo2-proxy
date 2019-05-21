@@ -12,12 +12,18 @@ import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import cors from 'cors';
 
+const swaggerUi = require('swagger-ui-express');
+import * as swaggerDefinitions from '../docs/swagger.json';
+
 const app: Application = express();
 global(app);
 app.use(errorHandler);
 app.use(cors());
 // register routes using typescript-rest
 Server.buildServices(app, StatusRoute, SearchRoute);
+// Register the docs route
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinitions));
+
 let server;
 
 // Only start the server if we're not in test mode

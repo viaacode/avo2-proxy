@@ -2,7 +2,16 @@
 
 ## Synopsis
 
-Deze repo bevat de NodeJS service die de communicatie regelt tussen de AvO frontend applicaties enerzijds en de backend services anderzijds.
+This repo contains the NodeJS backend service that handles the communication between
+* the AvO frontend applications ()
+    * Client
+    * Admin
+
+and
+* the backend services
+    * Elasticsearch
+    * GraphQL
+    * LDAP api
 
 ![Overview of the avo backend and frontend applications](avo-overview.png?raw=true)
 
@@ -19,10 +28,10 @@ Deze repo bevat de NodeJS service die de communicatie regelt tussen de AvO front
 
 ## Functional
 
-De NodeJS applicatie zal vooral de volgende zaken voorzien:
-* Proxy search requests van de frontend apps naar de graphQL en Elasticsearch services
-* Authenticatie voor inloggen adhv info uit de LDAP / smartschool, klasse API's
-* Extra informatie voor de gebruikers van de applicatie bijhouden in de postgres database
+The NodeJS services will provide the following features:
+* Proxy search requests from the frontend apps to graphQL and Elasticsearch services
+* Authentication for login using information from the LDAP API, Smartschool api, klasse api
+* Track extra information for logged in users. Eg: bookmarks, app permissions
 
 ## Server
 
@@ -38,9 +47,9 @@ NodeJS in Typescript and express.js
 
 ### Frontend
 
-* Frontend applicatie voor leerkrachten: React
+* Frontend application for teachers, students, content providers, ...: React
     * https://github.com/viaacode/avo2-client
-* Frontend applicatie voor viaa medewerkers: React
+* Frontend application for viaa employees: React
     * https://github.com/viaacode/avo2-admin
 
 ## Logging and monitoring
