@@ -1,11 +1,5 @@
 version: '3.7'
 
-x-default-logging: &default-logging
-  logging:
-    options:
-      max-size: "10m"
-      max-file: "3"
-
 services:
   app:
     build:
@@ -35,7 +29,6 @@ services:
       - NODE_ENV=local
     env_file: .env.local
     init: true
-    <<: *default-logging
 
 networks:
   avo2-proxy:

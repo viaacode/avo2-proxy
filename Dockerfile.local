@@ -23,4 +23,4 @@ WORKDIR /app/server
 COPY ./ ./
 
 # Start application with live reload
-CMD nodemon index.js --inspect=0.0.0.0:5858
+CMD npm run start
