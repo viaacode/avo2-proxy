@@ -8,9 +8,9 @@ export default class SearchRoute {
 	@Path('filter')
 	@POST
 	filter(
-			@FormParam('filters') filters: any,
-			@FormParam('from') from: number,
-			@FormParam('size') size: number,
+		@FormParam('filters') filters: any,
+		@FormParam('from') from: number,
+		@FormParam('size') size: number,
 	): IFilterResponse {
 		return SearchController.filter(filters, from, size);
 	}
