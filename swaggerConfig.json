@@ -1,0 +1,6 @@
+{
+	"swagger": {
+		"outputDirectory": "./docs",
+		"entryFile": "./tests/data/apis.ts"
+	}
+}

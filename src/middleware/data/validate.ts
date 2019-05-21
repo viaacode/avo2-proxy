@@ -1,6 +1,5 @@
 import { Response, NextFunction } from 'express';
 import { DataRequest } from '../middleware.types';
-import { curry } from 'ramda';
 import * as ValidationHelper from '../../helpers/validation';
 import { errorTypes } from './errorTypes';
 

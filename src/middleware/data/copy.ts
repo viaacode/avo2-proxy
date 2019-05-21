@@ -1,13 +1,13 @@
 import { Response, NextFunction } from 'express';
 import { DataRequest } from '../middleware.types';
-import { clone } from 'ramda';
+import * as _ from 'lodash';
 
 export default function (req: DataRequest, res: Response, next: NextFunction): void {
 	req.data = {
-		body: clone(req.body),
-		headers: clone(req.headers),
-		params: clone(req.params),
-		query: clone(req.query),
+		body: _.cloneDeep(req.body),
+		headers: _.cloneDeep(req.headers),
+		params: _.cloneDeep(req.params),
+		query: _.cloneDeep(req.query),
 	};
 	next();
 }

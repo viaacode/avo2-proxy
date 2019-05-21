@@ -8,6 +8,8 @@
 		"noImplicitAny": false,
 		"removeComments": false,
 		"inlineSourceMap": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
 		"sourceMap": false,
 		"moduleResolution": "node",
 		"outDir": "dist",

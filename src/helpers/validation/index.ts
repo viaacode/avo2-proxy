@@ -1,9 +1,8 @@
 import Joi from 'joi';
-import { curry } from 'ramda';
 import { ValidationErr } from '../validationError';
 import presets from './presets';
 
-const validator = curry((preset, onFailError, source) => {
+const validator = (preset, onFailError, source) => {
 	const validation: any = Joi.validate(source, preset.schema, preset.options);
 
 	if (validation.error) {
@@ -12,7 +11,7 @@ const validator = curry((preset, onFailError, source) => {
 
 	// Return value from validation, for casting etc
 	return validation.value;
-});
+};
 
 export {
 	validator,
