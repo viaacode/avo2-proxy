@@ -1,0 +1,15 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug",
+			"type": "node",
+			"request": "attach",
+			"restart": true,
+			"protocol": "inspector",
+			"port": 5858,
+			"localRoot": "${workspaceRoot}",
+			"remoteRoot": "/app/server"
+		}
+	]
+}

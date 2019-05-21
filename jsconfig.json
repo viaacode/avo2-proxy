@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./",
+		"paths": {
+			"@pkg": ["package.json"],
+			"@app": ["src/app.js"],
+			"@controllers": ["src/controllers"],
+			"@controllers/*": ["src/controllers/*"],
+			"@helpers": ["src/helpers"],
+			"@helpers/*": ["src/helpers/*"],
+			"@middleware": ["src/middleware"],
+			"@middleware/*": ["src/middleware/*"],
+			"@models": ["src/models"],
+			"@models/*": ["src/models/*"],
+			"@routes": ["src/routes"],
+			"@routes/*": ["src/routes/*"],
+			"@services": ["src/services"],
+			"@services/*": ["src/services/*"],
+			"@mocks": ["test/mocks"],
+			"@mocks/*": ["test/mocks/*"]
+		}
+	},
+	"exclude": [
+		"node_modules"
+	]
+}

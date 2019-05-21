@@ -1,0 +1,10 @@
+*Dockerfile*
+*docker-compose*
+
+.DS_Store
+.git
+.nyc_output
+.sessions
+.vscode
+logs
+node_modules
