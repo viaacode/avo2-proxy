@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import * as Joi from 'joi';
 import options from './options';
 
 const schema = Joi.object().keys({

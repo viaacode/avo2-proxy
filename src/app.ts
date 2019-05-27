@@ -2,7 +2,7 @@ import environment from './helpers/environment';
 
 environment(process.env);
 
-import express, { Application } from 'express';
+import * as express from 'express';
 import global from './middleware/global';
 import errorHandler from './middleware/errorHandler';
 import { AddressInfo } from 'net';
@@ -10,12 +10,12 @@ import { Logger } from './helpers/logger';
 import { Server } from 'typescript-rest';
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import cors from 'cors';
+import * as cors from 'cors';
 
 const swaggerUi = require('swagger-ui-express');
 import * as swaggerDefinitions from '../docs/swagger.json';
 
-const app: Application = express();
+const app: express.Application = express();
 global(app);
 app.use(errorHandler);
 app.use(cors());

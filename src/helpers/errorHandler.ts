@@ -14,7 +14,7 @@ const errorHandler = (err: Error): {
 		statusCode = 400;
 		msg = `${err.name} occurred. See the stack for more information.`;
 
-		return { statusCode, msg, stack: err.stack.split(/\r?\n/) };
+		return { statusCode, msg, stack: (err.stack || '').split(/\r?\n/) };
 	}
 
 	// Get the correct message

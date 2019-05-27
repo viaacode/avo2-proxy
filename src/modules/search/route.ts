@@ -1,18 +1,20 @@
 import SearchController from './controller';
-import { Path, POST, FormParam } from 'typescript-rest';
-import { IFilterResponse, IFilters } from './types';
+import { Path, POST } from 'typescript-rest';
+import { ISearchRequest, ISearchResponse } from './types';
+import { RecursiveError } from '../../helpers/recursiveError';
 
 @Path('/search')
 export default class SearchRoute {
 
-	@Path('filter')
+	@Path('search')
 	@POST
-	filter(
-		@FormParam('filters') filters: any,
-		@FormParam('from') from: number,
-		@FormParam('size') size: number,
-	): IFilterResponse {
-		return SearchController.filter(filters, from, size);
+	filter(searchRequest: ISearchRequest): Promise<ISearchResponse> | RecursiveError {
+		try {
+			return SearchController.search(searchRequest);
+		} catch (err) {
+			const error = new RecursiveError('failed during search route', err, { ...searchRequest });
+			console.error(JSON.stringify(error, null, 2));
+			return error;
+		}
 	}
-
 }
