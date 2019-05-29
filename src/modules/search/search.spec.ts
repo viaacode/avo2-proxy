@@ -1,8 +1,7 @@
 import 'jest';
-import * as _ from 'lodash';
 import * as aggregations from './fixtures/aggregations.json';
 import SearchService  from './service';
-import { IFilterOptions } from './types';
+import { FilterOptions } from './types';
 
 const keys: string[] = [
 	'lom_keywords.filter',
@@ -17,7 +16,7 @@ const keys: string[] = [
 ];
 
 test('should simplify aggregation object correctly', async () => {
-	const filterOptions: IFilterOptions = SearchService.simplifyAggregations(aggregations);
+	const filterOptions: FilterOptions = SearchService.simplifyAggregations(aggregations);
 	expect(filterOptions).toBeObject();
 	expect(filterOptions).toContainAllKeys([...keys, 'default']); // Side affect of import json module
 	keys.forEach((key) => {

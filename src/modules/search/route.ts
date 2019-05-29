@@ -1,6 +1,6 @@
 import SearchController from './controller';
 import { Path, POST } from 'typescript-rest';
-import { ISearchRequest, ISearchResponse } from './types';
+import { SearchRequest, SearchResponse } from './types';
 import { RecursiveError } from '../../helpers/recursiveError';
 
 @Path('/search')
@@ -12,7 +12,7 @@ export default class SearchRoute {
 	 */
 	@Path('search')
 	@POST
-	search(searchRequest: ISearchRequest): Promise<ISearchResponse> | RecursiveError {
+	search(searchRequest: SearchRequest): Promise<SearchResponse> | RecursiveError {
 		try {
 			return SearchController.search(searchRequest);
 		} catch (err) {

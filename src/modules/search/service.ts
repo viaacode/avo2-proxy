@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
-import { IFilterOptions, ISearchResponse } from './types';
+import { FilterOptions, SearchResponse } from './types';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -33,7 +33,7 @@ interface Aggregations {
 				from?: number;
 				to?: number;
 				doc_count: number;
-			}
+			};
 		};
 	} | {
 		doc_count_error_upper_bound: number;
@@ -93,7 +93,7 @@ export default class SearchService {
 		}
 	}
 
-	public static async search(searchQueryObject: any): Promise<ISearchResponse> {
+	public static async search(searchQueryObject: any): Promise<SearchResponse> {
 		let url;
 		try {
 			url = process.env.ELASTICSEARCH_URL;
@@ -211,8 +211,8 @@ export default class SearchService {
 	 *      ]
 	 * @param aggregations
 	 */
-	public static simplifyAggregations(aggregations: Aggregations): IFilterOptions {
-		const simpleAggs: IFilterOptions = {};
+	public static simplifyAggregations(aggregations: Aggregations): FilterOptions {
+		const simpleAggs: FilterOptions = {};
 		_.forEach(aggregations, (value, prop) => {
 			if (_.isPlainObject(value.buckets)) {
 				// range bucket object (eg: fragment_duration_seconds)
@@ -221,7 +221,7 @@ export default class SearchService {
 						from?: number;
 						to?: number;
 						doc_count: number;
-					}
+					};
 				};
 				simpleAggs[prop] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
 					return {

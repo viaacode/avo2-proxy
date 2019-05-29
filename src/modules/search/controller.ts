@@ -1,4 +1,4 @@
-import { ISearchResponse, IFilters, ISearchRequest } from './types';
+import { SearchResponse, Filters, SearchRequest } from './types';
 import * as _ from 'lodash';
 
 import * as elasticsearchTemplate from './elasticsearch-templates/search.json';
@@ -7,7 +7,7 @@ import SearchService from './service';
 
 export default class SearchController {
 
-	public static async search(searchRequest: ISearchRequest): Promise<ISearchResponse> {
+	public static async search(searchRequest: SearchRequest): Promise<SearchResponse> {
 		try {
 			// Convert filters to ElasticSearch query object using queryBuilder
 			const esQueryObject = SearchController.buildQueryObject(
@@ -17,7 +17,7 @@ export default class SearchController {
 
 			// Preform search
 			console.log('query: ', JSON.stringify(esQueryObject, null, 2));
-			const results: ISearchResponse = await SearchService.search(esQueryObject);
+			const results: SearchResponse = await SearchService.search(esQueryObject);
 			console.log('results: ', JSON.stringify(results, null, 2));
 			return results;
 		} catch (err) {
@@ -36,7 +36,7 @@ export default class SearchController {
 	 * @param size
 	 */
 	private static buildQueryObject(
-		filters: Partial<IFilters> | undefined,
+		filters: Partial<Filters> | undefined,
 		from: number | undefined,
 		size: number | undefined): any {
 		let queryObject: any = _.cloneDeep(elasticsearchTemplate);
