@@ -17,6 +17,7 @@ const app: express.Application = express();
 global(app);
 app.use(errorHandler);
 app.use(cors());
+
 // register routes using typescript-rest
 Server.ignoreNextMiddlewares(true);
 Server.buildServices(
@@ -24,6 +25,7 @@ Server.buildServices(
 	StatusRoute,
 	SearchRoute,
 );
+
 // Register the docs route
 Server.swagger(app, {
 	endpoint: 'docs/',
@@ -31,12 +33,14 @@ Server.swagger(app, {
 	host: 'localhost:3000',
 	schemes: ['http'],
 });
+
+// Return 404 if route is not knwon
 Server.buildServices(
 	app,
 	FallbackRoute,
 );
-// TODO try typescript-rest swagger implementation: Server.swagger(this.app, { filePath: './dist/swagger.json' });
-// app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinitions));
+
+// Global error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
 	if (err instanceof Errors.NotFoundError) {
 		res.set('Content-Type', 'application/json');

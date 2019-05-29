@@ -84,12 +84,12 @@
 				"field": "administrative_type.filter"
 			}
 		},
-		"lom_typical_age_range": {
+		"lom_typical_age_range.filter": {
 			"terms": {
 				"field": "lom_typical_age_range.filter"
 			}
 		},
-		"lom_context": {
+		"lom_context.filter": {
 			"terms": {
 				"field": "lom_context.filter"
 			}
@@ -99,23 +99,23 @@
 				"field": "lom_languages"
 			}
 		},
-		"lom_keywords": {
+		"lom_keywords.filter": {
 			"terms": {
 				"field": "lom_keywords.filter",
 				"size": 20
 			}
 		},
-		"lom_classification": {
+		"lom_classification.filter": {
 			"terms": {
 				"field": "lom_classification.filter"
 			}
 		},
-		"dc_titles_serie": {
+		"dc_titles_serie.filter": {
 			"terms": {
 				"field": "dc_titles_serie.filter"
 			}
 		},
-		"duration": {
+		"fragment_duration_seconds": {
 			"range": {
 				"field": "fragment_duration_seconds",
 				"keyed": true,
@@ -136,7 +136,7 @@
 				]
 			}
 		},
-		"original_cp": {
+		"original_cp.filter": {
 			"terms": {
 				"field": "original_cp.filter"
 			}

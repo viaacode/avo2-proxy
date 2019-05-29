@@ -1,4 +1,4 @@
-import * as axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
 import { IFilterOptions, ISearchResponse } from './types';
@@ -28,11 +28,13 @@ interface AuthTokenResponse {
 
 interface Aggregations {
 	[prop: string]: {
-		buckets: {[bucketName: string]: {
+		buckets: {
+			[bucketName: string]: {
 				from?: number;
 				to?: number;
 				doc_count: number;
-			}};
+			}
+		};
 	} | {
 		doc_count_error_upper_bound: number;
 		sum_other_doc_count: number;
@@ -60,7 +62,7 @@ export default class SearchService {
 				username: process.env.ELASTICSEARCH_AUTH_USERNAME as string,
 				password: process.env.ELASTICSEARCH_AUTH_PASSWORD as string,
 			};
-			const authTokenResponse: axios.AxiosResponse<AuthTokenResponse> = await axios.default({
+			const authTokenResponse: AxiosResponse<AuthTokenResponse> = await axios({
 				method: 'post',
 				url,
 				data,
@@ -92,67 +94,47 @@ export default class SearchService {
 	}
 
 	public static async search(searchQueryObject: any): Promise<ISearchResponse> {
-		const url = process.env.ELASTICSEARCH_URL;
-		const token: string = await SearchService.getAuthToken();
-		const esResponse: axios.AxiosResponse<ElasticsearchResponse> = await axios.default({
-			method: 'post',
-			url,
-			headers: {
-				Authorization: token,
-			},
-			data: searchQueryObject,
-		});
+		let url;
+		try {
+			url = process.env.ELASTICSEARCH_URL;
+			const token: string = await SearchService.getAuthToken();
+			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
+				method: 'post',
+				url,
+				headers: {
+					Authorization: token,
+				},
+				data: searchQueryObject,
+			});
 
-		// Handle response
-		if (esResponse.status >= 200 && esResponse.status < 400) {
-			// Return search results
-			return {
-				count: _.get(esResponse, 'data.hits.total'),
-				results: _.map(_.get(esResponse, 'data.hits.hits'), '_source'),
-				aggregations: _.get(esResponse, 'data.aggregations'),
-			};
-		} else {
+			// Handle response
+			if (esResponse.status >= 200 && esResponse.status < 400) {
+				// Return search results
+				return {
+					count: _.get(esResponse, 'data.hits.total'),
+					results: _.map(_.get(esResponse, 'data.hits.hits'), '_source'),
+					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
+				};
+			} else {
+				throw new RecursiveError(
+					'Request to elasticsearch was unsuccessful',
+					null,
+					{
+						url,
+						method: 'post',
+						searchQueryObject,
+						status: esResponse.status,
+						statusText: esResponse.statusText,
+					});
+			}
+		} catch (err) {
 			throw new RecursiveError(
-				'Failed to make search call to elasticsearch',
-				null,
+				'Failed to make request to elasticsearch',
+				err,
 				{
 					url,
 					method: 'post',
 					searchQueryObject,
-					status: esResponse.status,
-					statusText: esResponse.statusText,
-				});
-		}
-	}
-
-	public static async getFilterOptions(queryObject): Promise<Partial<ISearchResponse>> {
-		const url = process.env.ELASTICSEARCH_URL;
-		const token: string = await SearchService.getAuthToken();
-		const esResponse: axios.AxiosResponse<ElasticsearchResponse> = await axios.default({
-			method: 'post',
-			url,
-			headers: {
-				Authorization: token,
-			},
-			data: queryObject,
-		});
-
-		// Handle response
-		if (esResponse.status >= 200 && esResponse.status < 400) {
-			// Return search results
-			return {
-				aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
-			};
-		} else {
-			throw new RecursiveError(
-				'Failed to get aggregations from elasticsearch',
-				null,
-				{
-					url,
-					method: 'post',
-					queryObject,
-					status: esResponse.status,
-					statusText: esResponse.statusText,
 				});
 		}
 	}
@@ -212,7 +194,7 @@ export default class SearchService {
 	 *              "option_name": "afbetaling",
 	 *              "option_count": 1
 	 *          }
-	 *			],
+	 *      ],
 	 *      "fragment_duration_seconds": [
 	 *          {
 	 *              "option_name": "< 5 min",
@@ -234,11 +216,13 @@ export default class SearchService {
 		_.forEach(aggregations, (value, prop) => {
 			if (_.isPlainObject(value.buckets)) {
 				// range bucket object (eg: fragment_duration_seconds)
-				const rangeBuckets = value.buckets as {[bucketName: string]: {
+				const rangeBuckets = value.buckets as {
+					[bucketName: string]: {
 						from?: number;
 						to?: number;
 						doc_count: number;
-					}};
+					}
+				};
 				simpleAggs[prop] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
 					return {
 						option_name: bucketName,
