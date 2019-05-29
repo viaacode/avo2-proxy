@@ -21,7 +21,11 @@ export default class SearchController {
 			console.log('results: ', JSON.stringify(results, null, 2));
 			return results;
 		} catch (err) {
-			throw new RecursiveError('Failed to do search', err, { ...searchRequest });
+			if (err.statusText === 'Bad Request') {
+				throw new RecursiveError('Failed to do search, are you connected to the elasticsearch VPN?', err, { ...searchRequest }); // TODO remove dev error
+			} else {
+				throw new RecursiveError('Failed to do search', err, { ...searchRequest });
+			}
 		}
 	}
 
@@ -36,6 +40,7 @@ export default class SearchController {
 		from: number | undefined,
 		size: number | undefined): any {
 		let queryObject: any = _.cloneDeep(elasticsearchTemplate);
+		delete queryObject.default; // Side effect of importing a json file as a module
 
 		if (!_.isUndefined(from)) {
 			queryObject.from = from;
