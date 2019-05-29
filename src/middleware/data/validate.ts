@@ -6,7 +6,7 @@ import { errorTypes } from './errorTypes';
 const validate = (options: {
 	origin: string,
 	preset: any, // TODO: fix any types if possible
-	error: string,
+	error: string | undefined,
 	req: DataRequest,
 	res: Response,
 	next: NextFunction,

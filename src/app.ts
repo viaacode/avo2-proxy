@@ -2,27 +2,50 @@ import environment from './helpers/environment';
 
 environment(process.env);
 
-import * as express from 'express';
+import express from 'express';
 import global from './middleware/global';
 import errorHandler from './middleware/errorHandler';
 import { AddressInfo } from 'net';
 import { Logger } from './helpers/logger';
-import { Server } from 'typescript-rest';
+import { Server, Errors } from 'typescript-rest';
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import * as cors from 'cors';
-
-const swaggerUi = require('swagger-ui-express');
-import * as swaggerDefinitions from '../docs/swagger.json';
+import cors from 'cors';
+import FallbackRoute from './modules/fallback/route';
 
 const app: express.Application = express();
 global(app);
 app.use(errorHandler);
 app.use(cors());
 // register routes using typescript-rest
-Server.buildServices(app, StatusRoute, SearchRoute);
+Server.ignoreNextMiddlewares(true);
+Server.buildServices(
+	app,
+	StatusRoute,
+	SearchRoute,
+);
 // Register the docs route
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinitions));
+Server.swagger(app, {
+	endpoint: 'docs/',
+	filePath: './docs/swagger.json',
+	host: 'localhost:3000',
+	schemes: ['http'],
+});
+Server.buildServices(
+	app,
+	FallbackRoute,
+);
+// TODO try typescript-rest swagger implementation: Server.swagger(this.app, { filePath: './dist/swagger.json' });
+// app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDefinitions));
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+	if (err instanceof Errors.NotFoundError) {
+		res.set('Content-Type', 'application/json');
+		res.status(err.statusCode);
+		res.json({ error: 'Route not found' });
+	} else {
+		next(err);
+	}
+});
 
 let server;
 

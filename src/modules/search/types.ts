@@ -19,7 +19,7 @@ export interface IFilters {
 }
 
 export interface ISearchRequest { // Used on client to verify request structure
-	filters: Partial<IFilters>;
+	filters?: Partial<IFilters>;
 	from: number;
 	size: number;
 }
@@ -27,6 +27,7 @@ export interface ISearchRequest { // Used on client to verify request structure
 export interface ISearchResponse {
 	results: ISearchResultItem[];
 	count: number;
+	aggregations: IFilterOptions;
 }
 
 export interface ISearchResultItem {
@@ -50,4 +51,8 @@ export interface ISearchResultItem {
 	fragment_duration_seconds: number;
 	administrative_type: string;
 	administrative_external_id: string;
+}
+
+export interface IFilterOptions {
+	[prop: string]: { option_name: string, option_count: number }[];
 }

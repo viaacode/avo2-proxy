@@ -1,5 +1,5 @@
-import * as session from 'express-session';
-import * as Store from 'session-file-store';
+import session from 'express-session';
+import Store from 'session-file-store';
 
 export default session({
 	saveUninitialized: true,

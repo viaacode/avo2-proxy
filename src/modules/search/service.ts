@@ -1,7 +1,7 @@
 import * as axios from 'axios';
 import * as _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
-import { ISearchResponse } from './types';
+import { IFilterOptions, ISearchResponse } from './types';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -24,6 +24,25 @@ interface AuthTokenResponse {
 	graphql_api_url: string;
 	authorization_token: string;
 	status: string;
+}
+
+interface Aggregations {
+	[prop: string]: {
+		buckets: {[bucketName: string]: {
+				from?: number;
+				to?: number;
+				doc_count: number;
+			}};
+	} | {
+		doc_count_error_upper_bound: number;
+		sum_other_doc_count: number;
+		buckets: { key: string, doc_count: number }[];
+	};
+}
+
+interface SimpleBucket {
+	option_name: string;
+	option_count: number;
 }
 
 export default class SearchService {
@@ -90,6 +109,7 @@ export default class SearchService {
 			return {
 				count: _.get(esResponse, 'data.hits.total'),
 				results: _.map(_.get(esResponse, 'data.hits.hits'), '_source'),
+				aggregations: _.get(esResponse, 'data.aggregations'),
 			};
 		} else {
 			throw new RecursiveError(
@@ -103,5 +123,139 @@ export default class SearchService {
 					statusText: esResponse.statusText,
 				});
 		}
+	}
+
+	public static async getFilterOptions(queryObject): Promise<Partial<ISearchResponse>> {
+		const url = process.env.ELASTICSEARCH_URL;
+		const token: string = await SearchService.getAuthToken();
+		const esResponse: axios.AxiosResponse<ElasticsearchResponse> = await axios.default({
+			method: 'post',
+			url,
+			headers: {
+				Authorization: token,
+			},
+			data: queryObject,
+		});
+
+		// Handle response
+		if (esResponse.status >= 200 && esResponse.status < 400) {
+			// Return search results
+			return {
+				aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
+			};
+		} else {
+			throw new RecursiveError(
+				'Failed to get aggregations from elasticsearch',
+				null,
+				{
+					url,
+					method: 'post',
+					queryObject,
+					status: esResponse.status,
+					statusText: esResponse.statusText,
+				});
+		}
+	}
+
+	/**
+	 * Converts elasticsearch aggs result to simple list of options and counts per filter property
+	 *
+	 * Aggregations contain:
+	 *   Either a simple list for each option
+	 *      "lom_keywords.filter": {
+	 *          "doc_count_error_upper_bound": 0,
+	 *          "sum_other_doc_count": 0,
+	 *          "buckets": [
+	 *              {
+	 *                  "key": "armoede",
+	 *                  "doc_count": 2
+	 *              },
+	 *              {
+	 *                  "key": "schulden",
+	 *                  "doc_count": 2
+	 *              },
+	 *              {
+	 *                  "key": "afbetaling",
+	 *                  "doc_count": 1
+	 *              }
+	 *					]
+	 *			}
+	 *   or an object containing the ranged options
+	 *      "fragment_duration_seconds": {
+	 *          "buckets": {
+	 *              "< 5 min": {
+	 *                  "to": 300,
+	 *                  "doc_count": 2
+	 *              },
+	 *              "5 - 15 min": {
+	 *                  "from": 300,
+	 *                  "to": 900,
+	 *                  "doc_count": 0
+	 *              },
+	 *              "> 15 min": {
+	 *                  "from": 900,
+	 *                  "doc_count": 0
+	 *              }
+	 *          }
+	 *      }
+	 * and we will convert this to:
+	 *      "lom_keywords.filter": [
+	 *          {
+	 *              "option_name": "armoede",
+	 *              "option_count": 2
+	 *          },
+	 *          {
+	 *              "option_name": "schulden",
+	 *              "option_count": 2
+	 *          },
+	 *          {
+	 *              "option_name": "afbetaling",
+	 *              "option_count": 1
+	 *          }
+	 *			],
+	 *      "fragment_duration_seconds": [
+	 *          {
+	 *              "option_name": "< 5 min",
+	 *              "option_count": 2
+	 *          },
+	 *          {
+	 *              "option_name": "5 - 15 min",
+	 *              "option_count": 0
+	 *          },
+	 *          {
+	 *              "option_name": "> 15 min",
+	 *              "option_count": 0
+	 *          }
+	 *      ]
+	 * @param aggregations
+	 */
+	public static simplifyAggregations(aggregations: Aggregations): IFilterOptions {
+		const simpleAggs: IFilterOptions = {};
+		_.forEach(aggregations, (value, prop) => {
+			if (_.isPlainObject(value.buckets)) {
+				// range bucket object (eg: fragment_duration_seconds)
+				const rangeBuckets = value.buckets as {[bucketName: string]: {
+						from?: number;
+						to?: number;
+						doc_count: number;
+					}};
+				simpleAggs[prop] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
+					return {
+						option_name: bucketName,
+						option_count: bucketValue.doc_count,
+					};
+				})) as unknown as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
+			} else {
+				// regular bucket array (eg: administrative_type)
+				const regularBuckets = value.buckets as { key: string, doc_count: number }[];
+				simpleAggs[prop] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
+					return {
+						option_name: bucketValue.key,
+						option_count: bucketValue.doc_count,
+					};
+				})) as unknown as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
+			}
+		});
+		return simpleAggs;
 	}
 }

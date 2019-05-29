@@ -6,9 +6,13 @@ import { RecursiveError } from '../../helpers/recursiveError';
 @Path('/search')
 export default class SearchRoute {
 
+	/**
+	 * If no searchRequest.filters are passed, then a default search with aggregations is executed
+	 * @param searchRequest
+	 */
 	@Path('search')
 	@POST
-	filter(searchRequest: ISearchRequest): Promise<ISearchResponse> | RecursiveError {
+	search(searchRequest: ISearchRequest): Promise<ISearchResponse> | RecursiveError {
 		try {
 			return SearchController.search(searchRequest);
 		} catch (err) {

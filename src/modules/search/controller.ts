@@ -1,7 +1,7 @@
 import { ISearchResponse, IFilters, ISearchRequest } from './types';
 import * as _ from 'lodash';
 
-import * as elasticsearchTemplate from './elasticsearch-template.json';
+import * as elasticsearchTemplate from './elasticsearch-templates/search.json';
 import { RecursiveError } from '../../helpers/recursiveError';
 import SearchService from './service';
 
@@ -10,11 +10,14 @@ export default class SearchController {
 	public static async search(searchRequest: ISearchRequest): Promise<ISearchResponse> {
 		try {
 			// Convert filters to ElasticSearch query object using queryBuilder
-			const esQueryObject = SearchController.buildQueryObject(searchRequest.filters, searchRequest.from, searchRequest.size);
+			const esQueryObject = SearchController.buildQueryObject(
+				searchRequest.filters,
+				searchRequest.from,
+				searchRequest.size);
 
 			// Preform search
 			console.log('query: ', JSON.stringify(esQueryObject, null, 2));
-			const results = await SearchService.search(esQueryObject);
+			const results: ISearchResponse = await SearchService.search(esQueryObject);
 			console.log('results: ', JSON.stringify(results, null, 2));
 			return results;
 		} catch (err) {
@@ -28,18 +31,41 @@ export default class SearchController {
 	 * @param from
 	 * @param size
 	 */
-	private static buildQueryObject(filters: Partial<IFilters>, from: number, size: number): any {
-		let queryObject: any = elasticsearchTemplate;
-		queryObject.from = from;
-		queryObject.size = size;
-		if (filters.query) {
+	private static buildQueryObject(
+		filters: Partial<IFilters> | undefined,
+		from: number | undefined,
+		size: number | undefined): any {
+		let queryObject: any = _.cloneDeep(elasticsearchTemplate);
+
+		if (!_.isUndefined(from)) {
+			queryObject.from = from;
+		}
+		if (!_.isUndefined(size)) {
+			queryObject.size = size;
+		}
+
+		// If no filters are passed, we want to do a default query with aggs
+		if (!filters || _.isEmpty(filters)) {
+			_.set(queryObject, 'query', { match_all: {} });
+			_.unset(queryObject, 'query.bool');
+			return queryObject;
+		}
+
+		const stringQuery = _.get(filters, 'query');
+		if (stringQuery) {
 			// Replace {{query}} in the stringified template with the actual search terms
-			queryObject = JSON.parse(JSON.stringify(queryObject).replace(/{{query}}/g, filters.query));
+			queryObject = JSON.parse(JSON.stringify(queryObject).replace(/{{query}}/g, stringQuery));
 		} else {
 			// Remove the part of the template responsible for textual search
 			_.unset(queryObject, 'query.bool.should');
 		}
 
+		if (_.remove(_.keys(filters), 'query').length === 0) {
+			// Only a string query is passed, no need to add further filters
+			return queryObject;
+		}
+
+		// Add additional filters to the query object
 		const filterArray: any[] = [];
 		_.set(queryObject, 'query.bool.filter', filterArray);
 		_.forEach(filters, (value: any, key: string) => {

@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import * as Joi from 'joi';
 import 'jest-extended';
 import validate from '../../../../src/middleware/data/validate';
 import { errorTypes } from '../../../../src/middleware/data/errorTypes';

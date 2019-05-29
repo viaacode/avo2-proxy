@@ -75,89 +75,11 @@
 					}
 				}
 			],
-			"filter": [
-				{
-					"terms": {
-						"administrative_type": [
-							"video",
-							"audio"
-						]
-					}
-				},
-				{
-					"terms": {
-						"lom_typical_age_range.filter": [
-							"Secundair 2de graad",
-							"Secundair 3de graad"
-						]
-					}
-				},
-				{
-					"terms": {
-						"lom_context.filter": [
-							"Secundair onderwijs"
-						]
-					}
-				},
-				{
-					"range": {
-						"dcterms_issued": {
-							"gte": "2000-01-01",
-							"lte": "2020-01-01"
-						}
-					}
-				},
-				{
-					"terms": {
-						"lom_languages": [
-							"nl",
-							"fr"
-						]
-					}
-				},
-				{
-					"terms": {
-						"lom_keywords.filter": [
-							"armoede",
-							"schuldbemiddeling"
-						]
-					}
-				},
-				{
-					"terms": {
-						"lom_classification.filter": [
-							"levensbeschouwing",
-							"gedrags- en cultuurwetenschappen"
-						]
-					}
-				},
-				{
-					"terms": {
-						"dc_titles_serie.filter": [
-							"pano"
-						]
-					}
-				},
-				{
-					"range": {
-						"fragment_duration_seconds": {
-							"gte": 0,
-							"lte": 3600
-						}
-					}
-				},
-				{
-					"terms": {
-						"original_cp.filter": [
-							"VRT"
-						]
-					}
-				}
-			]
+			"filter": []
 		}
 	},
 	"aggs": {
-		"type": {
+		"administrative_type.filter": {
 			"terms": {
 				"field": "administrative_type.filter"
 			}
