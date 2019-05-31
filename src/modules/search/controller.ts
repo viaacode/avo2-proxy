@@ -16,10 +16,8 @@ export default class SearchController {
 				searchRequest.size);
 
 			// Preform search
-			console.log('query: ', JSON.stringify(esQueryObject, null, 2));
-			const results: SearchResponse = await SearchService.search(esQueryObject);
-			console.log('results: ', JSON.stringify(results, null, 2));
-			return results;
+			console.log('----------\nquery: ', JSON.stringify(esQueryObject));
+			return await SearchService.search(esQueryObject);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new RecursiveError('Failed to do search, are you connected to the elasticsearch VPN?', err, { ...searchRequest }); // TODO remove dev error

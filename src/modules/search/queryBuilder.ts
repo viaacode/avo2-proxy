@@ -1,4 +1,4 @@
-import { Filters, SearchResultOrderProperty, SearchResultOrderDirection } from './types';
+import { Filters, SearchOrderProperty, SearchOrderDirection } from './types';
 import * as _ from 'lodash';
 
 import * as elasticsearchTemplate from './elasticsearch-templates/search.json';
@@ -25,8 +25,8 @@ export default class QueryBuilder {
 	 */
 	public static buildQueryObject(
 		filters: Partial<Filters> | undefined,
-		orderProperty: SearchResultOrderProperty = 'relevance',
-		orderDirection: SearchResultOrderDirection = 'desc',
+		orderProperty: SearchOrderProperty = 'relevance',
+		orderDirection: SearchOrderDirection = 'desc',
 		from: number = 0,
 		size: number = 30): any {
 		try {
@@ -52,14 +52,14 @@ export default class QueryBuilder {
 				_.forEach(_.get(queryObject, 'query.bool.should'), (matchObj) => {
 					_.set(matchObj, 'multi_match.query', escapedQueryString);
 				});
+
+				if (_.keys(filters).length === 1) {
+					// Only a string query is passed, no need to add further filters
+					return queryObject;
+				}
 			} else {
 				// Remove the part of the template responsible for textual search
 				_.unset(queryObject, 'query.bool.should');
-			}
-
-			if (_.remove(_.keys(filters), 'query').length === 0) {
-				// Only a string query is passed, no need to add further filters
-				return queryObject;
 			}
 
 			// Add additional filters to the query object
@@ -131,7 +131,7 @@ export default class QueryBuilder {
 	 * @param orderProperty
 	 * @param orderDirection
 	 */
-	private static buildSortArray(orderProperty: SearchResultOrderProperty, orderDirection: SearchResultOrderDirection) {
+	private static buildSortArray(orderProperty: SearchOrderProperty, orderDirection: SearchOrderDirection) {
 		const mappedOrderProperty = this.orderMappings[orderProperty];
 		const sortArray: any[] = [];
 		if (mappedOrderProperty !== '_score') {
