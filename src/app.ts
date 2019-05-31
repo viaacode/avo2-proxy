@@ -2,16 +2,16 @@ import environment from './helpers/environment';
 
 environment(process.env);
 
-import express from 'express';
-import global from './middleware/global';
-import errorHandler from './middleware/errorHandler';
 import { AddressInfo } from 'net';
+import cors from 'cors';
+import errorHandler from './middleware/errorHandler';
+import express from 'express';
+import FallbackRoute from './modules/fallback/route';
+import global from './middleware/global';
 import { Logger } from './helpers/logger';
 import { Server, Errors } from 'typescript-rest';
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import cors from 'cors';
-import FallbackRoute from './modules/fallback/route';
 
 const app: express.Application = express();
 global(app);
