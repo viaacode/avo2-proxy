@@ -34,7 +34,7 @@ Server.swagger(app, {
 	schemes: ['http'],
 });
 
-// Return 404 if route is not knwon
+// Return 404 if route is not known
 Server.buildServices(
 	app,
 	FallbackRoute,

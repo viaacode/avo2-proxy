@@ -25,6 +25,8 @@ export interface Filters {
 export interface SearchRequest {
 	// Used on client to verify request structure
 	filters?: Partial<Filters>;
+	orderProperty?: SearchResultOrderProperty;
+	orderDirection?: SearchResultOrderDirection;
 	from: number;
 	size: number;
 }
@@ -66,3 +68,11 @@ export interface OptionProp {
 export interface FilterOptions {
 	[prop: string]: OptionProp[];
 }
+
+export type SearchResultOrderProperty =
+	| 'relevance'
+	| 'views'
+	| 'broadcastDate'
+	| 'addedDate'
+	| 'editDate';
+export type SearchResultOrderDirection = 'asc' | 'desc';

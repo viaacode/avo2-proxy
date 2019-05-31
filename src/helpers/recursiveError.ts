@@ -1,3 +1,5 @@
+import { inspect } from 'util';
+
 /**
  * Centralized error object that contains recursive innerException information
  */
@@ -5,9 +7,9 @@ export class RecursiveError extends Object {
 	public stack: string[];
 
 	constructor(
-			public errorMessage: string,
-			public innerException: any = null,
-			public additionalInfo: any = null) {
+		public errorMessage: string,
+		public innerException: any = null,
+		public additionalInfo: any = null) {
 		super();
 		if (innerException && typeof innerException.stack === 'string') {
 			this.stack = innerException.stack.split('\n');
@@ -18,6 +20,15 @@ export class RecursiveError extends Object {
 	}
 
 	public toString(): string {
-		return JSON.stringify(this, null, 2);
+		return JSON.stringify(
+			this,
+			(key, value) => {
+				if (key === 'request') {
+					// Avoid huge request object in error json
+					return '[request]';
+				}
+				return value;
+			},
+			2);
 	}
 }

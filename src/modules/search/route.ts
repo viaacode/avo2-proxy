@@ -12,13 +12,13 @@ export default class SearchRoute {
 	 */
 	@Path('search')
 	@POST
-	search(searchRequest: SearchRequest): Promise<SearchResponse> | RecursiveError {
+	async search(searchRequest: SearchRequest): Promise<SearchResponse> {
 		try {
-			return SearchController.search(searchRequest);
+			return await SearchController.search(searchRequest);
 		} catch (err) {
 			const error = new RecursiveError('failed during search route', err, { ...searchRequest });
-			console.error(JSON.stringify(error, null, 2));
-			return error;
+			console.error(error.toString());
+			throw error;
 		}
 	}
 }
