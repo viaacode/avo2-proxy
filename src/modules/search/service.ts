@@ -80,11 +80,12 @@ export default class SearchService {
 		if (SearchService.tokenPromise) {
 			// Token call in progress, return the same promise that is in progress
 			return SearchService.tokenPromise;
-		} else if (!SearchService.authToken || SearchService.authTokenExpire > new Date()) {
+		} else if (!SearchService.authToken || SearchService.authTokenExpire < new Date()) {
 			// We need to get a token the first time the search api is called or
 			// when the token in the cache is expired
 			SearchService.tokenPromise = SearchService.getAuthTokenFromNetwork();
 			SearchService.authToken = await SearchService.tokenPromise;
+			SearchService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
 			SearchService.tokenPromise = null;
 			return SearchService.authToken;
 		} else {
