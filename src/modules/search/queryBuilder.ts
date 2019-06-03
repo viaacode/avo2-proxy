@@ -71,25 +71,22 @@ export default class QueryBuilder {
 				} else if (_.isArray(value) && _.every(value, (val) => _.isString(val))) {
 					// Array of options
 					// TODO if only one option use "term" instead of "terms" (better efficiency for elasticsearch)
-					const filterObj = {
-						terms: {},
-					};
-					filterObj.terms[key] = [...value];
-					filterArray.push(filterObj);
+					filterArray.push({
+						terms: {
+							[key]: value,
+						},
+					});
 				} else if (_.isObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
 					// Date/number interval
 					const intervalValue = value as { gte?: string | number, lte?: string | number };
-					const filterObj = {
-						range: {},
-					};
-					filterObj.range[key] = {};
-					if (!_.isNil(intervalValue.gte)) {
-						filterObj.range[key].gte = intervalValue.gte;
-					}
-					if (!_.isNil(intervalValue.lte)) {
-						filterObj.range[key].lte = intervalValue.lte;
-					}
-					filterArray.push(filterObj);
+					filterArray.push({
+						range: {
+							[key]: {
+								...((!_.isNil(intervalValue.gte)) && { gte: intervalValue.gte }),
+								...((!_.isNil(intervalValue.lte)) && { lte: intervalValue.lte }),
+							},
+						},
+					});
 				} else {
 					console.error(new RecursiveError(
 						'Unknown filter during search',
