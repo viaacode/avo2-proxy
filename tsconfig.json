@@ -17,6 +17,7 @@
 		"strictFunctionTypes": true,
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
 		"typeRoots": [
 			"node_modules/@types"
 		],

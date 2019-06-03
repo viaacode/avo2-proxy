@@ -1,4 +1,4 @@
-import { SearchResponse, SearchRequest, SearchFilterOptionsRequest } from './types';
+import { SearchResponse, SearchRequest } from './types';
 import { RecursiveError } from '../../helpers/recursiveError';
 import SearchService from './service';
 import QueryBuilder from './queryBuilder';

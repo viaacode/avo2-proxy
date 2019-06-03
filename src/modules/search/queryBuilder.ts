@@ -1,7 +1,10 @@
 import { Filters, SearchOrderProperty, SearchOrderDirection, SearchRequest, FilterOptionSearch } from './types';
 import * as _ from 'lodash';
-import * as textQueryObjectTemplate from './elasticsearch-templates/text-query-object.json';
+import * as textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import { RecursiveError } from '../../helpers/recursiveError';
+
+delete (textQueryObjectTemplateImport as any).default; // https://github.com/Microsoft/TypeScript/issues/24588
+const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
 
 const escapeElastic = require('elasticsearch-sanitize');
 
