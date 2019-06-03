@@ -8,12 +8,7 @@ export default class SearchController {
 	public static async search(searchRequest: SearchRequest): Promise<SearchResponse> {
 		try {
 			// Convert filters to ElasticSearch query object using queryBuilder
-			const esQueryObject = QueryBuilder.buildQueryObject(
-				searchRequest.filters,
-				searchRequest.orderProperty,
-				searchRequest.orderDirection,
-				searchRequest.from,
-				searchRequest.size);
+			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
 			// Preform search
 			console.log('----------\nquery: ', JSON.stringify(esQueryObject));

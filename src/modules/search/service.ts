@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
 import { FilterOptions, SearchResponse } from './types';
+import { ELASTIC_TO_READABLE_FILTER_NAMES } from './queryBuilder';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -224,7 +225,7 @@ export default class SearchService {
 						doc_count: number;
 					};
 				};
-				simpleAggs[prop] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
+				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[prop]] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
 					return {
 						option_name: bucketName,
 						option_count: bucketValue.doc_count,
@@ -232,8 +233,8 @@ export default class SearchService {
 				})) as unknown as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
 			} else {
 				// regular bucket array (eg: administrative_type)
-				const regularBuckets = value.buckets as { key: string, doc_count: number }[];
-				simpleAggs[prop] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
+				const regularBuckets = (value.buckets || value[prop].buckets) as { key: string, doc_count: number }[];
+				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[prop]] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
 					return {
 						option_name: bucketValue.key,
 						option_count: bucketValue.doc_count,
