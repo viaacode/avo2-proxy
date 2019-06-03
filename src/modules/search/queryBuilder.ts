@@ -6,6 +6,20 @@ import { RecursiveError } from '../../helpers/recursiveError';
 
 const escapeElastic = require('elasticsearch-sanitize');
 
+const FILTER_NAME_MAPPINGS = {
+	query: 'query',
+	type: 'administrative_type.filter',
+	educationLevel: 'lom_typical_age_range.filter',
+	domain: 'lom_context.filter',
+	broadcastDate: 'dcterms_issued',
+	language: 'lom_languages',
+	keywords: 'lom_keywords.filter',
+	subject: 'lom_classification.filter',
+	serie: 'dc_titles_serie.filter',
+	duration: 'fragment_duration_seconds',
+	provider: 'original_cp.filter',
+};
+
 export default class QueryBuilder {
 	private static readonly orderMappings: { [prop: string]: any } = {
 		relevance: '_score',
@@ -65,15 +79,19 @@ export default class QueryBuilder {
 			// Add additional filters to the query object
 			const filterArray: any[] = [];
 			_.set(queryObject, 'query.bool.filter', filterArray);
-			_.forEach(filters, (value: any, key: string) => {
-				if (key === 'query') {
+			_.forEach(filters, (value: any, readableKey: string) => {
+				if (readableKey === 'query') {
 					return; // Query filter has already been handled, skip this foreach iteration
-				} else if (_.isArray(value) && _.every(value, (val) => _.isString(val))) {
+				}
+
+				// Map frontend filter names to elasticsearch names
+				const elasticKey = FILTER_NAME_MAPPINGS[readableKey];
+				if (_.isArray(value) && _.every(value, (val) => _.isString(val))) {
 					// Array of options
 					// TODO if only one option use "term" instead of "terms" (better efficiency for elasticsearch)
 					filterArray.push({
 						terms: {
-							[key]: value,
+							[elasticKey]: value,
 						},
 					});
 				} else if (_.isObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
@@ -81,7 +99,7 @@ export default class QueryBuilder {
 					const intervalValue = value as { gte?: string | number, lte?: string | number };
 					filterArray.push({
 						range: {
-							[key]: {
+							[elasticKey]: {
 								...((!_.isNil(intervalValue.gte)) && { gte: intervalValue.gte }),
 								...((!_.isNil(intervalValue.lte)) && { lte: intervalValue.lte }),
 							},
@@ -91,7 +109,7 @@ export default class QueryBuilder {
 					console.error(new RecursiveError(
 						'Unknown filter during search',
 						null,
-						{ key, value }));
+						{ key: elasticKey, value }));
 					return;
 				}
 			});
