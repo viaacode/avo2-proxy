@@ -26,7 +26,11 @@ ENV PATH /app/node_modules/.bin:$PATH
 # Copy source code
 WORKDIR /app/server
 COPY ./ ./
+# set rights for openshift
+RUN chgrp -R 0 /app/server/ && chmod -R g+rwX /app/server && chown node:node -R /app/server
 
+# add user for openshift 
+USER node
 RUN npm build
 
 # Start application
