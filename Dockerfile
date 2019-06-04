@@ -19,7 +19,8 @@ RUN npm install && npm ci --no-optional  && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Healthcheck
-HEALTHCHECK --interval=30s --start-period=30s --timeout=2s --retries=5 CMD node dist/src/healthcheck.js
+#Disable for kubernetes https://github.com/kubernetes/kubernetes/pull/50796 
+#HEALTHCHECK --interval=30s --start-period=30s --timeout=2s --retries=5 CMD node dist/src/healthcheck.js
 RUN if [ "$NODE_ENV" != "local" ] ; then npm run build; else echo No build required.; fi
 
 # Copy source code
