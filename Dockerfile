@@ -32,7 +32,7 @@ RUN chgrp -R 0 /app/server/ && chmod -R g+rwX /app/server && chown node:node -R 
 #fix sh: tsc: not found
 RUN npm install -g tsc && \
     npm install -g concurrently && \
-    npm install -g typescript && \
+    npm install -g typescript 
 
 # add user for openshift 
 USER node
