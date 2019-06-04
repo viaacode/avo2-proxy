@@ -15,7 +15,7 @@ RUN npm i --global --silent npm@latest
 # Install dependencies
 WORKDIR /app
 COPY package.json package-lock.json .npmrc ./
-RUN npm ci --no-optional  && npm cache clean --force
+RUN npm install && npm ci --no-optional  && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Healthcheck
