@@ -29,12 +29,14 @@ COPY ./ ./
 # set rights for openshift
 RUN chgrp -R 0 /app/server/ && chmod -R g+rwX /app/server && chown node:node -R /app/server
 
-# add user for openshift 
-USER node
 #fix sh: tsc: not found
 RUN npm install -g tsc && \
     npm install -g concurrently && \
     npm install -g typescript && \
+
+# add user for openshift 
+USER node
+
 RUN npm run build
 
 # Start application
