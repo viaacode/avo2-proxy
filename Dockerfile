@@ -31,7 +31,7 @@ RUN chgrp -R 0 /app/server/ && chmod -R g+rwX /app/server && chown node:node -R 
 
 # add user for openshift 
 USER node
-RUN npm build
+RUN npm run build
 
 # Start application
 CMD node dist/src/index.js
