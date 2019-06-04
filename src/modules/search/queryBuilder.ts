@@ -3,10 +3,11 @@ import * as _ from 'lodash';
 import * as textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import { RecursiveError } from '../../helpers/recursiveError';
 
+const escapeElastic = require('elasticsearch-sanitize');
+const removeAccents = require('remove-accents');
+
 delete (textQueryObjectTemplateImport as any).default; // https://github.com/Microsoft/TypeScript/issues/24588
 const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
-
-const escapeElastic = require('elasticsearch-sanitize');
 
 type FilterProperty = keyof Filters;
 export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in FilterProperty]: string } = {
@@ -147,9 +148,10 @@ export default class QueryBuilder {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});
 
+			_.set(filterObject, 'bool.should', textQueryObjectArray);
+
 			if (_.keys(filters).length === 1) {
 				// Only a string query is passed, no need to add further filters
-				_.set(filterObject, 'bool.should', textQueryObjectArray);
 				return filterObject;
 			}
 		}
@@ -224,11 +226,12 @@ export default class QueryBuilder {
 			}
 			if (filterOptionSearch && filterOptionSearch[aggProperty]) {
 				// An extra search filter should be applied for these filter options
-				const filterOptionsTerm = filterOptionSearch[aggProperty];
+				const filterOptionsTerm: string = filterOptionSearch[aggProperty];
 				aggs[elasticProperty] = {
 					filter: {
 						term: {
-							[elasticProperty]: filterOptionsTerm,
+							// Remove accents and lower case otherwise the response is always empty for this agg query
+							[elasticProperty]: removeAccents(filterOptionsTerm.toLowerCase()),
 						},
 					},
 					aggs: {
@@ -258,10 +261,10 @@ export default class QueryBuilder {
 	 * This helper function makes it easier to get a suffix if one is required
 	 * eg:
 	 * "dc_titles_serie.filter": {
-   *   "terms": {
-   *     "field": "dc_titles_serie.filter"
-   *   }
-   * },
+	 *   "terms": {
+	 *     "field": "dc_titles_serie.filter"
+	 *   }
+	 * },
 	 * @param prop
 	 */
 	private static suffix(prop: FilterProperty): string {
