@@ -19,9 +19,6 @@
 				"global.d.ts"
 			]
 		},
-		"typeRoots": [
-			"node_modules/@types"
-		]
 	},
 	"include": [
 		"src/**/*",
