@@ -41,4 +41,4 @@ USER node
 RUN npm run build
 
 # Start application
-CMD node dist/src/index.js
+CMD node dist/src/app.js
