@@ -10,7 +10,7 @@ export default class SearchController {
 			// Convert filters to ElasticSearch query object using queryBuilder
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
-			// Preform search
+			// Perform search
 			console.log('----------\nquery: ', JSON.stringify(esQueryObject));
 			return await SearchService.search(esQueryObject);
 		} catch (err) {

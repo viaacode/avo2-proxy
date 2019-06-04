@@ -1,7 +1,7 @@
 import { Application } from 'express';
 import cookieParser from 'cookie-parser';
-import * as bodyParser from 'body-parser';
-import * as helmet from 'helmet';
+import bodyParser from 'body-parser';
+import helmet from 'helmet';
 import session from './session';
 
 export default (app: Application): void => {
