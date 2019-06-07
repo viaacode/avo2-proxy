@@ -219,7 +219,7 @@ export default class QueryBuilder {
 	 */
 	private static buildAggsObject(filterOptionSearch: Partial<FilterOptionSearch> | undefined): any {
 		const aggs: any = {};
-		_.forEach(aggsProperties, (aggProperty: string) => {
+		_.forEach(aggsProperties, (aggProperty) => {
 			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
 			if (!elasticProperty) {
 				throw new RecursiveError(`Failed to resolve agg property: ${aggProperty}`);
