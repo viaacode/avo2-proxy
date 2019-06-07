@@ -26,7 +26,14 @@
 		],
 		"types": [
 			"jest"
-		]
+		],
+		"paths": {
+			"*": [
+				"node_modules/*",
+				"src/types/*",
+				"global.d.ts"
+			]
+		},
 	},
 	"include": [
 		"src/**/*.ts",
