@@ -64,9 +64,9 @@ export default class SearchService {
 				password: process.env.ELASTICSEARCH_AUTH_PASSWORD as string,
 			};
 			const authTokenResponse: AxiosResponse<AuthTokenResponse> = await axios({
-				method: 'post',
 				url,
 				data,
+				method: 'post',
 			});
 			return authTokenResponse.data.authorization_token;
 		} catch (err) {
@@ -81,7 +81,9 @@ export default class SearchService {
 		if (SearchService.tokenPromise) {
 			// Token call in progress, return the same promise that is in progress
 			return SearchService.tokenPromise;
-		} else if (!SearchService.authToken || SearchService.authTokenExpire < new Date()) {
+		}
+
+		if (!SearchService.authToken || SearchService.authTokenExpire < new Date()) {
 			// We need to get a token the first time the search api is called or
 			// when the token in the cache is expired
 			SearchService.tokenPromise = SearchService.getAuthTokenFromNetwork();
@@ -89,10 +91,10 @@ export default class SearchService {
 			SearchService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
 			SearchService.tokenPromise = null;
 			return SearchService.authToken;
-		} else {
+		}
 			// Return cached token
 			return SearchService.authToken;
-		}
+
 	}
 
 	public static async search(searchQueryObject: any): Promise<SearchResponse> {
@@ -101,8 +103,8 @@ export default class SearchService {
 			url = process.env.ELASTICSEARCH_URL;
 			const token: string = await SearchService.getAuthToken();
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
-				method: 'post',
 				url,
+				method: 'post',
 				headers: {
 					Authorization: token,
 				},
@@ -117,26 +119,26 @@ export default class SearchService {
 					results: _.map(_.get(esResponse, 'data.hits.hits'), '_source'),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
-			} else {
+			}
 				throw new RecursiveError(
 					'Request to elasticsearch was unsuccessful',
 					null,
 					{
 						url,
-						method: 'post',
 						searchQueryObject,
+						method: 'post',
 						status: esResponse.status,
 						statusText: esResponse.statusText,
 					});
-			}
+
 		} catch (err) {
 			throw new RecursiveError(
 				'Failed to make request to elasticsearch',
 				err,
 				{
 					url,
-					method: 'post',
 					searchQueryObject,
+					method: 'post',
 				});
 		}
 	}

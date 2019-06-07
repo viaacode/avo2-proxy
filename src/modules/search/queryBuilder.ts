@@ -169,7 +169,7 @@ export default class QueryBuilder {
 			if (!elasticKey) {
 				throw new RecursiveError(`Failed to resolve agg property: ${readableKey}`);
 			}
-			if (_.isArray(value) && _.every(value, (val) => _.isString(val))) {
+			if (_.isArray(value) && _.every(value, (val: any) => _.isString(val))) {
 				// Array of options
 				// TODO if only one option use "term" instead of "terms" (better efficiency for elasticsearch)
 				filterArray.push({
@@ -192,7 +192,7 @@ export default class QueryBuilder {
 				console.error(new RecursiveError(
 					'Unknown filter during search',
 					null,
-					{ key: elasticKey, value }));
+					{ value, key: elasticKey }));
 				return;
 			}
 		});
@@ -219,7 +219,7 @@ export default class QueryBuilder {
 	 */
 	private static buildAggsObject(filterOptionSearch: Partial<FilterOptionSearch> | undefined): any {
 		const aggs: any = {};
-		_.forEach(aggsProperties, aggProperty => {
+		_.forEach(aggsProperties, (aggProperty: string) => {
 			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
 			if (!elasticProperty) {
 				throw new RecursiveError(`Failed to resolve agg property: ${aggProperty}`);
