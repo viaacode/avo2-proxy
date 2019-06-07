@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
 import { FilterOptions, SearchResponse } from './types';
 import { ELASTIC_TO_READABLE_FILTER_NAMES } from './queryBuilder';

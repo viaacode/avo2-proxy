@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { DataRequest } from '../middleware.types';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 export default function (req: DataRequest, res: Response, next: NextFunction): void {
 	req.data = {

@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { DataRequest } from '../middleware.types';
-import * as ValidationHelper from '../../helpers/validation';
+import { validator } from '../../helpers/validation';
 import { errorTypes } from './errorTypes';
 
 const validate = (options: {
@@ -15,7 +15,7 @@ const validate = (options: {
 	if (!options.error) {
 		options.error = errorTypes.ObjectValidationFailed;
 	}
-	options.req.data[options.origin] = ValidationHelper.validator(options.preset, options.error, options.req.data[options.origin]);
+	options.req.data[options.origin] = validator(options.preset, options.error, options.req.data[options.origin]);
 	options.next();
 };
 

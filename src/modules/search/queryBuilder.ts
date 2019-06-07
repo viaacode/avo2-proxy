@@ -1,12 +1,11 @@
 import { Filters, SearchOrderProperty, SearchOrderDirection, SearchRequest, FilterOptionSearch } from './types';
-import * as _ from 'lodash';
-import * as textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
+import _ from 'lodash';
+import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import { RecursiveError } from '../../helpers/recursiveError';
 
 const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
 
-delete (textQueryObjectTemplateImport as any).default; // https://github.com/Microsoft/TypeScript/issues/24588
 const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
 
 type FilterProperty = keyof Filters;

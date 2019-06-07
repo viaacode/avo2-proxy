@@ -1,5 +1,5 @@
 import 'jest';
-import * as aggregations from './fixtures/aggregations.json';
+import aggregations from './fixtures/aggregations.json';
 import SearchService  from './service';
 import { FilterOptions } from './types';
 

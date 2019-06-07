@@ -1,7 +1,7 @@
 import environment from './helpers/environment';
 environment(process.env);
 
-import * as http from 'http';
+import http from 'http';
 
 const options = {
 	host: 'localhost',

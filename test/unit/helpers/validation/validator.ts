@@ -1,6 +1,6 @@
 import 'jest-extended';
 import Joi from 'joi';
-import * as validationHelper from '../../../../src/helpers/validation';
+import { validator } from '../../../../src/helpers/validation';
 
 const fixtures = {
 	check: {
@@ -16,7 +16,7 @@ describe('Validator helper', () => {
 		const obj = {};
 
 		expect(() => {
-			validationHelper.validator(fixtures.check, 'DEFINED_ERROR', obj);
+			validator(fixtures.check, 'DEFINED_ERROR', obj);
 		}).toThrowWithMessage(Error, 'DEFINED_ERROR');
 	});
 
@@ -24,7 +24,7 @@ describe('Validator helper', () => {
 		const obj = {
 			key: 'value',
 		};
-		const validation = validationHelper.validator(fixtures.check, 'DEFINED_ERROR', obj);
+		const validation = validator(fixtures.check, 'DEFINED_ERROR', obj);
 
 		expect(validation).toBeObject();
 		expect(validation).toContainEntry(['key', obj.key]);

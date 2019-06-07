@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { ValidationErr } from '../validationError';
 import presets from './presets';
 import _ from 'lodash';
