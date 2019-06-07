@@ -6,13 +6,13 @@ module.exports = {
 	},
 	testMatch: [
 		"**/test/**/*.[jt]s?(x)",
+		"**/src/**/*.spec.ts",
 	],
 	moduleFileExtensions: [
 		"ts",
 		"tsx",
 		"js",
 		"jsx",
-		"json",
 		"node"
 	],
 	setupFilesAfterEnv: ["jest-extended"]

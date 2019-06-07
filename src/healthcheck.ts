@@ -1,7 +1,7 @@
 import environment from './helpers/environment';
 environment(process.env);
 
-import http, { IncomingMessage } from 'http';
+import http from 'http';
 
 const options = {
 	host: 'localhost',
@@ -10,7 +10,7 @@ const options = {
 	timeout: 2000,
 };
 
-const request = http.request(options, (res: IncomingMessage) => {
+const request = http.request(options, (res: http.IncomingMessage) => {
 	console.log('STATUS:', res.statusCode); // eslint-disable-line no-console
 	process.exitCode = (res.statusCode === 200) ? 0 : 1;
 	process.exit();

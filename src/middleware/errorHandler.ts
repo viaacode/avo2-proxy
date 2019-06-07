@@ -3,17 +3,21 @@ import ErrorHelper from '../helpers/errorHandler';
 
 const errorHandler = (err?: string | Error, req?: Request, res?: Response, next?: NextFunction): void => {
 	// Check if there is an error
-	if (!err) {
+	if (!err && next) {
 		next();
 	}
 
 	// Check if the error is of type string
 	// If so, "convert" it to an error
-	let error: Error;
+	let error: Error | null = null;
 	if (typeof err === 'string') {
 		error = new Error(err);
-	} else {
+	} else if (err) {
 		error = err;
+	}
+
+	if (!error) {
+		return;
 	}
 
 	// Do not send multiple responses

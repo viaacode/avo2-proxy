@@ -1,9 +1,9 @@
 import Joi from 'joi';
-import { curry } from 'ramda';
 import { ValidationErr } from '../validationError';
 import presets from './presets';
+import _ from 'lodash';
 
-const validator = curry((preset, onFailError, source) => {
+const validator = _.curry((preset, onFailError, source) => {
 	const validation: any = Joi.validate(source, preset.schema, preset.options);
 
 	if (validation.error) {

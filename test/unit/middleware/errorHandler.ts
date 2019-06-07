@@ -4,7 +4,7 @@ import errorHandler from '../../../src/middleware/errorHandler';
 
 describe('Error handler middleware', () => {
 	it('Should skip if there is no error', () => {
-		errorHandler(null, null, null, (err) => {
+		errorHandler(undefined, undefined, undefined, (err) => {
 			expect(err).toBeUndefined();
 		});
 	});

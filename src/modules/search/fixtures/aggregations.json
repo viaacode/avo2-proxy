@@ -1,0 +1,182 @@
+{
+	"lom_keywords.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "armoede",
+				"doc_count": 2
+			},
+			{
+				"key": "schulden",
+				"doc_count": 2
+			},
+			{
+				"key": "afbetaling",
+				"doc_count": 1
+			},
+			{
+				"key": "armoedegrens",
+				"doc_count": 1
+			},
+			{
+				"key": "economie",
+				"doc_count": 1
+			},
+			{
+				"key": "factuur",
+				"doc_count": 1
+			},
+			{
+				"key": "geld",
+				"doc_count": 1
+			},
+			{
+				"key": "gerechtsdeurwaarder",
+				"doc_count": 1
+			},
+			{
+				"key": "kansarmoede",
+				"doc_count": 1
+			},
+			{
+				"key": "rekening",
+				"doc_count": 1
+			},
+			{
+				"key": "schuldbemiddeling",
+				"doc_count": 1
+			},
+			{
+				"key": "veiling",
+				"doc_count": 1
+			},
+			{
+				"key": "voedselbank",
+				"doc_count": 1
+			},
+			{
+				"key": "voedselbedeling",
+				"doc_count": 1
+			}
+		]
+	},
+	"fragment_duration_seconds": {
+		"buckets": {
+			"< 5 min": {
+				"to": 300,
+				"doc_count": 2
+			},
+			"5 - 15 min": {
+				"from": 300,
+				"to": 900,
+				"doc_count": 0
+			},
+			"> 15 min": {
+				"from": 900,
+				"doc_count": 0
+			}
+		}
+	},
+	"dc_titles_serie.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "Pano",
+				"doc_count": 2
+			}
+		]
+	},
+	"lom_classification.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "PAV - MAVO - GASV - ASPV",
+				"doc_count": 2
+			},
+			{
+				"key": "economie - SEI - boekhouding - bedrijfsbeheer",
+				"doc_count": 2
+			},
+			{
+				"key": "gedrags- en cultuurwetenschappen",
+				"doc_count": 2
+			},
+			{
+				"key": "levensbeschouwing",
+				"doc_count": 2
+			},
+			{
+				"key": "politieke en sociale wetenschappen - maatschappijleer",
+				"doc_count": 2
+			},
+			{
+				"key": "handel - kantoor - verkoop",
+				"doc_count": 1
+			},
+			{
+				"key": "psychologie en pedagogie",
+				"doc_count": 1
+			},
+			{
+				"key": "recht",
+				"doc_count": 1
+			},
+			{
+				"key": "wijsbegeerte en moraalwetenschappen",
+				"doc_count": 1
+			}
+		]
+	},
+	"lom_typical_age_range.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "Secundair 2de graad",
+				"doc_count": 2
+			},
+			{
+				"key": "Secundair 3de graad",
+				"doc_count": 2
+			}
+		]
+	},
+	"administrative_type.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "video",
+				"doc_count": 2
+			}
+		]
+	},
+	"lom_languages": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "nl",
+				"doc_count": 2
+			}
+		]
+	},
+	"lom_context.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "Secundair onderwijs",
+				"doc_count": 2
+			}
+		]
+	},
+	"original_cp.filter": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": []
+	}
+}

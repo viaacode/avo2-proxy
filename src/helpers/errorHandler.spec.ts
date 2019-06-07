@@ -80,7 +80,7 @@ describe('ErrorHandler helper', () => {
 
 		expect(result).toBeObject();
 		expect(result).toContainEntry(['statusCode', 500]);
-		expect(result).toContainEntry(['msg', 'Something unexpected happened.']);
+		expect(result).toContainEntry(['msg', 'Random error']);
 	});
 
 	it('Should return the thrown error when not known', () => {

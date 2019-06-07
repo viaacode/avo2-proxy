@@ -12,7 +12,7 @@ describe('Server fallback route', () => {
 				.then((response) => {
 					expect(response.statusCode).toBe(404);
 					expect(response.body).toBeObject();
-					expect(response.body).toContainEntry(['err', 'Not Found.']);
+					expect(response.body).toContainEntry(['error', 'Route not found']);
 				});
 	});
 });
