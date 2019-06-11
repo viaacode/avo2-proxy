@@ -24,7 +24,7 @@
   ],
   "homepage": "https://github.com/viaacode/avo2-proxy",
   "dependencies": {
-    "axios": "0.18.0",
+    "axios": "0.19.0",
     "body-parser": "1.18.3",
     "bodybuilder": "2.2.17",
     "cookie-parser": "1.4.4",
