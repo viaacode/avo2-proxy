@@ -232,7 +232,7 @@ export default class SearchService {
 						option_name: bucketName,
 						option_count: bucketValue.doc_count,
 					};
-				})) as unknown as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
+				})) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
 			} else {
 				// regular bucket array (eg: administrative_type)
 				const regularBuckets = (value.buckets || value[prop].buckets) as { key: string, doc_count: number }[];
@@ -241,7 +241,7 @@ export default class SearchService {
 						option_name: bucketValue.key,
 						option_count: bucketValue.doc_count,
 					};
-				})) as unknown as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
+				})) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
 			}
 		});
 		return simpleAggs;

@@ -60,7 +60,7 @@ export interface SearchResultItem {
 	lom_typical_age_range: string[];
 	lom_intended_enduser_role: string[];
 	algemeen_briefing_id: string[];
-	fragment_duration_time: null;
+	fragment_duration_time: any;
 	fragment_duration_seconds: number;
 	administrative_type: string;
 	administrative_external_id: string;
