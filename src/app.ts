@@ -27,6 +27,7 @@ Server.buildServices(
 );
 
 // Register the docs route
+// Make sure you first run ```npm run generate:docs```
 Server.swagger(app, {
 	endpoint: 'docs/',
 	filePath: './docs/swagger.json',
