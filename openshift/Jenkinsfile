@@ -46,12 +46,11 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject("sc-avo2") {
-                            if (openshift.selector("buildconfig", "avo2-proxy-s2i").exists()) {
+                            if (openshift.selector("buildconfig", "avo2-proxy-dev").exists()) {
                             sh'''#!/bin/bash
                             echo starting a build
                             oc project sc-avo2
-                            npm install npx
-                            npx nodeshift --namespace.name=sc-avo2 --strictSSL=false --dockerImage=nodeshift/centos7-s2i-web-app --imageTag=10.x --build.env YARN_ENABLED=true --expose build
+			    oc start-build avo2-proxy-dev
                             '''
 
 			      sh '''#!/bin/bash
@@ -64,10 +63,9 @@ pipeline {
                                       oc -n sc-avo2 apply -f openshift/avo2-proxy-tmpl-dc.yaml
                                       echo "templete installed , you can use it with add to project choose from project"
                                       oc project sc-avo2
-
-                                      npm install npx
-                                      npx nodeshift --namespace.name=sc-avo2 --strictSSL=false --dockerImage=nodeshift/centos7-s2i-web-app --imageTag=10.x --build.env YARN_ENABLED=true --expose build
-                                      echo " roll out QAS"
+				      echo "start NEW build"
+				      oc new-build --name= avo2-proxy-dev --strategy=docker .
+                                      echo "roll out QAS"
                                       oc process -l app=avo2-proxy -l component=proxy -l ENV=qas -p ENV=qas -f openshift/avo2-proxy-tmpl-dc.yaml | oc apply -f -
                                     '''
                               }
@@ -77,21 +75,6 @@ pipeline {
             } // steps
         } // stage
 
-        stage('test') {
-            steps {
-                script {
-                    openshift.withCluster() {
-                        openshift.withProject("sc-avo2") {
-                             sh'''#!/bin/bash
-                             echo "basic port test are in deployments "
-
-                             '''
-
-                        }
-                    }
-                }
-            }
-        }
         stage('Tag ') {
      steps {
      input message: "tag image for pod prd?: avo2-cient-prd. Approve?", id: "approval"
