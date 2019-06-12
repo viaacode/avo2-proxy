@@ -64,7 +64,7 @@ pipeline {
                                       echo "templete installed , you can use it with add to project choose from project"
                                       oc project sc-avo2
 				      echo "start NEW build"
-				      oc new-build --name= avo2-proxy-dev --strategy=docker .
+				      oc new-build --name=avo2-proxy-dev --strategy=docker .
                                       echo "roll out QAS"
                                       oc process -l app=avo2-proxy -l component=proxy -l ENV=qas -p ENV=qas -f openshift/avo2-proxy-tmpl-dc.yaml | oc apply -f -
                                     '''
