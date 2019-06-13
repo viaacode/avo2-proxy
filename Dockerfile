@@ -15,8 +15,8 @@ RUN npm i --global --silent npm@latest
 # Install dependencies
 WORKDIR /app
 COPY package.json package-lock.json .npmrc ./
-#RUN npm ci --production=false
-RUN  npm ci --no-optional  && npm cache clean --force
+RUN npm ci --production=false
+# RUN  npm ci --no-optional  && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Healthcheck
@@ -25,10 +25,9 @@ ENV PATH /app/node_modules/.bin:$PATH
 #RUN if [ "$NODE_ENV" != "local" ] ; then npm run build; else echo No build required.; fi
 
 # Copy source code
-WORKDIR /app/server
 COPY ./ ./
 # set rights for openshift
-RUN chgrp -R 0 /app/server/ && chmod -R g+rwX /app/server && chown node:node -R /app/server
+RUN chgrp -R 0 /app/ && chmod -R g+rwX /app && chown node:node -R /app
 
 # add user for openshift
 USER node
