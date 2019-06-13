@@ -50,7 +50,7 @@ pipeline {
                             sh'''#!/bin/bash
                             echo starting a build
                             oc project sc-avo2
-			    oc start-build avo2-proxy-dev
+			    oc start-build avo2-proxy-dev --wait=true
                             '''
 
 			      sh '''#!/bin/bash
