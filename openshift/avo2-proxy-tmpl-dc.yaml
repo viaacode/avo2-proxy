@@ -63,8 +63,9 @@ objects:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
-        securityContext: {}
-        terminationGracePeriodSeconds: 30
+        securityContext:
+          runAsUser: 1000
+        terminationGracePeriodSeconds: 10
     test: false
     triggers:
     - type: ConfigChange
