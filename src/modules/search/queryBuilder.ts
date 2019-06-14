@@ -115,14 +115,21 @@ export default class QueryBuilder {
 		const mappedOrderProperty = this.orderMappings[orderProperty];
 		const sortArray: any[] = [];
 		if (mappedOrderProperty !== '_score') {
-			const sortItem: any = {};
-			sortItem[mappedOrderProperty] = {
-				order: orderDirection,
+			const sortItem: any = {
+				[mappedOrderProperty]: {
+					order: orderDirection,
+				},
 			};
 			sortArray.push(sortItem);
 		}
 		// Always order by relevance if 2 search items have identical primary sort values
 		sortArray.push('_score');
+		// If score is equal, sort them by broadcast date
+		sortArray.push({
+			dcterms_issued: {
+				order: 'desc',
+			},
+		});
 		return sortArray;
 	}
 
