@@ -47,9 +47,9 @@ pipeline {
                             echo starting a build
                             oc project sc-avo2
 			                      oc start-build avo2-proxy --wait=true
-                			      echo 'app exists apply changes to template and roll out qas'
+                			      echo 'app exists apply changes to template and roll out dev'
                             oc -n sc-avo2 apply -f openshift/avo2-proxy-tmpl-dc.yaml
-                            oc process -l app=avo2-proxy -l component=proxy -l ENV=qas -p ENV=qas -f openshift/avo2-proxy-tmpl-dc.yaml | oc apply -f -
+                            oc process -l app=proxy -l component=proxy -l ENV=dev -p ENV=dev -f openshift/avo2-proxy-tmpl-dc.yaml | oc apply -f -
                             '''
                             } else {sh'''#!/bin/bash
                                       echo "install tmpl"
