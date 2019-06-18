@@ -2,53 +2,17 @@ import { Filters, SearchOrderProperty, SearchOrderDirection, SearchRequest, Filt
 import _ from 'lodash';
 import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import { RecursiveError } from '../../helpers/recursiveError';
+import {
+	AGGS_PROPERTIES, FilterProperty, MAX_COUNT_SEARCH_RESULTS,
+	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
+	NUMBER_OF_FILTER_OPTIONS,
+	READABLE_TO_ELASTIC_FILTER_NAMES
+} from '../../constants/constants';
 
 const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
 
 const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
-
-type FilterProperty = keyof Filters;
-export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in FilterProperty]: string } = {
-	query: 'query',
-	type: 'administrative_type',
-	educationLevel: 'lom_typical_age_range',
-	domain: 'lom_context',
-	broadcastDate: 'dcterms_issued',
-	language: 'lom_languages',
-	keyword: 'lom_keywords',
-	subject: 'lom_classification',
-	serie: 'dc_titles_serie',
-	provider: 'original_cp',
-};
-
-export const ELASTIC_TO_READABLE_FILTER_NAMES = _.invert(READABLE_TO_ELASTIC_FILTER_NAMES);
-
-const aggsProperties: (keyof Filters)[] = [
-	'type',
-	'educationLevel',
-	'domain',
-	'language',
-	'keyword',
-	'subject',
-	'serie',
-	'provider',
-];
-
-const NEEDS_FILTER_SUFFIX: { [prop in FilterProperty]: boolean } = {
-	query: false,
-	type: true,
-	educationLevel: true,
-	domain: true,
-	broadcastDate: true,
-	language: false,
-	keyword: true,
-	subject: true,
-	serie: true,
-	provider: true,
-};
-
-const NUMBER_OF_FILTER_OPTIONS = 50;
 
 export default class QueryBuilder {
 	private static readonly orderMappings: { [prop: string]: any } = {
@@ -68,8 +32,10 @@ export default class QueryBuilder {
 			const queryObject: any = {};
 			delete queryObject.default; // Side effect of importing a json file as a module
 
-			queryObject.from = searchRequest.from || 0;
-			queryObject.size = Math.min(searchRequest.size || 30, 2000); // Avoid huge queries
+			// Avoid huge queries
+			queryObject.size = Math.min(searchRequest.size || 30, MAX_NUMBER_SEARCH_RESULTS);
+			const max = Math.max(0, MAX_COUNT_SEARCH_RESULTS - queryObject.size);
+			queryObject.from = _.clamp(searchRequest.from || 0, 0, max);
 
 			// Provide the ordering to the query object
 			_.set(queryObject, 'sort', this.buildSortArray(searchRequest.orderProperty, searchRequest.orderDirection));
@@ -189,8 +155,8 @@ export default class QueryBuilder {
 				filterArray.push({
 					range: {
 						[elasticKey]: {
-							...((!_.isNil(intervalValue.gte)) && { gte: intervalValue.gte }),
-							...((!_.isNil(intervalValue.lte)) && { lte: intervalValue.lte }),
+							...(intervalValue.gte && { gte: intervalValue.gte }),
+							...(intervalValue.lte && { lte: intervalValue.lte }),
 						},
 					},
 				});
@@ -225,7 +191,7 @@ export default class QueryBuilder {
 	 */
 	private static buildAggsObject(filterOptionSearch: Partial<FilterOptionSearch> | undefined): any {
 		const aggs: any = {};
-		_.forEach(aggsProperties, (aggProperty) => {
+		_.forEach(AGGS_PROPERTIES, (aggProperty) => {
 			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
 			if (!elasticProperty) {
 				throw new RecursiveError(`Failed to resolve agg property: ${aggProperty}`);
