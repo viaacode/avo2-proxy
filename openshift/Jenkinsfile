@@ -40,7 +40,7 @@ pipeline {
                                if (!openshift.selector("configmap", "proxy-tst").exists()) {
                                sh '''#!/bin/bash
                                oc project sc-avo2
-                               oc process -p ENV=tst -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
+                               oc process -p ENV=dev -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
                                '''
                                }
                                if (!openshift.selector("configmap", "proxy-prd").exists()) {
