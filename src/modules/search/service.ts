@@ -5,7 +5,6 @@ import { FilterOptions, SearchResponse } from './types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
 	MAX_COUNT_SEARCH_RESULTS,
-	MAX_NUMBER_SEARCH_RESULTS
 } from '../../constants/constants';
 
 interface ElasticsearchResponse {
@@ -119,7 +118,7 @@ export default class SearchService {
 			if (esResponse.status >= 200 && esResponse.status < 400) {
 				// Return search results
 				return {
-					count: Math.min(_.get(esResponse, 'data.hits.total'), MAX_COUNT_SEARCH_RESULTS),
+					count: _.get(esResponse, 'data.hits.total'),
 					results: _.map(_.get(esResponse, 'data.hits.hits'), '_source'),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
