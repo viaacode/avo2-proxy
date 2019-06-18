@@ -46,6 +46,17 @@ objects:
           component: backend
       spec:
         containers:
+        - env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+        - envFrom:
+            - configMapRef:
+                name: proxy-${ENV}
+
+
         - image: docker-registry.default.svc:5000/sc-avo2/avo2-proxy@sha256:aeaa45767dc73f4d8c4d802b57252d799e737b4e54bbd68119f9ef689ea491dc
           imagePullPolicy: Always
           name: avo2-proxy-${ENV}

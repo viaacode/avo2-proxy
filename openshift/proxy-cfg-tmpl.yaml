@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: proxy-cfg-tmpl
+objects:
+- apiVersion: v1
+  data:
+    COOKIES_DOMAIN: ""
+    COOKIES_MAXAGE: ""
+    COOKIES_NAME: ""
+    COOKIES_SECRET: ""
+    ELASTICSEARCH_AUTH_PASSWORD: ""
+    ELASTICSEARCH_AUTH_SERVER_URL: ""
+    ELASTICSEARCH_AUTH_USERNAME: ""
+    ELASTICSEARCH_URL: ""
+    GRAPHQL_URL: ""
+    LOGGER_LEVELS: ""
+    NODE_ENV: local
+    PORT: "3000"
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: proxy-${ENV}
+
+parameters:
+  - name: ENV
+    value: dev

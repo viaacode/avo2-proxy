@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: client-cfg-tmpl
+objects:
+- apiVersion: v1
+  data:
+    REACT_APP_PROXY_URL: ""
+    NODE_ENV: ""
+    PORT: "8080"
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: client-${ENV}
+
+parameters:
+  - name: ENV
+    value: dev
