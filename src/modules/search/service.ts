@@ -2,7 +2,10 @@ import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
 import { FilterOptions, SearchResponse } from './types';
-import { ELASTIC_TO_READABLE_FILTER_NAMES } from './queryBuilder';
+import {
+	ELASTIC_TO_READABLE_FILTER_NAMES,
+	MAX_COUNT_SEARCH_RESULTS,
+} from '../../constants/constants';
 
 interface ElasticsearchResponse {
 	took: number;

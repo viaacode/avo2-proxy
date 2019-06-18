@@ -1,0 +1,51 @@
+import _ from 'lodash';
+import { Filters } from '../modules/search/types';
+
+// Max number of search results to return to the client
+export const MAX_NUMBER_SEARCH_RESULTS = 2000;
+// Max count to return to the client to avoid error:
+// -  Result window is too large, from + size must be less than or equal to: [10000] but was [17110].
+// -  See the scroll api for a more efficient way to request large data sets.
+// -  This limit can be set by changing the [index.max_result_window] index level setting.
+export const MAX_COUNT_SEARCH_RESULTS = 10000;
+export const NUMBER_OF_FILTER_OPTIONS = 50;
+
+export type FilterProperty = keyof Filters;
+export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in FilterProperty]: string } = {
+	query: 'query',
+	type: 'administrative_type',
+	educationLevel: 'lom_typical_age_range',
+	domain: 'lom_context',
+	broadcastDate: 'dcterms_issued',
+	language: 'lom_languages',
+	keyword: 'lom_keywords',
+	subject: 'lom_classification',
+	serie: 'dc_titles_serie',
+	provider: 'original_cp',
+};
+
+export const NEEDS_FILTER_SUFFIX: { [prop in FilterProperty]: boolean } = {
+	query: false,
+	type: true,
+	educationLevel: true,
+	domain: true,
+	broadcastDate: true,
+	language: false,
+	keyword: true,
+	subject: true,
+	serie: true,
+	provider: true,
+};
+
+export const AGGS_PROPERTIES: (keyof Filters)[] = [
+	'type',
+	'educationLevel',
+	'domain',
+	'language',
+	'keyword',
+	'subject',
+	'serie',
+	'provider',
+];
+
+export const ELASTIC_TO_READABLE_FILTER_NAMES = _.invert(READABLE_TO_ELASTIC_FILTER_NAMES);
