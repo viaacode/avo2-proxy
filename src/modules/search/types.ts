@@ -5,15 +5,17 @@ export interface Filters {
 	type: string[];
 	educationLevel: string[];
 	domain: string[];
-	broadcastDate: {
-		gte: string;
-		lte: string;
-	};
+	broadcastDate: DateRange;
 	language: string[];
 	keyword: string[];
 	subject: string[]; // Vak
 	serie: string[];
 	provider: string[];
+}
+
+export interface DateRange {
+	gte: string | '' | null | undefined;
+	lte: string | '' | null | undefined;
 }
 
 export interface FilterOptionSearch {
@@ -60,7 +62,7 @@ export interface SearchResultItem {
 	lom_typical_age_range: string[];
 	lom_intended_enduser_role: string[];
 	algemeen_briefing_id: string[];
-	fragment_duration_time: any;
+	fragment_duration_time: null;
 	fragment_duration_seconds: number;
 	administrative_type: string;
 	administrative_external_id: string;

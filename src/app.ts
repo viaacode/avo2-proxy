@@ -26,14 +26,16 @@ Server.buildServices(
 	SearchRoute,
 );
 
-// Register the docs route
+if (process.env.NODE_ENV !== 'production') {
+	// Register the docs route
 // Make sure you first run ```npm run generate:docs```
-Server.swagger(app, {
-	endpoint: 'docs/',
-	filePath: './docs/swagger.json',
-	host: 'localhost:3000',
-	schemes: ['http'],
-});
+	Server.swagger(app, {
+		endpoint: 'docs/',
+		filePath: './docs/swagger.json',
+		host: 'localhost:3000',
+		schemes: ['http'],
+	});
+}
 
 // Return 404 if route is not known
 Server.buildServices(
