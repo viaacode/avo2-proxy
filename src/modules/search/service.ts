@@ -4,7 +4,6 @@ import { RecursiveError } from '../../helpers/recursiveError';
 import { FilterOptions, SearchResponse } from './types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
-	MAX_COUNT_SEARCH_RESULTS,
 } from '../../constants/constants';
 
 interface ElasticsearchResponse {
@@ -95,8 +94,8 @@ export default class SearchService {
 			SearchService.tokenPromise = null;
 			return SearchService.authToken;
 		}
-			// Return cached token
-			return SearchService.authToken;
+		// Return cached token
+		return SearchService.authToken;
 
 	}
 
@@ -123,16 +122,16 @@ export default class SearchService {
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
 			}
-				throw new RecursiveError(
-					'Request to elasticsearch was unsuccessful',
-					null,
-					{
-						url,
-						searchQueryObject,
-						method: 'post',
-						status: esResponse.status,
-						statusText: esResponse.statusText,
-					});
+			throw new RecursiveError(
+				'Request to elasticsearch was unsuccessful',
+				null,
+				{
+					url,
+					searchQueryObject,
+					method: 'post',
+					status: esResponse.status,
+					statusText: esResponse.statusText,
+				});
 
 		} catch (err) {
 			throw new RecursiveError(
