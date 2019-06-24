@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
 import { DetailResponse } from './types';
+import { ContentType } from '../search/types';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -99,7 +100,7 @@ export default class DetailService {
 			// Handle response
 			if (esResponse.status >= 200 && esResponse.status < 400) {
 				return {
-					..._.get(esResponse, 'data.hits.hits[0]._source'),
+					...convertArrayProperties(_.get(esResponse, 'data.hits.hits[0]._source')),
 					id: _.get(esResponse, 'data.hits.hits[0]._id'),
 				};
 			}
@@ -125,4 +126,57 @@ export default class DetailService {
 				});
 		}
 	}
+}
+
+interface ElasticsearchResult {
+	id: string;
+	external_id?: string;
+	administrative_external_id?: string;
+	pid?: string;
+	table_name: string;
+	dc_title: string;
+	dc_titles_serie: string;
+	thumbnail_path: string;
+	original_cp: string;
+	original_cp_id: string;
+	lom_context: string;
+	lom_keywords: string;
+	lom_languages: string;
+	dcterms_issued: string;
+	dcterms_abstract: string;
+	lom_classification: string;
+	lom_typical_age_range: string;
+	lom_intended_enduser_role: string;
+	briefing_id: string[];
+	duration_time: string;
+	duration_seconds: number;
+	administrative_type: ContentType;
+}
+
+const stringArrayProperties = [
+	'lom_languages',
+	'lom_context',
+	'lom_keywords',
+	'lom_languages',
+	'lom_classification',
+	'lom_typical_age_range',
+	'lom_intended_enduser_role',
+];
+
+export function convertArrayProperties(elasticSearchResult: ElasticsearchResult): DetailResponse {
+	const detailResponse: DetailResponse = elasticSearchResult as any;
+	stringArrayProperties.forEach((stringArrayProperty: string) => {
+		try {
+			if (_.isString(elasticSearchResult[stringArrayProperty])) {
+				detailResponse[stringArrayProperty] = JSON.parse(elasticSearchResult[stringArrayProperty]);
+			} else if (!_.isArray(elasticSearchResult[stringArrayProperty])) {
+				console.error('Expected string array in elasticsearch response for property ', stringArrayProperty, elasticSearchResult); // TODO log this to VIAA log pipeline
+				detailResponse[stringArrayProperty] = [];
+			}
+		} catch (err) {
+			console.error('Failed to parse string array in elasticsearch result', stringArrayProperty, elasticSearchResult); // TODO log this to VIAA log pipeline
+			detailResponse[stringArrayProperty] = [];
+		}
+	});
+	return detailResponse;
 }

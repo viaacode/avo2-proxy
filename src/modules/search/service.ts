@@ -5,6 +5,7 @@ import { FilterOptions, SearchResponse } from './types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
 } from '../../constants/constants';
+import { convertArrayProperties } from '../detail/service';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -120,7 +121,7 @@ export default class SearchService {
 					count: _.get(esResponse, 'data.hits.total'),
 					results: _.map(_.get(esResponse, 'data.hits.hits'), (result) => {
 						return {
-							...result._source,
+							...convertArrayProperties(result._source),
 							id: result._id,
 						};
 					}),
