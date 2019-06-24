@@ -61,23 +61,6 @@
 			}
 		]
 	},
-	"fragment_duration_seconds": {
-		"buckets": {
-			"< 5 min": {
-				"to": 300,
-				"doc_count": 2
-			},
-			"5 - 15 min": {
-				"from": 300,
-				"to": 900,
-				"doc_count": 0
-			},
-			"> 15 min": {
-				"from": 900,
-				"doc_count": 0
-			}
-		}
-	},
 	"dc_titles_serie.filter": {
 		"doc_count_error_upper_bound": 0,
 		"sum_other_doc_count": 0,

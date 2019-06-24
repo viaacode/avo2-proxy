@@ -118,7 +118,12 @@ export default class SearchService {
 				// Return search results
 				return {
 					count: _.get(esResponse, 'data.hits.total'),
-					results: _.map(_.get(esResponse, 'data.hits.hits'), '_source'),
+					results: _.map(_.get(esResponse, 'data.hits.hits'), (result) => {
+						return {
+							...result._source,
+							id: result._id,
+						};
+					}),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
 			}

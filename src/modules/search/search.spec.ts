@@ -5,7 +5,6 @@ import { FilterOptions } from './types';
 
 const keys: string[] = [
 	'lom_keywords.filter',
-	'fragment_duration_seconds',
 	'dc_titles_serie.filter',
 	'lom_classification.filter',
 	'lom_typical_age_range.filter',

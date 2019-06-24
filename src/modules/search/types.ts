@@ -32,7 +32,6 @@ export interface FilterOptionSearch {
 }
 
 export interface SearchRequest {
-	// Used on client to verify request structure
 	filters?: Partial<Filters>;
 	filterOptionSearch?: Partial<FilterOptionSearch>;
 	orderProperty?: SearchOrderProperty;
@@ -48,7 +47,10 @@ export interface SearchResponse {
 }
 
 export interface SearchResultItem {
-	pid: string;
+	id: string;
+	external_id?: string;
+	administrative_external_id?: string;
+	pid?: string;
 	table_name: string;
 	dc_title: string;
 	dc_titles_serie: string;
@@ -63,11 +65,10 @@ export interface SearchResultItem {
 	lom_classification: string[];
 	lom_typical_age_range: string[];
 	lom_intended_enduser_role: string[];
-	algemeen_briefing_id: string[];
-	fragment_duration_time: null;
-	fragment_duration_seconds: number;
+	briefing_id: string[];
+	duration_time: string;
+	duration_seconds: number;
 	administrative_type: ContentType;
-	administrative_external_id: string;
 }
 
 export interface OptionProp {
@@ -85,4 +86,5 @@ export type SearchOrderProperty =
 	| 'broadcastDate'
 	| 'addedDate'
 	| 'editDate';
+
 export type SearchOrderDirection = 'asc' | 'desc';
