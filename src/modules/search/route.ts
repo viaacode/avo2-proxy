@@ -10,7 +10,7 @@ export default class SearchRoute {
 	 * If no searchRequest.filters are passed, then a default search with aggregations is executed
 	 * @param searchRequest <SearchRequest>
 	 */
-	@Path('search')
+	@Path('')
 	@POST
 	// searchRequest has any otherwise swagger gen complains about nullable types
 	// https://github.com/thiagobustamante/typescript-rest-swagger/issues/68

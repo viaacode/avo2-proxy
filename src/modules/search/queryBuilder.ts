@@ -6,7 +6,7 @@ import {
 	AGGS_PROPERTIES, FilterProperty, MAX_COUNT_SEARCH_RESULTS,
 	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
-	READABLE_TO_ELASTIC_FILTER_NAMES
+	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from '../../constants/constants';
 
 const escapeElastic = require('elasticsearch-sanitize');
@@ -81,11 +81,16 @@ export default class QueryBuilder {
 		const mappedOrderProperty = this.orderMappings[orderProperty];
 		const sortArray: any[] = [];
 		if (mappedOrderProperty !== '_score') {
-			const sortItem: any = {
-				[mappedOrderProperty]: {
-					order: orderDirection,
-				},
-			};
+			let sortItem: any;
+			if (mappedOrderProperty === 'dcterms_issued') {
+				sortItem = { dcterms_issued: { order: orderDirection, unmapped_type: 'date', missing: '_last' } };
+			} else {
+				sortItem = {
+					[mappedOrderProperty]: {
+						order: orderDirection,
+					},
+				};
+			}
 			sortArray.push(sortItem);
 		}
 		// Always order by relevance if 2 search items have identical primary sort values

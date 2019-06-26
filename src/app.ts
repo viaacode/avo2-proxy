@@ -10,8 +10,10 @@ import FallbackRoute from './modules/fallback/route';
 import global from './middleware/global';
 import { Logger } from './helpers/logger';
 import { Server, Errors } from 'typescript-rest';
+
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
+import DetailRoute from './modules/detail/route';
 
 const app: express.Application = express();
 global(app);
@@ -24,11 +26,12 @@ Server.buildServices(
 	app,
 	StatusRoute,
 	SearchRoute,
+	DetailRoute,
 );
 
 if (process.env.NODE_ENV !== 'production') {
 	// Register the docs route
-// Make sure you first run ```npm run generate:docs```
+	// Make sure you first run ```npm run generate:docs```
 	Server.swagger(app, {
 		endpoint: 'docs/',
 		filePath: './docs/swagger.json',
