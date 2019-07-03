@@ -1,7 +1,7 @@
 import 'jest';
 import aggregations from './fixtures/aggregations.json';
 import SearchService  from './service';
-import { FilterOptions } from './types';
+import {Avo} from '@viaa/avo2-types';
 
 const keys: string[] = [
 	'lom_keywords.filter',
@@ -15,7 +15,7 @@ const keys: string[] = [
 ];
 
 test('should simplify aggregation object correctly', async () => {
-	const filterOptions: FilterOptions = SearchService.simplifyAggregations(aggregations);
+	const filterOptions: Avo.Search.FilterOptions = SearchService.simplifyAggregations(aggregations);
 	expect(filterOptions).toBeObject();
 	expect(filterOptions).toContainAllKeys([...keys, 'default']); // Side affect of import json module
 	keys.forEach((key) => {

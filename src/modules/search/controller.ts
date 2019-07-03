@@ -1,11 +1,11 @@
-import { SearchResponse, SearchRequest } from './types';
+import {Avo} from '@viaa/avo2-types';
 import { RecursiveError } from '../../helpers/recursiveError';
 import SearchService from './service';
 import QueryBuilder from './queryBuilder';
 
 export default class SearchController {
 
-	public static async search(searchRequest: SearchRequest): Promise<SearchResponse> {
+	public static async search(searchRequest: Avo.Search.Request): Promise<Avo.Search.Response> {
 		try {
 			// Convert filters to ElasticSearch query object using queryBuilder
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);

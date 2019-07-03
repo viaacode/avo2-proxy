@@ -13,7 +13,8 @@ import { Server, Errors } from 'typescript-rest';
 
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import DetailRoute from './modules/detail/route';
+import ItemRoute from './modules/item/route';
+import CollectionRoute from './modules/collection/route';
 
 const app: express.Application = express();
 global(app);
@@ -26,7 +27,8 @@ Server.buildServices(
 	app,
 	StatusRoute,
 	SearchRoute,
-	DetailRoute,
+	ItemRoute,
+	CollectionRoute,
 );
 
 if (process.env.NODE_ENV !== 'production') {

@@ -1,8 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
-import { DetailResponse } from './types';
-import { ContentType } from '../search/types';
+import {Avo} from '@viaa/avo2-types';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -27,7 +26,7 @@ interface AuthTokenResponse {
 	status: string;
 }
 
-export default class DetailService {
+export default class ItemService {
 	private static authToken: string;
 	private static authTokenExpire: Date;
 	private static tokenPromise: Promise<string> | null;
@@ -57,30 +56,29 @@ export default class DetailService {
 	}
 
 	private static async getAuthToken(): Promise<string> {
-		if (DetailService.tokenPromise) {
+		if (ItemService.tokenPromise) {
 			// Token call in progress, return the same promise that is in progress
-			return DetailService.tokenPromise;
+			return ItemService.tokenPromise;
 		}
 
-		if (!DetailService.authToken || DetailService.authTokenExpire < new Date()) {
+		if (!ItemService.authToken || ItemService.authTokenExpire < new Date()) {
 			// We need to get a token the first time the search api is called or
 			// when the token in the cache is expired
-			DetailService.tokenPromise = DetailService.getAuthTokenFromNetwork();
-			DetailService.authToken = await DetailService.tokenPromise;
-			DetailService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
-			DetailService.tokenPromise = null;
-			return DetailService.authToken;
+			ItemService.tokenPromise = ItemService.getAuthTokenFromNetwork();
+			ItemService.authToken = await ItemService.tokenPromise;
+			ItemService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
+			ItemService.tokenPromise = null;
+			return ItemService.authToken;
 		}
 		// Return cached token
-		return DetailService.authToken;
-
+		return ItemService.authToken;
 	}
 
-	public static async get(id: string): Promise<DetailResponse> {
+	public static async get(id: string): Promise<Avo.Item.Response> {
 		let url;
 		try {
 			url = process.env.ELASTICSEARCH_URL; // TODO replace this with the graphql endpoint once data is available
-			const token: string = await DetailService.getAuthToken();
+			const token: string = await ItemService.getAuthToken();
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
 				method: 'post',
@@ -150,7 +148,7 @@ interface ElasticsearchResult {
 	briefing_id: string[];
 	duration_time: string;
 	duration_seconds: number;
-	administrative_type: ContentType;
+	administrative_type: Avo.Core.ContentType;
 }
 
 const stringArrayProperties = [
@@ -163,20 +161,21 @@ const stringArrayProperties = [
 	'lom_intended_enduser_role',
 ];
 
-export function convertArrayProperties(elasticSearchResult: ElasticsearchResult): DetailResponse {
-	const detailResponse: DetailResponse = elasticSearchResult as any;
+export function convertArrayProperties(elasticSearchResult: ElasticsearchResult): Avo.Item.Response {
+	const itemResponse: Avo.Item.Response = elasticSearchResult as any;
 	stringArrayProperties.forEach((stringArrayProperty: string) => {
 		try {
 			if (_.isString(elasticSearchResult[stringArrayProperty])) {
-				detailResponse[stringArrayProperty] = JSON.parse(elasticSearchResult[stringArrayProperty]);
+				itemResponse[stringArrayProperty] = JSON.parse(elasticSearchResult[stringArrayProperty]);
 			} else if (!_.isArray(elasticSearchResult[stringArrayProperty])) {
-				console.error('Expected string array in elasticsearch response for property ', stringArrayProperty, elasticSearchResult); // TODO log this to VIAA log pipeline
-				detailResponse[stringArrayProperty] = [];
+				// TODO log this to VIAA log pipeline
+				console.error('Expected string array in elasticsearch response for property ', stringArrayProperty, elasticSearchResult);
+				itemResponse[stringArrayProperty] = [];
 			}
 		} catch (err) {
 			console.error('Failed to parse string array in elasticsearch result', stringArrayProperty, elasticSearchResult); // TODO log this to VIAA log pipeline
-			detailResponse[stringArrayProperty] = [];
+			itemResponse[stringArrayProperty] = [];
 		}
 	});
-	return detailResponse;
+	return itemResponse;
 }
