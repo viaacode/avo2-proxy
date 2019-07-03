@@ -1,6 +1,3 @@
-import environment from './helpers/environment';
-environment(process.env);
-
 import http from 'http';
 
 const options = {
