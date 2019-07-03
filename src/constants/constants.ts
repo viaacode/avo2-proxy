@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Filters } from '../modules/search/types';
+import {Avo} from '@viaa/avo2-types';
 
 // Max number of search results to return to the client
 export const MAX_NUMBER_SEARCH_RESULTS = 2000;
@@ -10,8 +10,7 @@ export const MAX_NUMBER_SEARCH_RESULTS = 2000;
 export const MAX_COUNT_SEARCH_RESULTS = 10000;
 export const NUMBER_OF_FILTER_OPTIONS = 50;
 
-export type FilterProperty = keyof Filters;
-export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in FilterProperty]: string } = {
+export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in Avo.Search.FilterProp]: string } = {
 	query: 'query',
 	type: 'administrative_type',
 	educationLevel: 'lom_typical_age_range',
@@ -24,7 +23,7 @@ export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in FilterProperty]: strin
 	provider: 'original_cp',
 };
 
-export const NEEDS_FILTER_SUFFIX: { [prop in FilterProperty]: boolean } = {
+export const NEEDS_FILTER_SUFFIX: { [prop in Avo.Search.FilterProp]: boolean } = {
 	query: false,
 	type: true,
 	educationLevel: true,
@@ -37,7 +36,7 @@ export const NEEDS_FILTER_SUFFIX: { [prop in FilterProperty]: boolean } = {
 	provider: true,
 };
 
-export const AGGS_PROPERTIES: (keyof Filters)[] = [
+export const AGGS_PROPERTIES: Avo.Search.FilterProp[] = [
 	'type',
 	'educationLevel',
 	'domain',

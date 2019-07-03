@@ -1,9 +1,9 @@
-import { Filters, SearchOrderProperty, SearchOrderDirection, SearchRequest, FilterOptionSearch } from './types';
 import _ from 'lodash';
 import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import { RecursiveError } from '../../helpers/recursiveError';
+import {Avo} from '@viaa/avo2-types';
 import {
-	AGGS_PROPERTIES, FilterProperty, MAX_COUNT_SEARCH_RESULTS,
+	AGGS_PROPERTIES, MAX_COUNT_SEARCH_RESULTS,
 	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
@@ -27,7 +27,7 @@ export default class QueryBuilder {
 	 * Convert filters, order, aggs properties (created by the ui) to elasticsearch query object
 	 * @param searchRequest
 	 */
-	public static buildSearchObject(searchRequest: SearchRequest): any {
+	public static buildSearchObject(searchRequest: Avo.Search.Request): any {
 		try {
 			const queryObject: any = {};
 			delete queryObject.default; // Side effect of importing a json file as a module
@@ -76,8 +76,8 @@ export default class QueryBuilder {
 	 * @param orderDirection
 	 */
 	private static buildSortArray(
-		orderProperty: SearchOrderProperty | undefined = 'relevance',
-		orderDirection: SearchOrderDirection | undefined = 'desc') {
+		orderProperty: Avo.Search.OrderProperty | undefined = 'relevance',
+		orderDirection: Avo.Search.OrderDirection | undefined = 'desc') {
 		const mappedOrderProperty = this.orderMappings[orderProperty];
 		const sortArray: any[] = [];
 		if (mappedOrderProperty !== '_score') {
@@ -109,7 +109,7 @@ export default class QueryBuilder {
 	 * Containing the search terms and the checked filters
 	 * @param filters
 	 */
-	private static buildFilterObject(filters: Partial<Filters> | undefined) {
+	private static buildFilterObject(filters: Partial<Avo.Search.Filters> | undefined) {
 		if (!filters || _.isEmpty(filters)) {
 			// Return query object that will match all results
 			return { match_all: {} };
@@ -151,7 +151,7 @@ export default class QueryBuilder {
 				// TODO if only one option use "term" instead of "terms" (better efficiency for elasticsearch)
 				filterArray.push({
 					terms: {
-						[elasticKey + this.suffix(readableKey as keyof Filters)]: value,
+						[elasticKey + this.suffix(readableKey as Avo.Search.FilterProp)]: value,
 					},
 				});
 			} else if (_.isObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
@@ -194,7 +194,7 @@ export default class QueryBuilder {
 	 * }
 	 * @param filterOptionSearch
 	 */
-	private static buildAggsObject(filterOptionSearch: Partial<FilterOptionSearch> | undefined): any {
+	private static buildAggsObject(filterOptionSearch: Partial<Avo.Search.FilterOption> | undefined): any {
 		const aggs: any = {};
 		_.forEach(AGGS_PROPERTIES, (aggProperty) => {
 			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
@@ -244,7 +244,7 @@ export default class QueryBuilder {
 	 * },
 	 * @param prop
 	 */
-	private static suffix(prop: FilterProperty): string {
+	private static suffix(prop: Avo.Search.FilterProp): string {
 		return NEEDS_FILTER_SUFFIX[prop] ? '.filter' : '';
 	}
 }

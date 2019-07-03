@@ -1,11 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
-import { FilterOptions, SearchResponse } from './types';
+import {Avo} from '@viaa/avo2-types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
 } from '../../constants/constants';
-import { convertArrayProperties } from '../detail/service';
+import { convertArrayProperties } from '../item/service';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -100,7 +100,7 @@ export default class SearchService {
 
 	}
 
-	public static async search(searchQueryObject: any): Promise<SearchResponse> {
+	public static async search(searchQueryObject: any): Promise<Avo.Search.Response> {
 		let url;
 		try {
 			url = process.env.ELASTICSEARCH_URL;
@@ -223,8 +223,8 @@ export default class SearchService {
 	 *      ]
 	 * @param aggregations
 	 */
-	public static simplifyAggregations(aggregations: Aggregations): FilterOptions {
-		const simpleAggs: FilterOptions = {};
+	public static simplifyAggregations(aggregations: Aggregations): Avo.Search.FilterOptions {
+		const simpleAggs: Avo.Search.FilterOptions = {};
 		_.forEach(aggregations, (value, prop) => {
 			if (_.isPlainObject(value.buckets)) {
 				// range bucket object (eg: fragment_duration_seconds)
