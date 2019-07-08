@@ -8,7 +8,7 @@ export const MAX_NUMBER_SEARCH_RESULTS = 2000;
 // -  See the scroll api for a more efficient way to request large data sets.
 // -  This limit can be set by changing the [index.max_result_window] index level setting.
 export const MAX_COUNT_SEARCH_RESULTS = 10000;
-export const NUMBER_OF_FILTER_OPTIONS = 50;
+export const NUMBER_OF_FILTER_OPTIONS = 40;
 
 export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in Avo.Search.FilterProp]: string } = {
 	query: 'query',
