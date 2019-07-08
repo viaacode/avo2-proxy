@@ -15,6 +15,10 @@ import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import ItemRoute from './modules/item/route';
 import CollectionRoute from './modules/collection/route';
+import { GraphQlService } from './services/graphql';
+
+// graphql schema initialization
+GraphQlService.initialize();
 
 const app: express.Application = express();
 global(app);

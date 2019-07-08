@@ -119,11 +119,11 @@ export default class SearchService {
 				// Return search results
 				return {
 					count: _.get(esResponse, 'data.hits.total'),
-					results: _.map(_.get(esResponse, 'data.hits.hits'), (result) => {
+					results: _.map(_.get(esResponse, 'data.hits.hits'), (result): Avo.Search.ResultItem => {
 						return {
 							...convertArrayProperties(result._source),
 							id: result._id,
-						};
+						} as Avo.Search.ResultItem;
 					}),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
