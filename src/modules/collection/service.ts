@@ -1,6 +1,5 @@
 import { RecursiveError } from '../../helpers/recursiveError';
 import { Avo } from '@viaa/avo2-types';
-import { HttpLink } from 'apollo-link-http';
 import { GraphQlService } from '../../services/graphql';
 import { NotFoundError } from 'typescript-rest/dist/server/model/errors';
 import * as _ from 'lodash';
