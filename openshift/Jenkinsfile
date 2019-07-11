@@ -56,7 +56,7 @@ pipeline {
                 }
             }
         }
-        stage('check Install') {
+        stage('Build and rollout template') {
             steps {
                 script {
                     openshift.withCluster() {
@@ -88,7 +88,7 @@ pipeline {
                 } // script
             } // steps
         } // stage
-        stage('Tag ') {
+        stage('Tag qas ') {
      steps {
      // input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
          script {
