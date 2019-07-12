@@ -32,6 +32,8 @@ export default class QueryBuilder {
 			const queryObject: any = {};
 			delete queryObject.default; // Side effect of importing a json file as a module
 
+			queryObject.min_score = 0.5;
+
 			// Avoid huge queries
 			queryObject.size = Math.min(searchRequest.size || 30, MAX_NUMBER_SEARCH_RESULTS);
 			const max = Math.max(0, MAX_COUNT_SEARCH_RESULTS - queryObject.size);

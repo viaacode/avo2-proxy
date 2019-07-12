@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
-import {Avo} from '@viaa/avo2-types';
+import { Avo } from '@viaa/avo2-types';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -168,8 +168,11 @@ export function convertArrayProperties(elasticSearchResult: ElasticsearchResult)
 			if (_.isString(elasticSearchResult[stringArrayProperty])) {
 				itemResponse[stringArrayProperty] = JSON.parse(elasticSearchResult[stringArrayProperty]);
 			} else if (!_.isArray(elasticSearchResult[stringArrayProperty])) {
-				// TODO log this to VIAA log pipeline
-				console.error('Expected string array in elasticsearch response for property ', stringArrayProperty, elasticSearchResult);
+
+				if (!_.isNil(elasticSearchResult[stringArrayProperty])) {
+					// TODO log this to VIAA log pipeline
+					console.error('Expected string array in elasticsearch response for property ', stringArrayProperty, elasticSearchResult);
+				}
 				itemResponse[stringArrayProperty] = [];
 			}
 		} catch (err) {

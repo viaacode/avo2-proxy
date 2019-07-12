@@ -2,23 +2,13 @@ import 'jest';
 import aggregations from './fixtures/aggregations.json';
 import SearchService  from './service';
 import {Avo} from '@viaa/avo2-types';
-
-const keys: string[] = [
-	'lom_keywords.filter',
-	'dc_titles_serie.filter',
-	'lom_classification.filter',
-	'lom_typical_age_range.filter',
-	'administrative_type.filter',
-	'lom_languages',
-	'lom_context.filter',
-	'original_cp.filter',
-];
+import { AGGS_PROPERTIES } from '../../constants/constants';
 
 test('should simplify aggregation object correctly', async () => {
 	const filterOptions: Avo.Search.FilterOptions = SearchService.simplifyAggregations(aggregations);
 	expect(filterOptions).toBeObject();
-	expect(filterOptions).toContainAllKeys([...keys, 'default']); // Side affect of import json module
-	keys.forEach((key) => {
+	expect(filterOptions).toContainAllKeys([...AGGS_PROPERTIES]);
+	AGGS_PROPERTIES.forEach((key) => {
 		expect(filterOptions[key]).toBeArray();
 		filterOptions[key].forEach((optionsObj) => {
 			expect(optionsObj).toBeObject();
