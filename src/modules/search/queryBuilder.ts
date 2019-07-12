@@ -32,8 +32,6 @@ export default class QueryBuilder {
 			const queryObject: any = {};
 			delete queryObject.default; // Side effect of importing a json file as a module
 
-			queryObject.min_score = 0.5;
-
 			// Avoid huge queries
 			queryObject.size = Math.min(searchRequest.size || 30, MAX_NUMBER_SEARCH_RESULTS);
 			const max = Math.max(0, MAX_COUNT_SEARCH_RESULTS - queryObject.size);
@@ -47,6 +45,12 @@ export default class QueryBuilder {
 
 			// Specify the aggs objects with optional search terms
 			_.set(queryObject, 'aggs', this.buildAggsObject(searchRequest.filterOptionSearch));
+
+			// If search terms are passed, we're only interested in items with a score > 0
+			// If only filters are passed, and no search terms, then score 0 items are also accepted
+			if (searchRequest.filters && searchRequest.filters.query) {
+				queryObject.min_score = 0.5;
+			}
 
 			return queryObject;
 		} catch (err) {
