@@ -56,7 +56,7 @@ pipeline {
                 }
             }
         }
-        stage('check Install') {
+        stage('Build and rollout template') {
             steps {
                 script {
                     openshift.withCluster() {
@@ -88,15 +88,15 @@ pipeline {
                 } // script
             } // steps
         } // stage
-        stage('Tag ') {
+        stage('Tag qas ') {
      steps {
-     input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
+     // input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
          script {
              openshift.withCluster() {
                  openshift.withProject("sc-avo2") {
                       echo "Tag "
                       sh '''#/bin/bash
-                      oc -n sc-avo2  tag  avo2-proxy:latest  avo2-proxy:prd
+                    # oc -n sc-avo2  tag  avo2-proxy:latest  avo2-proxy:prd
                       oc -n sc-avo2  tag  avo2-proxy:latest  avo2-proxy:qas
                       '''
                  }

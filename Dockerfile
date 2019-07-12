@@ -30,7 +30,7 @@ USER node
 RUN npm run build
 
 # Healthcheck
-HEALTHCHECK --interval=30s --start-period=30s --timeout=2s --retries=5 CMD node dist/src/healthcheck.js
+# HEALTHCHECK --interval=30s --start-period=30s --timeout=2s --retries=5 CMD node dist/src/healthcheck.js
 
 # Start application
 CMD node dist/src/app.js
