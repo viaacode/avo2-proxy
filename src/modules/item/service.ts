@@ -1,8 +1,9 @@
 import _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
-import {Avo} from '@viaa/avo2-types';
+import { Avo } from '@viaa/avo2-types';
 import { GraphQlService } from '../../services/graphql';
 import { NotFoundError } from 'typescript-rest/dist/server/model/errors';
+import OrganizationService from '../organization/service';
 
 interface GraphQlItemResponse {
 	data: {
@@ -41,6 +42,7 @@ interface AppItemMetaItem {
 	updated_at: string;
 	views: null;
 }
+
 interface Type {
 	id: number;
 	label: string;
@@ -48,7 +50,8 @@ interface Type {
 
 export default class ItemService {
 	public static async getByItemId(itemId: string): Promise<Avo.Item.Response> {
-		const query = /* GraphQL */ `
+		try {
+			const query = /* GraphQL */ `
 query getItemById($id: bpchar!) {
   app_item_meta(where: {external_id: {_eq: $id}}) {
     bookmarks {
@@ -91,29 +94,33 @@ query getItemById($id: bpchar!) {
 }
 `;
 
-		let response: GraphQlItemResponse;
-		try {
-			response = await GraphQlService.request<GraphQlItemResponse>(
-				query,
-				{ id: itemId });
+			let response: GraphQlItemResponse;
+			try {
+				response = await GraphQlService.request<GraphQlItemResponse>(
+					query,
+					{ id: itemId });
+			} catch (err) {
+				throw new RecursiveError(
+					'Failed to get collection by id',
+					err,
+					{
+						itemId,
+						method: 'post',
+					});
+			}
+
+			const item: AppItemMetaItem = _.get(response, 'app_item_meta[0]');
+			if (!item) {
+				throw new NotFoundError(`item with id ${item} was not found.`);
+			}
+
+			return {
+				...item,
+				type: item.type.label as Avo.Core.ContentType,
+				org_name: await OrganizationService.getOrganisationName(item.org_id),
+			};
 		} catch (err) {
-			throw new RecursiveError(
-				'Failed to get collection by id',
-				err,
-				{
-					itemId,
-					method: 'post',
-				});
+			throw new RecursiveError('Failed to get item by id', err, { itemId });
 		}
-
-		const item: AppItemMetaItem = _.get(response, 'app_item_meta[0]');
-		if (!item) {
-			throw new NotFoundError(`item with id ${item} was not found.`);
-		}
-
-		return {
-			...item,
-			type: item.type.label as Avo.Core.ContentType,
-		};
 	}
 }
