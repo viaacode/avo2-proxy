@@ -4,7 +4,7 @@ import { RecursiveError } from '../../helpers/recursiveError';
 import {Avo} from '@viaa/avo2-types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
-} from '../../constants/constants';
+} from './constants';
 import { convertArrayProperties } from '../item/service';
 
 interface ElasticsearchResponse {

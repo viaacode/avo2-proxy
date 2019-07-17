@@ -15,11 +15,17 @@ import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import ItemRoute from './modules/item/route';
 import CollectionRoute from './modules/collection/route';
+import passport = require('passport');
+import AuthRoute from './modules/auth/route';
 
 const app: express.Application = express();
 global(app);
 app.use(errorHandler);
 app.use(cors());
+
+// Register saml password middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // register routes using typescript-rest
 Server.ignoreNextMiddlewares(true);
@@ -29,18 +35,19 @@ Server.buildServices(
 	SearchRoute,
 	ItemRoute,
 	CollectionRoute,
+	AuthRoute,
 );
 
-if (process.env.NODE_ENV !== 'production') {
-	// Register the docs route
-	// Make sure you first run ```npm run generate:docs```
-	Server.swagger(app, {
-		endpoint: 'docs/',
-		filePath: './docs/swagger.json',
-		host: 'localhost:3000',
-		schemes: ['http'],
-	});
-}
+// if (process.env.NODE_ENV !== 'production') {
+// 	// Register the docs route
+// 	// Make sure you first run ```npm run generate:docs```
+// 	Server.swagger(app, {
+// 		endpoint: 'docs/',
+// 		filePath: './docs/swagger.json',
+// 		host: 'localhost:3000',
+// 		schemes: ['http'],
+// 	});
+// }
 
 // Return 404 if route is not known
 Server.buildServices(
