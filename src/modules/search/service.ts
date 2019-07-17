@@ -225,6 +225,10 @@ export default class SearchService {
 	public static simplifyAggregations(aggregations: Aggregations): Avo.Search.FilterOptions {
 		const simpleAggs: Avo.Search.FilterOptions = {};
 		_.forEach(aggregations, (value, prop) => {
+			const cleanProp = prop.replace(/\.filter$/, '');
+			if (!ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]) {
+				console.error(`elasticsearch filter name not found for ${cleanProp}`);
+			}
 			if (_.isPlainObject(value.buckets)) {
 				// range bucket object (eg: fragment_duration_seconds)
 				const rangeBuckets = value.buckets as {
@@ -234,7 +238,7 @@ export default class SearchService {
 						doc_count: number;
 					};
 				};
-				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[prop]] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
+				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
 					return {
 						option_name: bucketName,
 						option_count: bucketValue.doc_count,
@@ -243,7 +247,7 @@ export default class SearchService {
 			} else {
 				// regular bucket array (eg: administrative_type)
 				const regularBuckets = (value.buckets || value[prop].buckets) as { key: string, doc_count: number }[];
-				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[prop]] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
+				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
 					return {
 						option_name: bucketValue.key,
 						option_count: bucketValue.doc_count,
