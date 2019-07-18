@@ -2,7 +2,7 @@ import 'jest';
 import aggregations from './fixtures/aggregations.json';
 import SearchService  from './service';
 import {Avo} from '@viaa/avo2-types';
-import { AGGS_PROPERTIES } from '../../constants/constants';
+import { AGGS_PROPERTIES } from './constants';
 
 test('should simplify aggregation object correctly', async () => {
 	const filterOptions: Avo.Search.FilterOptions = SearchService.simplifyAggregations(aggregations);

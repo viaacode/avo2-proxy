@@ -1,9 +1,45 @@
 import saml2 from 'saml2-js';
 import { RecursiveError } from '../../helpers/recursiveError';
 
+export interface SamlCallbackBody {
+	SAMLResponse: string;
+	RelayState: string; // JSON
+}
+
+interface DecodedSamlResponse {
+	response_header: ResponseHeader;
+	type: string;
+	user: LdapUser;
+}
+
+interface ResponseHeader {
+	version: string;
+	destination: string;
+	in_response_to: string;
+	id: string;
+}
+
+export interface LdapUser {
+	name_id: string; // email address user
+	session_index: string;
+	session_not_on_or_after: string; // date string eg: "2019-07-18T12:08:20Z"
+	attributes: LdapAttributes;
+}
+
+interface LdapAttributes {
+	mail: string[];
+	givenName: string[]; // firstname
+	sn: string[]; // lastname
+	cn: string[]; // fullname
+	o: string[]; // organization id
+	entryUUID: string[];
+	entryDN: string[]; // eg: mail=bert.verhelst@studiohyperdrive.be,ou=people,dc=hetarchief,dc=be
+	oNickname: string[]; // name organization
+}
+
 export default class AuthService {
 	private static serviceProviderOptions = {
-		entity_id: 'http://idp-tst.hetarchief.be/idp',
+		entity_id: 'http://avo2-tst/sp',
 		private_key: process.env.SAML_PRIVATE_KEY || '',
 		certificate: process.env.SAML_SP_CERTIFICATE || '',
 		assert_endpoint: 'https://sp.example.com/assert',
@@ -26,12 +62,12 @@ export default class AuthService {
 	private static serviceProvider = new saml2.ServiceProvider(AuthService.serviceProviderOptions);
 	private static identityProvider = new saml2.IdentityProvider(AuthService.identityProviderOptions);
 
-	public static createLoginRequestUrl(callbackUrl: string, returnToUrl: string) {
+	public static createLoginRequestUrl(returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_login_request_url(
 				AuthService.identityProvider,
 				{
-					relay_state: JSON.stringify({ callbackUrl, returnToUrl }),
+					relay_state: JSON.stringify({ returnToUrl }),
 				},
 				(error: any, loginUrl: string, requestId: string) => {
 					if (error) {
@@ -43,27 +79,30 @@ export default class AuthService {
 		});
 	}
 
-	public static assertSamlResponse(requestBody: string): Promise<{ nameId: string, sessionIndex: string }> {
+	public static assertSamlResponse(requestBody: SamlCallbackBody): Promise<LdapUser> {
 		return new Promise((resolve, reject) => {
-			this.serviceProvider.post_assert(this.identityProvider, { request_body: requestBody }, (err, samlResponse) => {
-				if (err != null) {
-					reject(new RecursiveError('Failed to verify SAML response', err, { requestBody }));
-				}
-
-				resolve({
-					nameId: samlResponse.user.name_id,
-					sessionIndex: samlResponse.user.session_index,
+			this.serviceProvider.post_assert(
+				this.identityProvider,
+				{
+					request_body: requestBody,
+					allow_unencrypted_assertion: true,
+				},
+				(err, samlResponse: DecodedSamlResponse) => {
+					if (err) {
+						reject(new RecursiveError('Failed to verify SAML response', err, { requestBody }));
+					} else {
+						resolve(samlResponse.user);
+					}
 				});
-			});
 		});
 	}
 
-	public static createLogoutRequestUrl(callbackUrl: string, returnToUrl: string) {
+	public static createLogoutRequestUrl(returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_logout_request_url(
 				AuthService.identityProvider,
 				{
-					relay_state: JSON.stringify({ callbackUrl, returnToUrl }),
+					relay_state: JSON.stringify({ returnToUrl }),
 				},
 				(error: any, logoutUrl: string) => {
 					if (error) {
