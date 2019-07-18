@@ -13,8 +13,8 @@ export const NUMBER_OF_FILTER_OPTIONS = 40;
 export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in Avo.Search.FilterProp]: string } = {
 	query: 'query',
 	type: 'administrative_type',
-	educationLevel: 'lom_typical_age_range',
-	domain: 'lom_context',
+	educationLevel: 'lom_context',
+	domain: 'lom_typical_age_range', // broken // TODO VIAA
 	broadcastDate: 'dcterms_issued',
 	language: 'lom_languages',
 	keyword: 'lom_keywords',
