@@ -106,8 +106,8 @@ query getMigrateCollectionById($id: Int!) {
 
 	public static async getByOwnerId(ownerId: number): Promise<Avo.Collection.Response[]> {
 		const query = /* GraphQL */ `
-query getMigrateCollectionById($id: Int!) {
-  migrate_collections(where: {d_ownerid: {_eq: $id}}) {
+query getMigrateCollectionById($ownerId: Int!) {
+  migrate_collections(where: {d_ownerid: {_eq: $ownerId}}) {
     ${COLLECTION_PROPS}
   }
 }
