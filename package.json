@@ -44,6 +44,7 @@
     "lodash": "4.17.11",
     "node-cron": "^2.0.3",
     "remove-accents": "0.4.2",
+    "sanitize-html": "^1.20.1",
     "session-file-store": "1.2.0",
     "typescript-rest": "2.2.0"
   },
