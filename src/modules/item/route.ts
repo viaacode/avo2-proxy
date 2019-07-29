@@ -12,11 +12,11 @@ export default class ItemRoute {
 	 */
 	@Path('')
 	@GET
-	async item(@QueryParam('id') id: string): Promise<Avo.Item.Response> {
+	async getOne(@QueryParam('id') id: string): Promise<Avo.Item.Response> {
 		try {
-			return await ItemController.get(id);
+			return await ItemController.getItemById(id);
 		} catch (err) {
-			const error = new RecursiveError('failed during item item route', err, { id });
+			const error = new RecursiveError('failed during get item by id route', err, { id });
 			console.error(error.toString());
 			throw error;
 		}

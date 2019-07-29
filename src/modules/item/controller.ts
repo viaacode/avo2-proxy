@@ -4,20 +4,20 @@ import ItemService from './service';
 
 export default class ItemController {
 
-	public static async get(id: string): Promise<Avo.Item.Response> {
+	public static async getItemById(itemId: string): Promise<Avo.Item.Response> {
 		try {
-			return await ItemService.get(id);
+			return await ItemService.getByItemId(itemId);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new RecursiveError(
 					'Failed to get item, are you connected to the VIAA VPN?',
 					err,
-					{ id }); // TODO remove dev error
+					{ itemId }); // TODO remove dev error
 			} else {
 				throw new RecursiveError(
 					'Failed to get item',
 					err,
-					{ id });
+					{ itemId });
 			}
 		}
 	}

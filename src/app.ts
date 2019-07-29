@@ -15,8 +15,16 @@ import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import ItemRoute from './modules/item/route';
 import CollectionRoute from './modules/collection/route';
+import { GraphQlService } from './services/graphql';
+import OrganizationService from './modules/organization/service';
 import passport = require('passport');
 import AuthRoute from './modules/auth/route';
+
+// graphql schema initialization
+GraphQlService.initialize();
+
+// Cache organaizations every day
+OrganizationService.initialize();
 
 const app: express.Application = express();
 global(app);
