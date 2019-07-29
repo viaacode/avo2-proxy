@@ -1,8 +1,7 @@
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import { RecursiveError } from '../../helpers/recursiveError';
 import AuthController from './controller';
-import queryString from 'query-string';
-import passport from 'passport';
+import * as _ from 'lodash';
 import AuthService, { LdapUser, SamlCallbackBody } from './service';
 
 interface RelayState {
@@ -23,6 +22,7 @@ export default class AuthRoute {
 	@GET
 	async checkLogin(): Promise<any> {
 		try {
+			console.log('check-login: ', _.get(this.context.request, 'session.id'));
 			if (AuthController.isAuthenticated(this.context.request)) {
 				return {message: 'LOGGED_IN'};
 			} else {
@@ -44,6 +44,7 @@ export default class AuthRoute {
 	@GET
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
+			console.log('login: ', _.get(this.context.request, 'session.id'));
 			if (AuthController.isAuthenticated(this.context.request)) {
 				return new Return.MovedTemporarily<void>(returnToUrl);
 			} else {
@@ -65,8 +66,8 @@ export default class AuthRoute {
 	@POST
 	async callback(response: SamlCallbackBody): Promise<any> {
 		try {
+			console.log('callback: ', _.get(this.context.request, 'session.id'));
 			try {
-				// TODO Enable once we certificates enabled
 				const ldapUser: LdapUser = await AuthService.assertSamlResponse(response);
 				const info: RelayState = JSON.parse(response.RelayState);
 

@@ -17,23 +17,29 @@ import ItemRoute from './modules/item/route';
 import CollectionRoute from './modules/collection/route';
 import { GraphQlService } from './services/graphql';
 import OrganizationService from './modules/organization/service';
-import passport = require('passport');
 import AuthRoute from './modules/auth/route';
+import session from './middleware/session';
 
 // graphql schema initialization
 GraphQlService.initialize();
 
-// Cache organaizations every day
+// Cache organizations every day
 OrganizationService.initialize();
 
 const app: express.Application = express();
 global(app);
 app.use(errorHandler);
-app.use(cors());
-
-// Register saml password middleware
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(session);
+app.use(cors({
+	origin: [
+		'http://localhost:8080',
+		'http://avo2-client-dev-sc-avo2.apps.do-prd-okp-m0.do.viaa.be',
+		'http://avo2-client-tst-sc-avo2.apps.do-prd-okp-m0.do.viaa.be',
+		'http://avo2-client-qas-sc-avo2.apps.do-prd-okp-m0.do.viaa.be',
+		'http://avo2-client-prd-sc-avo2.apps.do-prd-okp-m0.do.viaa.be',
+	],
+	credentials: true,
+}));
 
 // register routes using typescript-rest
 Server.ignoreNextMiddlewares(true);
