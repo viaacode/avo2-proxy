@@ -22,9 +22,9 @@ export default class AuthRoute {
 	async checkLogin(): Promise<any> {
 		try {
 			if (AuthController.isAuthenticated(this.context.request)) {
-				return {message: 'LOGGED_IN'};
+				return { message: 'LOGGED_IN' };
 			} else {
-				return {message: 'LOGGED_OUT'};
+				return { message: 'LOGGED_OUT' };
 			}
 		} catch (err) {
 			const error = new RecursiveError('Failed during auth login route', err, {});
@@ -61,7 +61,7 @@ export default class AuthRoute {
 	 */
 	@Path('callback')
 	@POST
-	async callback(response: SamlCallbackBody): Promise<any> {
+	async loginCallback(response: SamlCallbackBody): Promise<any> {
 		try {
 			try {
 				const ldapUser: LdapUser = await AuthService.assertSamlResponse(response);
@@ -89,8 +89,46 @@ export default class AuthRoute {
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
-			const url = await AuthService.createLogoutRequestUrl(returnToUrl);
-			return new Return.MovedTemporarily<void>(url);
+			const ldapUser: LdapUser | null = AuthController.getLdapUserFromSession(this.context.request);
+
+			// Remove the ldap user from the session
+			AuthController.setLdapUserOnSession(this.context.request, null);
+
+			if (ldapUser) {
+				// Logout by redirecting to the identity server logout page
+				const url = await AuthService.createLogoutRequestUrl(ldapUser.name_id, returnToUrl);
+				return new Return.MovedTemporarily<void>(url);
+			}
+			console.error(new RecursiveError(
+				'ldap user wasn\'t found on the session',
+				null,
+				{ returnToUrl },
+			));
+			return new Return.MovedTemporarily<void>(returnToUrl);
+		} catch (err) {
+			const error = new RecursiveError('Failed during auth login route', err, {});
+			console.error(error.toString());
+			throw error;
+		}
+	}
+
+	/**
+	 * Called by SAML service to let the proxy know what the logout status is of the user after a logout attempt
+	 * This function has to redirect the browser back to the app
+	 */
+	@Path('logout')
+	@POST
+	async logoutCallback(response: SamlCallbackBody): Promise<any> {
+		try {
+			try {
+				console.log('logout callback called by identity server');
+				const info: RelayState = JSON.parse(response.RelayState);
+
+				return new Return.MovedTemporarily(info.returnToUrl);
+			} catch (err) {
+				// Failed to login
+				console.error(err); // TODO redirect to failed login page
+			}
 		} catch (err) {
 			const error = new RecursiveError('Failed during auth login route', err, {});
 			console.error(error.toString());

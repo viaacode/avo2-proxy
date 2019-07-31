@@ -31,7 +31,7 @@ export default class AuthController {
 		return _.get(request, 'session.ldapUser', null);
 	}
 
-	public static setLdapUserOnSession(request: Express.Request, ldapUser: LdapUser): void {
+	public static setLdapUserOnSession(request: Express.Request, ldapUser: LdapUser | null): void {
 		if (request.session) {
 			request.session.ldapUser = ldapUser;
 			_.set(request, 'session.ldapUser', ldapUser);

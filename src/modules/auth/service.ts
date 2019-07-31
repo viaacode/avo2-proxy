@@ -1,4 +1,4 @@
-import saml2 from 'saml2-js';
+import saml2, { IdentityProviderOptions, ServiceProviderOptions } from 'saml2-js';
 import { RecursiveError } from '../../helpers/recursiveError';
 
 export interface SamlCallbackBody {
@@ -38,11 +38,11 @@ interface LdapAttributes {
 }
 
 export default class AuthService {
-	private static serviceProviderOptions = {
+	private static serviceProviderOptions: ServiceProviderOptions = {
 		entity_id: 'http://avo2-tst/sp',
 		private_key: process.env.SAML_PRIVATE_KEY || '',
 		certificate: process.env.SAML_SP_CERTIFICATE || '',
-		assert_endpoint: 'https://sp.example.com/assert',
+		assert_endpoint: 'http://localhost:3000/auth/login',
 		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 		auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
 		nameid_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
@@ -50,7 +50,7 @@ export default class AuthService {
 		allow_unencrypted_assertion: true,
 	};
 
-	private static identityProviderOptions = {
+	private static identityProviderOptions: IdentityProviderOptions = {
 		sso_login_url: 'https://idp-tst.hetarchief.be/saml2/idp/SSOService.php',
 		sso_logout_url: 'https://idp-tst.hetarchief.be/saml2/idp/SingleLogoutService.php',
 		certificates: [process.env.SAML_IDP_CERTIFICATE || ''],
@@ -97,12 +97,13 @@ export default class AuthService {
 		});
 	}
 
-	public static createLogoutRequestUrl(returnToUrl: string) {
+	public static createLogoutRequestUrl(nameId: string, returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_logout_request_url(
 				AuthService.identityProvider,
 				{
 					relay_state: JSON.stringify({ returnToUrl }),
+					name_id: nameId,
 				},
 				(error: any, logoutUrl: string) => {
 					if (error) {
