@@ -43,7 +43,7 @@ export default class AuthService {
 		private_key: process.env.SAML_PRIVATE_KEY || '',
 		certificate: process.env.SAML_SP_CERTIFICATE || '',
 		assert_endpoint: 'https://sp.example.com/assert',
-		// force_authn: true,
+		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 		auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
 		nameid_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
 		sign_get_request: false,
@@ -54,9 +54,9 @@ export default class AuthService {
 		sso_login_url: 'https://idp-tst.hetarchief.be/saml2/idp/SSOService.php',
 		sso_logout_url: 'https://idp-tst.hetarchief.be/saml2/idp/SingleLogoutService.php',
 		certificates: [process.env.SAML_IDP_CERTIFICATE || ''],
-		force_authn: true,
+		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 		sign_get_request: false,
-		allow_unencrypted_assertion: false,
+		allow_unencrypted_assertion: true,
 	};
 
 	private static serviceProvider = new saml2.ServiceProvider(AuthService.serviceProviderOptions);
