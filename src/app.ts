@@ -13,10 +13,9 @@ import { Server, Errors } from 'typescript-rest';
 
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import ItemRoute from './modules/item/route';
-import CollectionRoute from './modules/collection/route';
 import { GraphQlService } from './services/graphql';
 import OrganizationService from './modules/organization/service';
+import DataRoute from './modules/data/route';
 
 // graphql schema initialization
 GraphQlService.initialize();
@@ -35,8 +34,7 @@ Server.buildServices(
 	app,
 	StatusRoute,
 	SearchRoute,
-	ItemRoute,
-	CollectionRoute,
+	DataRoute,
 );
 
 if (process.env.NODE_ENV !== 'production') {

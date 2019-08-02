@@ -24,7 +24,9 @@ export class GraphQlService {
 
 	public static async request<T>(query: string, variables?: any): Promise<T> {
 		try {
-			return (await this.getGraphQlClient).request(query, variables);
+			const graphqlClient: GraphQLClient = await this.getGraphQlClient;
+			const response = await graphqlClient.request(query, variables);
+			return response;
 		} catch (err) {
 			throw new RecursiveError('Failed to make query to graphql', err, { query, variables });
 		}
