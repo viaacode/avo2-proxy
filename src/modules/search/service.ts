@@ -99,10 +99,16 @@ export default class SearchService {
 
 	}
 
-	public static async search(searchQueryObject: any): Promise<Avo.Search.Response> {
+	public static async search(searchQueryObject: any, index?: string): Promise<Avo.Search.Response> {
 		let url;
+		if (!process.env.ELASTICSEARCH_URL) {
+			throw new RecursiveError('Environment variable ELASTICSEARCH_URL is undefined');
+		}
 		try {
 			url = process.env.ELASTICSEARCH_URL;
+			url = index ?
+				url.replace('/avo-search/', `/avo-search/${index}/`) :
+				url;
 			const token: string = await SearchService.getAuthToken();
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
