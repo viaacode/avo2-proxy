@@ -8,13 +8,13 @@ Explore the database through the hasura console:
 http://avo-graphql-qas-sc-avo2.apps.do-prd-okp-m0.do.viaa.be/console
 
 Migrations are imported from the old avo platform by VIAA and are stored into our postgres database under the tables:
-* migrate_collections
-* migrate_collection_fragments
+* `migrate_collections`
+* `migrate_collection_fragments`
 
 These collections are formatted according to the old AvO1 format, to use them in the new AvO2 platform we need to convert them to a new format.
 The tables containing collections in the new format are:
-* app_collections
-* app_collection_fragments
+* `app_collections`
+* `app_collection_fragments`
 
 ## Process
 
@@ -29,6 +29,10 @@ The LDAP database stores both the old and the new UserId for each user.
 * The collection fragments are stored in a more general way in the new system. 
 Each fragment consists of an array of content blocks and for each content block a list of fields is stored. 
 Theses fields describe what values are needed to fill the content block with data.
+* We want to keep track of which collections are migrated and which are created directly in the AvO2 platform.
+For this reason we keep track of a column in the `app_collections` table: `is_migrated_collection`.
+When the user edits their migrated collection, we'll put this column to false, so we can keep track of which collections have been updated after the migration.
+In the future we might delete the collections that still have their `is_migrated_collection` value set to true.
 
 ## Sync rules
 The migration from AvO1 to AvO2 will happen a few times. Once for the Beta version release and again when the AvO2 goes live.
