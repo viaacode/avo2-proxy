@@ -1,18 +1,14 @@
 import session from 'express-session';
-import Store from 'session-file-store';
+
+// TODO store sessions in redis instance provided by VIAA
 
 export default session({
-	saveUninitialized: true,
-	resave: true,
+	resave: false, // Postgres session provider doesn't need to resave the session every time
+	saveUninitialized: true, // Do not create a session for users that are not logged in, neither for health checks
 	cookie: {
-		secure: false,
+		secure: false, // TODO make secure once app runs on https: https://www.npmjs.com/package/express-session#cookiesecure
 		httpOnly: false,
-		domain: process.env.COOKIES_DOMAIN || '',
-		maxAge: parseInt(process.env.COOKIES_MAXAGE as string, 10),
+		maxAge: parseInt(process.env.COOKIES_MAXAGE as string, 10) || 4 * 60 * 60 * 1000, // 4h
 	},
-	name: process.env.COOKIES_NAME,
-	secret: process.env.COOKIES_SECRET as string,
-	store: new Store(session)({
-		path: './.sessions',
-	}),
+	secret: process.env.COOKIES_SECRET || '',
 });
