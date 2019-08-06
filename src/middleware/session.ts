@@ -1,14 +1,4 @@
 import session from 'express-session';
-import connectPgSimple from 'connect-pg-simple';
-import pg from 'pg';
-import { RecursiveError } from '../helpers/recursiveError';
-
-// Setup session store in postgres db
-const pgPool = new pg.Pool({});
-const pgSession = connectPgSimple(session);
-if (!process.env.COOKIES_SECRET) {
-	console.error(new RecursiveError('COOKIES_SECRET env variable is required'));
-}
 
 // TODO store sessions in redis instance provided by VIAA
 
