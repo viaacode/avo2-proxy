@@ -7,7 +7,7 @@ import {
 	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
-} from '../../constants/constants';
+} from './constants';
 
 const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
