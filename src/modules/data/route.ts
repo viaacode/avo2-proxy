@@ -1,5 +1,4 @@
 import { Path, POST } from 'typescript-rest';
-import { GraphQlService } from '../../services/graphql';
 import { RecursiveError } from '../../helpers/recursiveError';
 import axios, { AxiosResponse } from 'axios';
 
