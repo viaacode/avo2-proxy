@@ -2,7 +2,9 @@ import {Avo} from '@viaa/avo2-types';
 import { RecursiveError } from '../../helpers/recursiveError';
 import SearchService from './service';
 import QueryBuilder from './queryBuilder';
-import { EsIndex } from '@viaa/avo2-types/types/search/types';
+// import { EsIndex } from '@viaa/avo2-types/types/search/types';
+
+export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
 
 const ES_INDEX_MAP: {[key in EsIndex]: string | undefined} = {
 	both: 'avo_qas*',
@@ -18,7 +20,8 @@ export default class SearchController {
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
 			// Perform search
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index || 'both']);
+			console.log('----------\nquery: ', JSON.stringify(esQueryObject));
+			return await SearchService.search(esQueryObject, ES_INDEX_MAP[(searchRequest as any).index || 'both']); // TODO remove any when typings build is fixed
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new RecursiveError(
