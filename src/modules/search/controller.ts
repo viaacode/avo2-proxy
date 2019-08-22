@@ -18,8 +18,7 @@ export default class SearchController {
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
 			// Perform search
-			console.log('----------\nquery: ', JSON.stringify(esQueryObject));
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index]);
+			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index || 'both']);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new RecursiveError(
