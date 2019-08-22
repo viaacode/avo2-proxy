@@ -13,14 +13,10 @@ import { Server, Errors } from 'typescript-rest';
 
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import { GraphQlService } from './services/graphql';
 import OrganizationService from './modules/organization/service';
 import DataRoute from './modules/data/route';
 import AuthRoute from './modules/auth/route';
 import session from './middleware/session';
-
-// graphql schema initialization
-GraphQlService.initialize();
 
 // Cache organizations every day
 OrganizationService.initialize();
