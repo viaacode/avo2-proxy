@@ -10,6 +10,7 @@ import FallbackRoute from './modules/fallback/route';
 import global from './middleware/global';
 import { Logger } from './helpers/logger';
 import { Server, Errors } from 'typescript-rest';
+import useragent from 'express-useragent';
 
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
@@ -25,6 +26,7 @@ const app: express.Application = express();
 global(app);
 app.use(errorHandler);
 app.use(session);
+app.use(useragent.express());
 app.use(cors({
 	origin: [
 		'http://localhost:8080',
