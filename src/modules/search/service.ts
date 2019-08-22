@@ -4,8 +4,7 @@ import { RecursiveError } from '../../helpers/recursiveError';
 import {Avo} from '@viaa/avo2-types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
-} from '../../constants/constants';
-import { convertArrayProperties } from '../item/service';
+} from './constants';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -100,11 +99,18 @@ export default class SearchService {
 
 	}
 
-	public static async search(searchQueryObject: any): Promise<Avo.Search.Response> {
+	public static async search(searchQueryObject: any, index?: string): Promise<Avo.Search.Response> {
 		let url;
+		if (!process.env.ELASTICSEARCH_URL) {
+			throw new RecursiveError('Environment variable ELASTICSEARCH_URL is undefined');
+		}
 		try {
 			url = process.env.ELASTICSEARCH_URL;
+			url = index ?
+				url.replace('/avo-search/', `/avo-search/${index}/`) :
+				url;
 			const token: string = await SearchService.getAuthToken();
+			console.log('---------- query: \n', url, '\n', JSON.stringify(searchQueryObject));
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
 				method: 'post',
@@ -119,11 +125,11 @@ export default class SearchService {
 				// Return search results
 				return {
 					count: _.get(esResponse, 'data.hits.total'),
-					results: _.map(_.get(esResponse, 'data.hits.hits'), (result) => {
+					results: _.map(_.get(esResponse, 'data.hits.hits'), (result): Avo.Search.ResultItem => {
 						return {
-							...convertArrayProperties(result._source),
+							...result._source,
 							id: result._id,
-						};
+						} as Avo.Search.ResultItem;
 					}),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
@@ -226,6 +232,10 @@ export default class SearchService {
 	public static simplifyAggregations(aggregations: Aggregations): Avo.Search.FilterOptions {
 		const simpleAggs: Avo.Search.FilterOptions = {};
 		_.forEach(aggregations, (value, prop) => {
+			const cleanProp = prop.replace(/\.filter$/, '');
+			if (!ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]) {
+				console.error(`elasticsearch filter name not found for ${cleanProp}`);
+			}
 			if (_.isPlainObject(value.buckets)) {
 				// range bucket object (eg: fragment_duration_seconds)
 				const rangeBuckets = value.buckets as {
@@ -235,7 +245,7 @@ export default class SearchService {
 						doc_count: number;
 					};
 				};
-				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[prop]] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
+				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
 					return {
 						option_name: bucketName,
 						option_count: bucketValue.doc_count,
@@ -244,7 +254,7 @@ export default class SearchService {
 			} else {
 				// regular bucket array (eg: administrative_type)
 				const regularBuckets = (value.buckets || value[prop].buckets) as { key: string, doc_count: number }[];
-				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[prop]] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
+				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
 					return {
 						option_name: bucketValue.key,
 						option_count: bucketValue.doc_count,

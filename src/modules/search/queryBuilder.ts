@@ -7,7 +7,7 @@ import {
 	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
-} from '../../constants/constants';
+} from './constants';
 
 const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
@@ -45,6 +45,12 @@ export default class QueryBuilder {
 
 			// Specify the aggs objects with optional search terms
 			_.set(queryObject, 'aggs', this.buildAggsObject(searchRequest.filterOptionSearch));
+
+			// If search terms are passed, we're only interested in items with a score > 0
+			// If only filters are passed, and no search terms, then score 0 items are also accepted
+			if (searchRequest.filters && searchRequest.filters.query) {
+				queryObject.min_score = 0.5;
+			}
 
 			return queryObject;
 		} catch (err) {

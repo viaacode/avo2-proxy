@@ -62,6 +62,9 @@ NodeJS in Typescript and express.js
 
 #### Prerequisites
 
+Ensure that the VIAA provided postgres db has been setup to accept sessions by following the readme here:
+https://www.npmjs.com/package/connect-pg-simple
+
 #### Backend
 
 The deployment happens through Jenkins which will build a docker image and upload it to the viaa docker repository.
