@@ -21,7 +21,7 @@ export default class SearchController {
 
 			// Perform search
 			console.log('----------\nquery: ', JSON.stringify(esQueryObject));
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[(searchRequest as any).index]); // TODO remove any when typings build is fixed
+			return await SearchService.search(esQueryObject, ES_INDEX_MAP[(searchRequest as any).index || 'both']); // TODO remove any when typings build is fixed
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new RecursiveError(
