@@ -3,7 +3,7 @@ FROM node:dubnium-alpine
 # Set arguments & environment variables
 ARG NODE_ENV=production
 ENV NODE_ENV $NODE_ENV
-ARG PORT=8000
+ARG PORT=8080
 ENV PORT $PORT
 
 # Expose port
