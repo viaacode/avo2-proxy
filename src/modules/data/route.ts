@@ -1,6 +1,5 @@
 import { Path, POST } from 'typescript-rest';
-import { RecursiveError } from '../../helpers/recursiveError';
-import axios, { AxiosResponse } from 'axios';
+import DataController from './controller';
 
 interface DataQuery {
 	query: any;
@@ -17,27 +16,6 @@ export default class DataRoute {
 	@Path('')
 	@POST
 	async post(body: DataQuery): Promise<any> {
-		let url;
-		try {
-			url = process.env.GRAPHQL_URL;
-			const response: AxiosResponse<any> = await axios(url, {
-				method: 'post',
-				headers: {
-					'x-hasura-admin-secret': process.env.GRAPHQL_SECRET,
-				},
-				data: {
-					query: body.query,
-					variables: body.variables,
-				},
-			});
-			return response.data;
-		} catch (err) {
-			throw new RecursiveError(
-				'Failed to get data from database',
-				err,
-				{
-					...body,
-				});
-		}
+		return await DataController.execute(body);
 	}
 }
