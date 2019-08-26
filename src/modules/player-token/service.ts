@@ -1,63 +1,66 @@
 import axios, { AxiosResponse } from 'axios';
 import { RecursiveError } from '../../helpers/recursiveError';
 import * as https from 'https';
+import * as fs from 'fs';
 
-export interface PlayerTokenResponse {
-	total: number;
-	name: string;
-	results: PlayerTokenResult[];
-}
-
-interface PlayerTokenResult {
+export interface PlayerToken {
 	jwt: string;
-	app: string;
-	verb: string;
-	name: string;
-	useragent: string;
-	client: string;
-	expiration: string;
+	context: {
+		aud: string;
+		exp: number;
+		sub: string;
+		ip: string;
+		referer: string;
+		fragment: {
+			start: string;
+			end: string;
+		};
+	};
 }
-
 
 export default class PlayerTokenService {
+	private static cert = fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/VIAA/flowplayer/player-token/viaa_cert.cert');
+	private static key = fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/VIAA/flowplayer/player-token/viaa_cert.key');
 	private static httpsAgent = new https.Agent({
 		rejectUnauthorized: false,
-		cert: process.env.PLAYER_TOKEN_CERT_PEM, // TODO add these to the openshift env variables
-		key: process.env.PLAYER_TOKEN_KEY_PEM,
-		passphrase: process.env.PLAYER_TOKEN_PASSPHRASE,
+		// cert: Buffer.from(process.env.PLAYER_TOKEN_CERT_PEM, 'utf8'), // TODO add these to the openshift env variables
+		// key: Buffer.from(process.env.PLAYER_TOKEN_KEY_PEM, 'utf8'),
+		// passphrase: process.env.PLAYER_TOKEN_PASSPHRASE,
+		cert: PlayerTokenService.cert,
+		key: PlayerTokenService.key,
+		passphrase: '3p4Kqt4xGn7kvYBRVRJh',
 	});
 
 	/**
 	 * Get a player token, to be able to show a video/audio fragment for a limited time
-	 * https://viaadocumentation.atlassian.net/wiki/spaces/AVO/pages/119308331/Request+Play+Token
-	 * @param mediaUrl
-	 * @param ip
-	 * @param userAgent
+	 * https://viaadocumentation.atlassian.net/wiki/spaces/SI/pages/108342960/Ticket+Service
+	 * @param clientIp
+	 * @param referer
 	 * @param expire
 	 */
-	public static async getToken(mediaUrl: string, ip: string, userAgent: string, expire: number): Promise<PlayerTokenResponse> {
+	public static async getToken(clientIp: string, referer: string, expire: number): Promise<PlayerToken> {
 		try {
-			const response: AxiosResponse<any> = await axios(mediaUrl, {
+			if (!process.env.TICKET_SERVICE_URL) {
+				throw new RecursiveError('TICKET_SERVICE_URL env variable is not set', null, { url: process.env.TICKET_SERVICE_URL });
+			}
+			const data = {
+				app: 'OR-avo2',
+				referer,
+				client: clientIp,
+			};
+			const response: AxiosResponse<any> = await axios(process.env.TICKET_SERVICE_URL, {
 				method: 'get',
 				httpsAgent: this.httpsAgent,
-				data: {
-					app: 'OR-h41jm1d', // TODO update with actual app id of avo2
-					useragent: userAgent,
-					verb: 'GET',
-					client: ip,
-					maxage: expire, // not mandatory
-					format: [ 'mp4' ], // array of selected extensions or TRUE to receive all
-				},
+				data,
 			});
 			return response.data;
 		} catch (err) {
 			throw new RecursiveError(
-				'Failed to get data from database',
+				'Failed to get player-token from player-token service',
 				err,
 				{
-					mediaUrl,
-					ip,
-					userAgent,
+					clientIp,
+					referer,
 					expire,
 				});
 		}

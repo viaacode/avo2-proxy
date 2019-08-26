@@ -16,6 +16,6 @@ export default class DataRoute {
 	@Path('')
 	@POST
 	async post(body: DataQuery): Promise<any> {
-		return await DataController.execute(body);
+		return await DataController.execute(body.query, body.variables);
 	}
 }

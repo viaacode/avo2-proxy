@@ -2,7 +2,7 @@ import { RecursiveError } from '../../helpers/recursiveError';
 import axios, { AxiosResponse } from 'axios';
 
 export default class DataService {
-	public static async execute(body: any): Promise<any> {
+	public static async execute(query: string, variables: {[varName: string]: any}): Promise<any> {
 		let url;
 		try {
 			url = process.env.GRAPHQL_URL;
@@ -12,8 +12,8 @@ export default class DataService {
 					'x-hasura-admin-secret': process.env.GRAPHQL_SECRET,
 				},
 				data: {
-					query: body.query,
-					variables: body.variables,
+					query,
+					variables,
 				},
 			});
 			return response.data;
@@ -22,7 +22,8 @@ export default class DataService {
 				'Failed to get data from database',
 				err,
 				{
-					...body,
+					query,
+					variables,
 				});
 		}
 	}
