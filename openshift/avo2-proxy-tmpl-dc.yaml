@@ -46,9 +46,6 @@ objects:
           component: backend
       spec:
         containers:
-      
-
-
         - image: docker-registry.default.svc:5000/sc-avo2/avo2-proxy@sha256:aeaa45767dc73f4d8c4d802b57252d799e737b4e54bbd68119f9ef689ea491dc
           imagePullPolicy: Always
           name: avo2-proxy-${ENV}
@@ -56,7 +53,7 @@ objects:
                 - configMapRef:
                     name: proxy-${ENV}
           ports:
-          - containerPort: 8000
+          - containerPort: 8080
             name: http
             protocol: TCP
           resources: {}
@@ -105,9 +102,9 @@ objects:
   spec:
     ports:
     - name: http
-      port: 8000
+      port: 8080
       protocol: TCP
-      targetPort: 8000
+      targetPort: 8080
     selector:
       app: avo2-proxy
       ENV: ${ENV}
