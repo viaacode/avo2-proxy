@@ -1,5 +1,6 @@
 import { Path, POST } from 'typescript-rest';
 import DataController from './controller';
+import { RecursiveError } from '../../helpers/recursiveError';
 
 interface DataQuery {
 	query: any;
@@ -16,6 +17,10 @@ export default class DataRoute {
 	@Path('')
 	@POST
 	async post(body: DataQuery): Promise<any> {
-		return await DataController.execute(body.query, body.variables);
+		try {
+			return await DataController.execute(body.query, body.variables);
+		} catch (err) {
+			throw new RecursiveError('Failed to get data from graphql');
+		}
 	}
 }
