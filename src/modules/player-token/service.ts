@@ -29,16 +29,19 @@ if (!process.env.TICKET_SERVICE_PASSPHRASE) {
 }
 
 export default class PlayerTokenService {
-	private static cert = fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/VIAA/flowplayer/player-token/viaa_cert.cert');
-	private static key = fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/VIAA/flowplayer/player-token/viaa_cert.key');
+	private static certEnv = Buffer.from(
+		(process.env.TICKET_SERVICE_CERT as string).replace(/\\n/g, '\n'),
+		'utf8',
+	);
+	private static keyEnv = Buffer.from(
+		(process.env.TICKET_SERVICE_KEY as string).replace(/\\n/g, '\n'),
+		'utf8',
+	);
 	private static httpsAgent = new https.Agent({
 		rejectUnauthorized: false,
-		// cert: PlayerTokenService.cert,
-		// key: PlayerTokenService.key,
-		// passphrase: process.env.TICKET_SERVICE_PASSPHRASE,
-		cert: PlayerTokenService.cert,
-		key: PlayerTokenService.key,
-		passphrase: '3p4Kqt4xGn7kvYBRVRJh',
+		cert: PlayerTokenService.certEnv,
+		key: PlayerTokenService.keyEnv,
+		passphrase: process.env.TICKET_SERVICE_PASSPHRASE,
 	});
 
 	/**
