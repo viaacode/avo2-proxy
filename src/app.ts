@@ -18,7 +18,7 @@ import OrganizationService from './modules/organization/service';
 import DataRoute from './modules/data/route';
 import AuthRoute from './modules/auth/route';
 import session from './middleware/session';
-import PlayerTokenRoute from './modules/player-token/route';
+import PlayerTicketRoute from './modules/player-ticket/route';
 
 // Cache organizations every day
 OrganizationService.initialize();
@@ -47,7 +47,7 @@ Server.buildServices(
 	SearchRoute,
 	DataRoute,
 	AuthRoute,
-	PlayerTokenRoute,
+	PlayerTicketRoute,
 );
 
 // if (process.env.NODE_ENV !== 'production') {

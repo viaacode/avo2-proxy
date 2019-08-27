@@ -1,14 +1,12 @@
 import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import { RecursiveError } from '../../helpers/recursiveError';
-import AuthController from '../auth/controller';
-import { UnauthorizedError } from 'typescript-rest/dist/server/model/errors';
-import PlayerTokenController from './controller';
-import * as _ from 'lodash';
+import PlayerTicketController from './controller';
 import * as util from 'util';
+import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 const publicIp = require('public-ip');
 
-@Path('/player-token')
-export default class PlayerTokenRoute {
+@Path('/player-ticket')
+export default class PlayerTicketRoute {
 	@Context
 	context: ServiceContext;
 
@@ -17,17 +15,17 @@ export default class PlayerTokenRoute {
 	 */
 	@Path('')
 	@GET
-	async getToken(
+	async getPlayableUrl(
 		@QueryParam('externalId') externalId: string,
 	): Promise<any> {
 		if (!externalId) {
-			throw new RecursiveError('query param externalId is required');
+			throw new BadRequestError('query param externalId is required');
 		}
 		try {
 			// if (AuthController.isAuthenticated(this.context.request)) {
-				return await PlayerTokenController.getToken(
+				return await PlayerTicketController.getPlayableUrl(
 					externalId,
-					await PlayerTokenRoute.getIp(this.context),
+					await PlayerTicketRoute.getIp(this.context),
 					this.context.request.header('Referer') || 'http://localhost:8080/',
 					8 * 60 * 60 * 1000,
 				);
