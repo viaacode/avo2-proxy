@@ -47,7 +47,7 @@ describe('[UNIT - SHARED] Errors', () => {
 	});
 
 	it('Should return a CustomError based on another error', (done: jest.DoneCallback) => {
-		const err: ICustomError = new CustomError(new TypeError('Invalid type'));
+		const err: ICustomError = new CustomError('Invalid type', new TypeError('Invalid type'));
 
 		validateError(err, CustomError, 500, 'TypeError', 'Invalid type');
 		done();

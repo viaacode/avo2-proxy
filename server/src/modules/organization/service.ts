@@ -9,6 +9,7 @@ interface OrganizationResponse {
 	description: string;
 	data: OrganizationInfo[];
 }
+
 interface OrganizationInfo {
 	or_id: string;
 	cp_name: string;
@@ -17,6 +18,7 @@ interface OrganizationInfo {
 	cp_name_catpro: string | null;
 	contact_information: ContactInformation;
 }
+
 interface ContactInformation {
 	phone: string | null;
 	website: string | null;
@@ -77,7 +79,7 @@ export default class OrganizationService {
 
 	public static getOrganisationInfo(orgId: string): OrganizationInfo | null {
 		try {
-			return _.find(OrganizationService.organizations, {or_id: orgId}) || null;
+			return _.find(OrganizationService.organizations, { or_id: orgId }) || null;
 		} catch (err) {
 			throw new CustomError(
 				'Failed to get organization info for id',

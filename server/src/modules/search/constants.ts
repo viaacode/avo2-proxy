@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {Avo} from '@viaa/avo2-types';
+import { Avo } from '@viaa/avo2-types';
 
 // Max number of search results to return to the client
 export const MAX_NUMBER_SEARCH_RESULTS = 2000;
@@ -35,6 +35,16 @@ export const NEEDS_FILTER_SUFFIX: { [prop in Avo.Search.FilterProp]: boolean } =
 	serie: true,
 	provider: true,
 };
+
+export type AggProps =
+	'type' |
+	'educationLevel' |
+	'domain' |
+	'language' |
+	'keyword' |
+	'subject' |
+	'serie' |
+	'provider';
 
 export const AGGS_PROPERTIES: Avo.Search.FilterProp[] = [
 	'type',

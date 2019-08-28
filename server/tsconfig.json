@@ -40,7 +40,9 @@
 			"@shared": ["src/shared"],
 			"@shared/*": ["src/shared/*"],
 			"@test": ["test"],
-			"@test/*": ["test/*"]
+			"@test/*": ["test/*"],
+			"@viaa": ["node_modules/@viaa"],
+			"@viaa/*": ["node_modules/@viaa/*"]
 		}
 	},
 	"include": [

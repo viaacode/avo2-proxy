@@ -1,6 +1,6 @@
 import SearchController from './controller';
 import { Path, POST } from 'typescript-rest';
-import {Avo} from '@viaa/avo2-types';
+import { Avo } from '@viaa/avo2-types';
 import { logger } from '@shared/helpers/logger';
 import { CustomError } from '@shared/helpers/error';
 

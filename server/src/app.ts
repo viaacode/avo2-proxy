@@ -8,20 +8,17 @@ import { GlobalMiddleware } from '@modules/core/middleware/global';
 import { IConfig } from '@config/config.types';
 import { logger } from '@shared/helpers/logger';
 import { presets as corePresets } from '@modules/core/helpers/presets';
-import { SwaggerMiddleware } from '@modules/core/middleware/swagger';
 import { Validator } from '@shared/helpers/validation';
-import { Server, Errors } from 'typescript-rest';
+import { Server } from 'typescript-rest';
 
-import { CoreModule } from '@modules/core';
 import OrganizationService from '@modules/organization/service';
-import { SampleModule } from '@modules/sample';
 import StatusRoute from '@modules/status/route';
 import SearchRoute from '@modules/search/route';
 import DataRoute from '@modules/data/route';
 import AuthRoute from '@modules/auth/route';
 import PlayerTicketRoute from '@modules/player-ticket/route';
 import FallbackRoute from '@modules/fallback/route';
-import { searchModels } from '@modules/search/search.models';
+import { CustomError } from '@shared/helpers/error';
 
 export class App {
 	public app: Application = express();
@@ -32,7 +29,9 @@ export class App {
 		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
 		// Cache organizations every day
-		OrganizationService.initialize();
+		OrganizationService.initialize().catch((err) => {
+			logger.error(new CustomError('Failed to cache organizations', err));
+		});
 
 		this.loadMiddleware();
 		this.loadModules();
@@ -68,12 +67,10 @@ export class App {
 
 	private loadMiddleware(): void {
 		GlobalMiddleware.load(this.app);
-		if (this.config.state.docs) {
-			SwaggerMiddleware.load(this.app, {
-				...CoreModule.models,
-				...SampleModule.models,
-			});
-		}
+		// if (this.config.state.docs) {
+		// 	SwaggerMiddleware.load(this.app, {
+		// 	});
+		// }
 	}
 
 	private loadModules(): void {

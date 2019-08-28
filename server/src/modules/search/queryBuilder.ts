@@ -2,12 +2,14 @@ import _ from 'lodash';
 import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import { Avo } from '@viaa/avo2-types';
 import {
+	AggProps,
 	AGGS_PROPERTIES, MAX_COUNT_SEARCH_RESULTS,
 	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from './constants';
 import { CustomError } from '@shared/helpers/error';
+import { logger } from '@shared/helpers/logger';
 
 const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
@@ -148,7 +150,7 @@ export default class QueryBuilder {
 			}
 
 			// Map frontend filter names to elasticsearch names
-			const elasticKey = READABLE_TO_ELASTIC_FILTER_NAMES[readableKey];
+			const elasticKey = READABLE_TO_ELASTIC_FILTER_NAMES[readableKey as Avo.Search.FilterProp];
 			if (!elasticKey) {
 				throw new CustomError(`Failed to resolve agg property: ${readableKey}`);
 			}
@@ -160,7 +162,7 @@ export default class QueryBuilder {
 						[elasticKey + this.suffix(readableKey as Avo.Search.FilterProp)]: value,
 					},
 				});
-			} else if (_.isObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
+			} else if (_.isPlainObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
 				// Date/number interval
 				const intervalValue = value as { gte?: string | number, lte?: string | number };
 				filterArray.push({
@@ -207,9 +209,9 @@ export default class QueryBuilder {
 			if (!elasticProperty) {
 				throw new CustomError(`Failed to resolve agg property: ${aggProperty}`);
 			}
-			if (filterOptionSearch && filterOptionSearch[aggProperty]) {
+			if (filterOptionSearch && filterOptionSearch[aggProperty as AggProps]) {
 				// An extra search filter should be applied for these filter options
-				const filterOptionsTerm: string = filterOptionSearch[aggProperty];
+				const filterOptionsTerm: string = filterOptionSearch[aggProperty as AggProps];
 				aggs[elasticProperty] = {
 					filter: {
 						term: {
