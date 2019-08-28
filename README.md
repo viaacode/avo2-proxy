@@ -1,65 +1,86 @@
-# NODEJS-BOILERPLATE 2.0 #
+# Het Archief voor Onderwijs - backend NodeJS proxy
 
-[![Travis CI badge](https://travis-ci.org/studiohyperdrive/nodejs-boilerplate.png?branch=master)](https://travis-ci.org/studiohyperdrive/nodejs-boilerplate)
-[![Codecov badge](https://img.shields.io/codecov/c/gh/studiohyperdrive/nodejs-boilerplate.svg)](https://codecov.io/gh/studiohyperdrive/nodejs-boilerplate)
-[![Greenkeeper badge](https://badges.greenkeeper.io/studiohyperdrive/nodejs-boilerplate.svg)](https://greenkeeper.io)
-[![License badge](https://img.shields.io/badge/license-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
+## Synopsis
 
-Studio Hyperdrive Node.js 2.0 boilerplate
+This repo contains the NodeJS backend service that handles the communication between
+* the AvO frontend applications ()
+    * Client
+    * Admin
 
-## Setup ##
+and
+* the backend services
+    * Elasticsearch
+    * GraphQL
+    * LDAP api
 
-### System requirements ###
+![Overview of the avo backend and frontend applications](avo-overview.png?raw=true)
 
-* [Docker](https://docs.docker.com/engine/installation/)
-* [Node.js](https://nodejs.org/en/) (LTS)
 
-Node.js is optional and only required if you want to run the linters in your IDE. Running them inside Docker works without Node.js.
+## Technical
 
-### Installation ###
+|Role              | Handle / username|
+| -------------    |--------------| 
+|Principal/Owner   | Bart Debunne <bart.debunne@viaa.be>  | 
+|Lead Developer    | Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be> |
+|Lead Developer    | Bert Verhelst <bert.verhelst@studiohyperdrive.be> |
 
-Update the values (if needed) of the local config file inside `./server/.env/local.env`.
+**Code Review:**
 
-Start the Docker container:
+## Functional
 
-```bash
-$ docker-compose up
-```
+The NodeJS services will provide the following features:
+* Proxy search requests from the frontend apps to graphQL and Elasticsearch services
+* Authentication for login using information from the LDAP API, Smartschool api, klasse api
+* Track extra information for logged in users. Eg: bookmarks, app permissions
 
-_Optional_: Install the Node.js packages locally:
+## Server
 
-```bash
-$ npm install
-```
+|               | QAS           | PRD      |
+| ------------- |:-------------:| :-----:  |
+| **host**      | TODO          | TODO     |
 
-## Getting started ##
+## Stack
 
-Once your Docker container is running, your application is accessible on [localhost:3000](http://localhost:3000) (assuming you did not change the port in the local config file).
+#### Backend
 
-### Running linter ###
+NodeJS in Typescript and express.js
 
-Running TSlint inside Docker:
+### Frontend
 
-```bash
-$ docker-compose exec server npm run lint
-```
+* Frontend application for teachers, students, content providers, ...: React
+    * https://github.com/viaacode/avo2-client
+* Frontend application for viaa employees: React
+    * https://github.com/viaacode/avo2-admin
 
-### Running tests ###
+## Logging and monitoring
 
-Running tests inside Docker:
+#### Backend
 
-```bash
-$ docker-compose exec server npm test
-```
+// TODO
 
-## Bugs ##
+## Deployment/Installation
 
-In case of bugs, issues, questions, ... check the [issues](https://github.com/studiohyperdrive/nodejs-boilerplate/issues) on Github.
+#### Prerequisites
 
-## Contributions ##
+Ensure that the VIAA provided postgres db has been setup to accept sessions by following the readme here:
+https://www.npmjs.com/package/connect-pg-simple
 
-Contributions through pull requests are more than welcome. Make sure you respect the current tools, guidelines and flow to get your improved version accepted.
+#### Backend
 
-## License ##
+The deployment happens through Jenkins which will build a docker image and upload it to the viaa docker repository.
 
-See [LICENSE](LICENSE).
+## Usage
+
+#### Examples
+
+See postman collection (TODO add link)
+
+### Troubleshooting
+
+## Process Flow
+
+#### Flow
+
+#### Diagram
+
+![Overview of the avo backend and frontend applications](avo-overview.png?raw=true)
