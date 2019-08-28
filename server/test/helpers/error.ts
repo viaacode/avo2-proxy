@@ -8,7 +8,8 @@ export const validateError = <T>(err: ICustomError, type: T, status: number, nam
 	expect(err.identifier).toBeString();
 	expect(err.message).toEqual(message);
 	expect(err.name).toEqual(name);
-	expect(err.stack).toBeString();
+	expect(err.stack).toBeArray();
+	expect(err.stack[0]).toBeString();
 	expect(err.status).toEqual(status);
 	expect(err.timestamp).toBeString();
 

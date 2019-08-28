@@ -5,6 +5,7 @@ import { validateError } from '@test/helpers/error';
 import {
 	CustomError,
 	CustomValidationError,
+	TypeError,
 	BodyError,
 	HeadersError,
 	ParamsError,
@@ -46,12 +47,12 @@ describe('[UNIT - SHARED] Errors', () => {
 		done();
 	});
 
-	it('Should return a CustomError based on another error', (done: jest.DoneCallback) => {
-		const err: ICustomError = new CustomError('Invalid type', new TypeError('Invalid type'));
-
-		validateError(err, CustomError, 500, 'TypeError', 'Invalid type');
-		done();
-	});
+	// it('Should return a TypeError', (done: jest.DoneCallback) => {
+	// 	const err: ICustomValidationError = new TypeError();
+	//
+	// 	validateError(err.innerException, CustomError, 500, 'TypeError', 'Invalid type');
+	// 	done();
+	// });
 
 	it('Should return a default CustomValidationError', (done: jest.DoneCallback) => {
 		const err: ICustomValidationError = new CustomValidationError(new ValidationError('Validation failed', validation as JoiValidationError));

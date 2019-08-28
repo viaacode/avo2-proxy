@@ -1,7 +1,7 @@
 import { logger } from '@shared/helpers/logger';
 import { wait } from '@test/helpers/wait';
 
-import { App } from './app';
+import { App } from '@app';
 
 describe('[UNIT - APP] Application', () => {
 	let app: App;

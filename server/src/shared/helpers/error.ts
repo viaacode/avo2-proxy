@@ -72,6 +72,12 @@ export class QueryError extends CustomValidationError {
 	public message: string = 'Invalid query';
 }
 
+export class TypeError extends CustomError {
+	public message: string = 'Type error';
+	public name: string = 'TypeError';
+	public status: number = 500;
+}
+
 export class UnauthorizedError extends CustomError {
 	public message: string = 'Missing authorization';
 	public name: string = 'Unauthorized';
@@ -94,6 +100,12 @@ export class ConflictError extends CustomError {
 	public message: string = 'The request could not be completed due to a conflict with the current state of the target resource';
 	public name: string = 'Conflict';
 	public status: number = 409;
+}
+
+export class GoneError extends CustomError {
+	public message: string = 'Access to the target resource is no longer available at the origin server and that this condition is likely to be permanent';
+	public name: string = 'Gone';
+	public status: number = 410;
 }
 
 export class InternalServerError extends CustomError {
