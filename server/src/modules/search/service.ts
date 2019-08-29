@@ -115,7 +115,7 @@ export default class SearchService {
 				url.replace('/avo-search/', `/avo-search/${index}/`) :
 				url;
 			const token: string = await SearchService.getAuthToken();
-			logger.log('---------- query: \n', url, '\n', JSON.stringify(searchQueryObject));
+			logger.info('---------- query: \n', url, '\n', JSON.stringify(searchQueryObject));
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
 				method: 'post',
