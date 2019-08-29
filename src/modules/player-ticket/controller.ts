@@ -1,10 +1,10 @@
-import PlayerTokenService, { PlayerToken } from './service';
+import PlayerTicketService, { PlayerTicket } from './service';
 import DataService from '../data/service';
 import { GET_ITEM_BY_ID } from './queries.gql';
 import * as _ from 'lodash';
 import { RecursiveError } from '../../helpers/recursiveError';
 
-export default class PlayerTokenController {
+export default class PlayerTicketController {
 
 	/**
 	 * Gets a playable url for a given media item
@@ -14,7 +14,7 @@ export default class PlayerTokenController {
 	 * @param referer
 	 * @param expire
 	 */
-	public static async getToken(externalId: string, ip: string, referer: string, expire: number): Promise<string> {
+	public static async getPlayableUrl(externalId: string, ip: string, referer: string, expire: number): Promise<string> {
 		const response = await DataService.execute(GET_ITEM_BY_ID, { id: externalId });
 		const browsePath: string = _.get(response, 'data.app_item_meta[0].browse_path');
 
@@ -35,7 +35,7 @@ export default class PlayerTokenController {
 			});
 		}
 
-		const playerToken: PlayerToken = await PlayerTokenService.getToken(objectName, ip, referer, expire);
+		const playerToken: PlayerTicket = await PlayerTicketService.getPlayerTicket(objectName, ip, referer, expire);
 
 		return `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerToken.jwt}`;
 	}

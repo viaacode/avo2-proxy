@@ -3,7 +3,7 @@ import { RecursiveError } from '../../helpers/recursiveError';
 import * as https from 'https';
 import * as fs from 'fs';
 
-export interface PlayerToken {
+export interface PlayerTicket {
 	jwt: string;
 	context: {
 		aud: string;
@@ -28,17 +28,20 @@ if (!process.env.TICKET_SERVICE_PASSPHRASE) {
 	throw new RecursiveError('Environment variable TICKET_SERVICE_PASSPHRASE has to be filled in');
 }
 
-export default class PlayerTokenService {
-	private static cert = fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/VIAA/flowplayer/player-token/viaa_cert.cert');
-	private static key = fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/VIAA/flowplayer/player-token/viaa_cert.key');
+export default class PlayerTicketService {
+	private static certEnv = Buffer.from(
+		(process.env.TICKET_SERVICE_CERT as string).replace(/\\n/g, '\n'),
+		'utf8',
+	);
+	private static keyEnv = Buffer.from(
+		(process.env.TICKET_SERVICE_KEY as string).replace(/\\n/g, '\n'),
+		'utf8',
+	);
 	private static httpsAgent = new https.Agent({
 		rejectUnauthorized: false,
-		// cert: PlayerTokenService.cert,
-		// key: PlayerTokenService.key,
-		// passphrase: process.env.TICKET_SERVICE_PASSPHRASE,
-		cert: PlayerTokenService.cert,
-		key: PlayerTokenService.key,
-		passphrase: '3p4Kqt4xGn7kvYBRVRJh',
+		cert: PlayerTicketService.certEnv,
+		key: PlayerTicketService.keyEnv,
+		passphrase: process.env.TICKET_SERVICE_PASSPHRASE,
 	});
 
 	/**
@@ -49,10 +52,14 @@ export default class PlayerTokenService {
 	 * @param referer
 	 * @param expire
 	 */
-	public static async getToken(objectName: string, clientIp: string, referer: string, expire: number): Promise<PlayerToken> {
+	public static async getPlayerTicket(objectName: string, clientIp: string, referer: string, expire: number): Promise<PlayerTicket> {
 		try {
 			if (!process.env.TICKET_SERVICE_URL) {
-				throw new RecursiveError('TICKET_SERVICE_URL env variable is not set', null, { url: process.env.TICKET_SERVICE_URL });
+				throw new RecursiveError(
+					'TICKET_SERVICE_URL env variable is not set',
+					null,
+					{ url: process.env.TICKET_SERVICE_URL }
+				);
 			}
 			const data = {
 				app: 'OR-avo2',
