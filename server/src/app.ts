@@ -3,7 +3,7 @@ import { default as express, Application } from 'express';
 import * as http from 'http';
 
 import { default as config } from '@config';
-import { ErrorMiddleware } from '@modules/core/middleware/error';
+// import { ErrorMiddleware } from '@modules/core/middleware/error';
 import { GlobalMiddleware } from '@modules/core/middleware/global';
 import { IConfig } from '@config/config.types';
 import { logger } from '@shared/helpers/logger';
@@ -35,7 +35,7 @@ export class App {
 
 		this.loadMiddleware();
 		this.loadModules();
-		this.loadErrorHandling();
+		// this.loadErrorHandling();
 
 		if (start) {
 			this.start();
@@ -87,9 +87,9 @@ export class App {
 		);
 	}
 
-	private loadErrorHandling(): void {
-		this.app.use(ErrorMiddleware.handleError);
-	}
+	// private loadErrorHandling(): void {
+	// 	this.app.use(ErrorMiddleware.handleError);
+	// }
 }
 
 export const CONFIG: IConfig = config;

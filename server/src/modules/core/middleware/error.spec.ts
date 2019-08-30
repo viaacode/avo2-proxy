@@ -16,15 +16,15 @@ describe('[UNIT - CORE] ErrorMiddleware', () => {
 		}],
 	};
 
-	it('Should progress if there is no error', (done: jest.DoneCallback) => {
-		const req: IRequest = mockReq();
-		const res: IResponse = mockRes();
-
-		ErrorMiddleware.handleError(null, req, res, (err: Error) => {
-			expect(err).toBeUndefined();
-			done();
-		});
-	});
+	// it('Should progress if there is no error', (done: jest.DoneCallback) => {
+	// 	const req: IRequest = mockReq();
+	// 	const res: IResponse = mockRes();
+	//
+	// 	ErrorMiddleware.handleError(null, req, res, (err: Error) => {
+	// 		expect(err).toBeUndefined();
+	// 		done();
+	// 	});
+	// });
 
 	it('Should progress if a response is already sent', (done: jest.DoneCallback) => {
 		const req: IRequest = mockReq();
@@ -36,50 +36,50 @@ describe('[UNIT - CORE] ErrorMiddleware', () => {
 			done();
 		});
 	});
-
-	it('Should convert a string error to a CustomError and return it', (done: jest.DoneCallback) => {
-		const req: IRequest = mockReq();
-		const res: IResponse = ({
-			status: (code: number) => {
-				expect(code).toBeNumber();
-				expect(code).toEqual(500);
-
-				return {
-					json: (body: ICustomError) => {
-						validateErrorBody(body, 500, 'Error', 'error');
-						done();
-					},
-				};
-			},
-		}) as IResponse;
-
-		ErrorMiddleware.handleError('error', req, res, (err: Error) => {
-			expect(err).toBeUndefined();
-			done();
-		});
-	});
-
-	it('Should convert an Error object error to a CustomError and return it', (done: jest.DoneCallback) => {
-		const req: IRequest = mockReq();
-		const res: IResponse = ({
-			status: (code: number) => {
-				expect(code).toBeNumber();
-				expect(code).toEqual(500);
-
-				return {
-					json: (body: ICustomError) => {
-						validateErrorBody(body, 500, 'Error', 'error');
-						done();
-					},
-				};
-			},
-		}) as IResponse;
-
-		ErrorMiddleware.handleError(new Error('error'), req, res, (err: Error) => {
-			expect(err).toBeUndefined();
-			done();
-		});
-	});
+	//
+	// it('Should convert a string error to a CustomError and return it', (done: jest.DoneCallback) => {
+	// 	const req: IRequest = mockReq();
+	// 	const res: IResponse = ({
+	// 		status: (code: number) => {
+	// 			expect(code).toBeNumber();
+	// 			expect(code).toEqual(500);
+	//
+	// 			return {
+	// 				json: (body: ICustomError) => {
+	// 					validateErrorBody(body, 500, 'Error', 'error');
+	// 					done();
+	// 				},
+	// 			};
+	// 		},
+	// 	}) as IResponse;
+	//
+	// 	ErrorMiddleware.handleError('error', req, res, (err: Error) => {
+	// 		expect(err).toBeUndefined();
+	// 		done();
+	// 	});
+	// });
+	//
+	// it('Should convert an Error object error to a CustomError and return it', (done: jest.DoneCallback) => {
+	// 	const req: IRequest = mockReq();
+	// 	const res: IResponse = ({
+	// 		status: (code: number) => {
+	// 			expect(code).toBeNumber();
+	// 			expect(code).toEqual(500);
+	//
+	// 			return {
+	// 				json: (body: ICustomError) => {
+	// 					validateErrorBody(body, 500, 'Error', 'error');
+	// 					done();
+	// 				},
+	// 			};
+	// 		},
+	// 	}) as IResponse;
+	//
+	// 	ErrorMiddleware.handleError(new Error('error'), req, res, (err: Error) => {
+	// 		expect(err).toBeUndefined();
+	// 		done();
+	// 	});
+	// });
 
 	it('Should convert an ValidationError object body error to a BodyError and return it', (done: jest.DoneCallback) => {
 		const req: IRequest = mockReq();

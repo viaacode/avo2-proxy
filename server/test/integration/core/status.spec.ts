@@ -14,6 +14,7 @@ describe('[INTEGRATION - CORE] Status route', () => {
 				expect(res.body).toContainAllKeys([
 					'success',
 					'version',
+					'date',
 				]);
 				expect(res.body.success).toBeBoolean();
 				expect(res.body.success).toBeTrue();

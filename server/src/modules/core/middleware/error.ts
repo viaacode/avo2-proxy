@@ -5,6 +5,11 @@ import * as _ from 'lodash';
 
 export class ErrorMiddleware {
 	public static handleError(err: string | Error | ICustomError | null | undefined, req: IRequest, res: IResponse, next: INext): IResponse | void {
+		if ((err as any).statusCode) {
+			res.status((err as any).statusCode).json(JSON.stringify(err, null, 2));
+			return;
+		}
+
 		// Check if there is an error
 		if (!err) {
 			return next();
@@ -43,15 +48,15 @@ export class ErrorMiddleware {
 			err = new CustomError(err.message, err); // tslint:disable-line no-parameter-reassignment
 		}
 
-		return res.status((err as ICustomError).status).json({
-			host: (err as ICustomError).host,
-			identifier: (err as ICustomError).identifier,
-			timestamp: (err as ICustomError).timestamp,
-			status: (err as ICustomError).status,
-			name: (err as ICustomError).name,
-			message: (err as ICustomError).message,
-			details: (err as ICustomError).details, // Optional
-			stack: (_.get(err as ICustomError, 'stack', '') as string[]), // Optional and only on local or test environment
+		return res.status(_.get(err, 'innerException.statusCode') || err.status).json({
+			host: err.host,
+			identifier: err.identifier,
+			timestamp: err.timestamp,
+			status: _.get(err, 'innerException.statusCode') || _.get(err, 'innerException.status') || err.status,
+			name: _.get(err, 'innerException.name') || err.name,
+			message: _.get(err, 'innerException.message') || err.message,
+			details: err.details, // Optional
+			stack: _.get(err, 'innerException.stack') || err.stack || [], // Optional and only on local or test environment
 		});
 	}
 }

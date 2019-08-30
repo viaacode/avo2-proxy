@@ -1,11 +1,12 @@
-import { Path, GET, Errors } from 'typescript-rest';
+import { Path, GET } from 'typescript-rest';
+import { NotFoundError } from 'typescript-rest/dist/server/model/errors';
 
 @Path('/')
 export default class FallbackRoute {
 
 	@GET
-	@Path('*')
+	@Path('/*')
 	fallback() {
-		throw new Errors.NotFoundError('Not found');
+		throw new NotFoundError('Not found');
 	}
 }

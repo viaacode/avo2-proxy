@@ -6,12 +6,6 @@ import { IStatusResponse } from './types';
 export default class StatusRoute {
 
 	@GET
-	@Path('')
-	root(): IStatusResponse {
-		return StatusController.status();
-	}
-
-	@GET
 	@Path('status')
 	status(): IStatusResponse {
 		return StatusController.status();
