@@ -26,7 +26,7 @@
 		{
 			"label": "build image (server) (Docker)",
 			"type": "shell",
-			"command": "docker build -t nodejs-boilerplate-server ./server",
+			"command": "docker build -t avo-proxy ./server",
 			"group": "build",
 			"presentation": {
 				"reveal": "always",
@@ -36,7 +36,7 @@
 		{
 			"label": "run image (server) (Docker)",
 			"type": "shell",
-			"command": "docker run --init --rm -it --env-file=./server/.env/local.env nodejs-boilerplate-server",
+			"command": "docker run --init --rm -it --env-file=./server/.env/local.env avo-proxy",
 			"group": "build",
 			"presentation": {
 				"reveal": "always",

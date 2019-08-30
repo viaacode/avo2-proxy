@@ -12,8 +12,8 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile.dev
-    image: nodejs-boilerplate-server
-    container_name: nodejs-boilerplate-server
+    image: avo-proxy
+    container_name: avo-proxy
     env_file: ./server/.env/local.env
     init: true
     ports:

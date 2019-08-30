@@ -1,8 +1,17 @@
 {
-  "name": "@studiohyperdrive/nodejs-boilerplate-server",
-  "version": "0.0.0",
-  "description": "Server directory for the Node.js boilerplate.",
+  "name": "avo2-proxy",
+  "version": "0.1.0",
+  "description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
   "main": "index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viaacode/avo2-proxy.git"
+  },
+  "author": "Bert Verhelst <bert.verhelst@studiohyperdrive.be>",
+  "contributors": [
+    "Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be>"
+  ],
+  "homepage": "https://github.com/viaacode/avo2-proxy",
   "scripts": {
     "start": "npm run serve",
     "serve": "ts-node-dev --transpileOnly --poll --inspect=0.0.0.0:5858 -- index.ts",
