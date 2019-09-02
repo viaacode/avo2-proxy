@@ -10,6 +10,7 @@ import FallbackRoute from './modules/fallback/route';
 import global from './middleware/global';
 import { Logger } from './helpers/logger';
 import { Server, Errors } from 'typescript-rest';
+import useragent from 'express-useragent';
 
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
@@ -17,6 +18,7 @@ import OrganizationService from './modules/organization/service';
 import DataRoute from './modules/data/route';
 import AuthRoute from './modules/auth/route';
 import session from './middleware/session';
+import PlayerTicketRoute from './modules/player-ticket/route';
 
 // Cache organizations every day
 OrganizationService.initialize();
@@ -25,6 +27,7 @@ const app: express.Application = express();
 global(app);
 app.use(errorHandler);
 app.use(session);
+app.use(useragent.express());
 app.use(cors({
 	origin: [
 		'http://localhost:8080',
@@ -44,6 +47,7 @@ Server.buildServices(
 	SearchRoute,
 	DataRoute,
 	AuthRoute,
+	PlayerTicketRoute,
 );
 
 // if (process.env.NODE_ENV !== 'production') {
