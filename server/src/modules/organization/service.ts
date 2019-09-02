@@ -33,9 +33,11 @@ export default class OrganizationService {
 		try {
 			await OrganizationService.updateOrganizationsCache();
 			// Register a cron job to refresh the organizations every night
-			cron.schedule('0 0 04 * * *', async () => {
-				await OrganizationService.initialize();
-			}).start();
+			if (process.env.NODE_ENV !== 'test') {
+				cron.schedule('0 0 04 * * *', async () => {
+					await OrganizationService.initialize();
+				}).start();
+			}
 		} catch (err) {
 			logger.error(new CustomError('Failed to fill initial organizations cache or schedule cron job to renew the cache', err));
 		}
