@@ -1,4 +1,4 @@
-import { default as Joi } from 'joi';
+import { default as Joi } from '@hapi/joi';
 import { mockReq, mockRes } from 'sinon-express-mock';
 
 import { DataMiddleware } from './data';

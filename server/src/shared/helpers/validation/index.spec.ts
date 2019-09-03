@@ -1,4 +1,4 @@
-import { default as Joi, ValidationResult } from 'joi';
+import { default as Joi, ValidationResult } from '@hapi/joi';
 
 import { allowUnknown, stripUnknown } from './options';
 import { CustomError } from '../error';
