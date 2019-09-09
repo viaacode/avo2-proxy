@@ -58,18 +58,18 @@ export default class PlayerTicketService {
 				throw new RecursiveError(
 					'TICKET_SERVICE_URL env variable is not set',
 					null,
-					{ url: process.env.TICKET_SERVICE_URL }
+					{ url: process.env.TICKET_SERVICE_URL },
 				);
 			}
 			const data = {
-				app: 'OR-avo2',
 				referer,
+				app: 'OR-avo2',
 				client: clientIp,
 			};
 			const response: AxiosResponse<any> = await axios(`${process.env.TICKET_SERVICE_URL}/${objectName}`, {
+				data,
 				method: 'get',
 				httpsAgent: this.httpsAgent,
-				data,
 			});
 			return response.data;
 		} catch (err) {

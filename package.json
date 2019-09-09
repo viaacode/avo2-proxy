@@ -20,6 +20,8 @@
   },
   "author": "Bert Verhelst <bert.verhelst@studiohyperdrive.be>",
   "contributors": [
+    "Bert Verhelst <bert.verhelst@studiohyperdrive.be>",
+    "Benjamin Naesen <benjamin.naesen@studiohyperdrive.be>",
     "Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be>"
   ],
   "homepage": "https://github.com/viaacode/avo2-proxy",
