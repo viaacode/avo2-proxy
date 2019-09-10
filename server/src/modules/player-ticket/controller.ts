@@ -4,6 +4,10 @@ import { GET_ITEM_BY_ID } from './queries.gql';
 import * as _ from 'lodash';
 import { CustomError } from '@shared/helpers/error';
 
+export interface PlayerTicketResponse {
+	url: string;
+}
+
 export default class PlayerTicketController {
 
 	/**
@@ -14,7 +18,7 @@ export default class PlayerTicketController {
 	 * @param referer
 	 * @param expire
 	 */
-	public static async getPlayableUrl(externalId: string, ip: string, referer: string, expire: number): Promise<string> {
+	public static async getPlayableUrl(externalId: string, ip: string, referer: string, expire: number): Promise<PlayerTicketResponse> {
 		const response = await DataService.execute(GET_ITEM_BY_ID, { id: externalId });
 		const browsePath: string = _.get(response, 'data.app_item_meta[0].browse_path');
 
@@ -37,6 +41,8 @@ export default class PlayerTicketController {
 
 		const playerToken: PlayerTicket = await PlayerTicketService.getPlayerTicket(objectName, ip, referer, expire);
 
-		return `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerToken.jwt}`;
+		return {
+			url: `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerToken.jwt}`,
+		};
 	}
 }
