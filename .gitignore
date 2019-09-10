@@ -125,3 +125,5 @@ server/test/coverage
 server/logs
 
 .idea
+dist
+server/dist
