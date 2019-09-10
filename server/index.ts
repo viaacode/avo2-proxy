@@ -1,6 +1,6 @@
 require('module-alias/register');
 
-import { App } from './src/app';
+import { App } from '@app';
 
 const app: App = new App();
 
