@@ -23,10 +23,6 @@ export default class DataController {
 					errors.push('DELETED');
 					return null;
 				}
-				if (item.is_orphaned) {
-					errors.push('ORPHANED');
-					return null;
-				}
 				return item;
 			}));
 			if (errors && errors.length) {
