@@ -58,7 +58,7 @@ export default class AuthRoute {
 	 * Called by SAML service to return LDAP info if user successfully logged in
 	 * This function has to redirect the browser back to the app once the information is stored in the user's session
 	 */
-	@Path('callback')
+	@Path('login-callback')
 	@POST
 	async loginCallback(response: SamlCallbackBody): Promise<any> {
 		try {
@@ -115,7 +115,7 @@ export default class AuthRoute {
 	 * Called by SAML service to let the proxy know what the logout status is of the user after a logout attempt
 	 * This function has to redirect the browser back to the app
 	 */
-	@Path('logout')
+	@Path('logout-callback')
 	@POST
 	async logoutCallback(response: SamlCallbackBody): Promise<any> {
 		try {
