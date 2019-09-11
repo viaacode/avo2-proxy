@@ -1,6 +1,12 @@
 ### BASE ###
 FROM node:dubnium-alpine as base
 
+# Set arguments & environment variables
+ARG NODE_ENV=production
+ENV NODE_ENV $NODE_ENV
+ARG PORT=8080
+ENV PORT $PORT
+
 # Install latest npm version
 RUN npm i --global --silent npm@latest
 
@@ -10,12 +16,17 @@ FROM base as builder
 # Install dependencies
 WORKDIR /app
 COPY package*.json .npmrc ./
-RUN npm ci --silent
+RUN npm ci --production=false --silent
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Copy source code
 WORKDIR /app/server
 COPY ./ ./
+# set rights for openshift
+RUN chgrp -R 0 /app/ && chmod -R g+rwX /app && chown node:node -R /app
+
+# add user for openshift
+USER node
 
 # Build source code
 RUN npm run build
@@ -24,7 +35,7 @@ RUN npm run build
 FROM base as run
 
 # Expose port
-EXPOSE 80
+EXPOSE 8080
 
 # Install dependencies (production only)
 WORKDIR /app
