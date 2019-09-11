@@ -19,6 +19,7 @@ import AuthRoute from '@modules/auth/route';
 import PlayerTicketRoute from '@modules/player-ticket/route';
 import FallbackRoute from '@modules/fallback/route';
 import { CustomError } from '@shared/helpers/error';
+import AuthService from '@modules/auth/service';
 
 export class App {
 	public app: Application = express();
@@ -29,9 +30,8 @@ export class App {
 		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
 		// Cache organizations every day
-		OrganizationService.initialize().catch((err) => {
-			logger.error(new CustomError('Failed to cache organizations', err));
-		});
+		OrganizationService.initialize();
+		AuthService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();
