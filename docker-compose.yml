@@ -1,37 +1,37 @@
-version: '3.7'
+version: '2.4'
+
+x-default-options: &default-options
+  tty: true
+  logging:
+    options:
+      max-size: '10m'
+      max-file: '3'
 
 services:
-  app:
+  server:
     build:
-      context: .
-      dockerfile: Dockerfile.local
-      args:
-        # Default docker-compose pinpoints to local environment
-        - NODE_ENV=local
-    image: avo2-proxy
-    container_name: avo2-proxy
-    command: npm run start
+      context: ./server
+      dockerfile: Dockerfile.dev
+    image: avo-proxy
+    container_name: avo-proxy
+    env_file: ./server/.env/local.env
+    init: true
     ports:
       # App port
       - 3000:3000
       # Debug port
       - 5858:5858
     networks:
-      - avo2-proxy
+      - nodejs-boilerplate
     volumes:
       # Delegated option for faster mounted volumes
-      - .:/app/server:delegated
+      - ./server:/app/server:delegated
       # Because `npm install`
-      - ./package.json:/app/package.json
-      - ./package-lock.json:/app/package-lock.json
+      - ./server/package.json:/app/package.json
+      - ./server/package-lock.json:/app/package-lock.json
       # Block local modules
-      - avo2-proxy-notused:/app/server/node_modules
-    environment:
-      - NODE_ENV=local
-    env_file: .env.local
-    init: true
+      - /app/server/node_modules
+    <<: *default-options
 
 networks:
-  avo2-proxy:
-volumes:
-  avo2-proxy-notused:
+  nodejs-boilerplate:

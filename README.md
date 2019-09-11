@@ -21,8 +21,9 @@ and
 |Role              | Handle / username|
 | -------------    |--------------| 
 |Principal/Owner   | Bart Debunne <bart.debunne@viaa.be>  | 
-|Lead Developer    | Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be> |
 |Lead Developer    | Bert Verhelst <bert.verhelst@studiohyperdrive.be> |
+|Lead Developer    | Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be> |
+|Developer         | Benjamin Naesen <benjamin.naesen@studiohyperdrive.be> |
 
 **Code Review:**
 
