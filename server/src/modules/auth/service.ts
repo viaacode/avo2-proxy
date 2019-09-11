@@ -37,11 +37,21 @@ interface LdapAttributes {
 	oNickname: string[]; // name organization
 }
 
+if (!process.env.SAML_SP_ENTITY_ID) {
+	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
+}
+if (!process.env.SAML_IDP_SSO_LOGIN_URL) {
+	throw new CustomError('The environment variable SAML_IDP_SSO_LOGIN_URL should have a value.');
+}
+if (!process.env.SAML_IDP_SSO_LOGOUT_URL) {
+	throw new CustomError('The environment variable SAML_IDP_SSO_LOGOUT_URL should have a value.');
+}
+
 export default class AuthService {
 	private static serviceProviderOptions: ServiceProviderOptions = {
-		entity_id: 'http://avo2-tst/sp',
-		private_key: process.env.SAML_PRIVATE_KEY || '',
-		certificate: process.env.SAML_SP_CERTIFICATE || '',
+		entity_id: process.env.SAML_SP_ENTITY_ID as string,
+		private_key: process.env.SAML_PRIVATE_KEY as string,
+		certificate: process.env.SAML_SP_CERTIFICATE as string,
 		assert_endpoint: 'http://localhost:3000/auth/login',
 		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 		auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
@@ -51,8 +61,8 @@ export default class AuthService {
 	};
 
 	private static identityProviderOptions: IdentityProviderOptions = {
-		sso_login_url: 'https://idp-tst.hetarchief.be/saml2/idp/SSOService.php',
-		sso_logout_url: 'https://idp-tst.hetarchief.be/saml2/idp/SingleLogoutService.php',
+		sso_login_url: process.env.SAML_IDP_SSO_LOGIN_URL as string,
+		sso_logout_url: process.env.SAML_IDP_SSO_LOGOUT_URL as string,
 		certificates: [process.env.SAML_IDP_CERTIFICATE || ''],
 		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 		sign_get_request: false,
