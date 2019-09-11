@@ -12,13 +12,17 @@ import { Validator } from '@shared/helpers/validation';
 import { Server } from 'typescript-rest';
 
 import OrganizationService from '@modules/organization/service';
+import { CustomError } from '@shared/helpers/error';
+
 import StatusRoute from '@modules/status/route';
 import SearchRoute from '@modules/search/route';
 import DataRoute from '@modules/data/route';
 import AuthRoute from '@modules/auth/route';
 import PlayerTicketRoute from '@modules/player-ticket/route';
+import VideoStillsRoute from '@modules/video-stills/route';
+
+// This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from '@modules/fallback/route';
-import { CustomError } from '@shared/helpers/error';
 
 export class App {
 	public app: Application = express();
@@ -83,6 +87,7 @@ export class App {
 			DataRoute,
 			AuthRoute,
 			PlayerTicketRoute,
+			VideoStillsRoute,
 			FallbackRoute,
 		);
 	}
