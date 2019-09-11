@@ -1,5 +1,9 @@
-import saml2, { IdentityProviderOptions, ServiceProviderOptions } from 'saml2-js';
+import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
 import { CustomError } from '@shared/helpers/error';
+import axios, { AxiosResponse } from 'axios';
+import { logger } from '@shared/helpers/logger';
+import convert = require('xml-js');
+import _ from 'lodash';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -37,6 +41,9 @@ interface LdapAttributes {
 	oNickname: string[]; // name organization
 }
 
+if (!process.env.SAML_IPD_META_DATA_ENDPOINT) {
+	throw new CustomError('The environment variable SAML_IPD_META_DATA_ENDPOINT should have a value.');
+}
 if (!process.env.SAML_SP_ENTITY_ID) {
 	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
 }
@@ -48,29 +55,76 @@ if (!process.env.SAML_IDP_SSO_LOGOUT_URL) {
 }
 
 export default class AuthService {
-	private static serviceProviderOptions: ServiceProviderOptions = {
-		entity_id: process.env.SAML_SP_ENTITY_ID as string,
-		private_key: process.env.SAML_PRIVATE_KEY as string,
-		certificate: process.env.SAML_SP_CERTIFICATE as string,
-		assert_endpoint: 'http://localhost:3000/auth/login',
-		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
-		auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
-		nameid_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
-		sign_get_request: false,
-		allow_unencrypted_assertion: true,
-	};
+	private static serviceProvider: ServiceProvider;
+	private static identityProvider: IdentityProvider;
 
-	private static identityProviderOptions: IdentityProviderOptions = {
-		sso_login_url: process.env.SAML_IDP_SSO_LOGIN_URL as string,
-		sso_logout_url: process.env.SAML_IDP_SSO_LOGOUT_URL as string,
-		certificates: [process.env.SAML_IDP_CERTIFICATE || ''],
-		// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
-		sign_get_request: false,
-		allow_unencrypted_assertion: true,
-	};
-
-	private static serviceProvider = new saml2.ServiceProvider(AuthService.serviceProviderOptions);
-	private static identityProvider = new saml2.IdentityProvider(AuthService.identityProviderOptions);
+	/**
+	 * Get saml credentials and signin and signout links directly from the idp when the server starts
+	 */
+	public static async initialize() {
+		const url = process.env.SAML_IPD_META_DATA_ENDPOINT;
+		try {
+			const response: AxiosResponse<string> = await axios({
+				url,
+				method: 'post',
+			});
+			const metaData: IdpMetaData = convert.xml2js(response.data, {
+				compact: true,
+				trim: true,
+				ignoreDeclaration: true,
+				ignoreInstruction: true,
+				ignoreAttributes: false,
+				ignoreComment: true,
+				ignoreCdata: true,
+				ignoreDoctype: true,
+			}) as IdpMetaData;
+			const idpCertificatePath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:KeyDescriptor[0].ds:KeyInfo.ds:X509Data.ds:X509Certificate._text';
+			const ssoLoginUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleSignOnService._attributes.Location';
+			const ssoLogoutUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleLogoutService._attributes.Location';
+			const idpCertificate = _.get(metaData, idpCertificatePath);
+			const ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
+			const ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
+			if (!idpCertificate) {
+				throw new CustomError('Failed to find certificate in idp metadata', null, {
+					metaData,
+					idpCertificatePath,
+				});
+			}
+			if (!ssoLoginUrl) {
+				throw new CustomError('Failed to find ssoLoginUrl in idp metadata', null, {
+					metaData,
+					ssoLoginUrlPath,
+				});
+			}
+			if (!ssoLogoutUrl) {
+				throw new CustomError('Failed to find ssoLogoutUrl in idp metadata', null, {
+					metaData,
+					ssoLogoutUrlPath,
+				});
+			}
+			this.serviceProvider = new saml2.ServiceProvider({
+				entity_id: process.env.SAML_SP_ENTITY_ID as string,
+				private_key: process.env.SAML_PRIVATE_KEY as string,
+				certificate: process.env.SAML_SP_CERTIFICATE as string,
+				assert_endpoint: 'http://localhost:3000/auth/login',
+				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
+				auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
+				nameid_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+				sign_get_request: false,
+				allow_unencrypted_assertion: true,
+			});
+			this.identityProvider = new saml2.IdentityProvider({
+				sso_login_url: ssoLoginUrl,
+				sso_logout_url: ssoLogoutUrl,
+				certificates: [idpCertificate],
+				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
+				sign_get_request: false,
+				allow_unencrypted_assertion: true,
+			});
+		} catch (err) {
+			logger.error(new CustomError('Failed to get meta data from idp server', err, { endpoint: url }));
+		}
+	}
 
 	public static createLoginRequestUrl(returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
