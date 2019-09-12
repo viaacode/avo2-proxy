@@ -23,6 +23,8 @@ import VideoStillsRoute from '@modules/video-stills/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from '@modules/fallback/route';
+import { CustomError } from '@shared/helpers/error';
+import AuthService from '@modules/auth/service';
 
 export class App {
 	public app: Application = express();
@@ -33,9 +35,8 @@ export class App {
 		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
 		// Cache organizations every day
-		OrganizationService.initialize().catch((err) => {
-			logger.error(new CustomError('Failed to cache organizations', err));
-		});
+		OrganizationService.initialize();
+		AuthService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();

@@ -1,6 +1,6 @@
 {
   "name": "avo2-proxy-server",
-  "version": "0.1.0",
+  "version": "0.4.1",
   "description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
   "main": "index.ts",
   "repository": {
@@ -60,7 +60,8 @@
     "swagger-express-ts": "1.0.1",
     "swagger-ui-express": "4.0.7",
     "typescript-rest": "2.2.2",
-    "uuid": "3.3.3"
+    "uuid": "3.3.3",
+    "xml-js": "1.6.11"
   },
   "devDependencies": {
     "@types/async": "3.0.1",
