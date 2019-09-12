@@ -27,11 +27,7 @@ export default class VideoStillsController {
 			const browsePaths: string[] = _.get(response, 'data.app_item_meta', []).map((item: any) => item.browse_path);
 
 			// Extract object name from the browse path
-			const objectNames: string[] = _.compact(browsePaths.map((browsePath: string) => {
-				const parts = browsePath.split('/');
-				parts.pop(); // strip browse.mp4
-				return parts.pop(); // Return browse_path id
-			}));
+			const objectNames: string[] = _.compact(browsePaths.map(this.extractObjectName));
 
 			// Only request stills for as many videos as we need
 			const slicedObjectNames = objectNames.slice(0, Math.min(objectNames.length, numberOfStills || objectNames.length));
@@ -58,7 +54,9 @@ export default class VideoStillsController {
 				}
 				arrayIndex = (arrayIndex + 1) % allVideoStills.length;
 			}
-			return pickedStills;
+
+			// Sort selected video stills, so the stills from the first externalId come first
+			return _.sortBy(pickedStills, (videoStill: VideoStill) => objectNames.indexOf(this.extractObjectName(videoStill.thumbnailImagePath)));
 		} catch (err) {
 			throw new CustomError('Failed to get stills in video stills controller', err, { externalIds, numberOfStills });
 		}
@@ -72,4 +70,8 @@ export default class VideoStillsController {
 			return null; // Avoid failing on a single error, so the other stills still get returned, We'll just log the error
 		}
 	}
+
+	private static extractObjectName = (browsePath: string) => {
+		return browsePath.split(/(\/keyframes|\/browse)/g)[0].split('/').pop();
+	};
 }
