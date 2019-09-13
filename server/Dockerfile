@@ -40,7 +40,7 @@ EXPOSE 8080
 # Install dependencies (production only)
 WORKDIR /app
 COPY package*.json .npmrc ./
-RUN npm ci --production --silent && npm cache clean --force
+RUN npm ci --production && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Copy built source code
