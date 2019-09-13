@@ -2,7 +2,7 @@ import { Application } from 'express';
 import { default as bodyParser } from 'body-parser';
 import { default as cookieParser } from 'cookie-parser';
 import { default as helmet } from 'helmet';
-import session from '@shared/middleware/session';
+import session from '../../../shared/middleware/session';
 import useragent from 'express-useragent';
 import cors from 'cors';
 

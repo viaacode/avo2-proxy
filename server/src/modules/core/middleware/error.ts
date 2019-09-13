@@ -1,6 +1,6 @@
-import { CustomError, BodyError, HeadersError, ParamsError, QueryError } from '@shared/helpers/error';
-import { IRequest, IResponse, INext, ICustomError } from '@shared/shared.types';
-import { ValidationError } from '@shared/helpers/validation/error';
+import { CustomError, BodyError, HeadersError, ParamsError, QueryError } from '../../../shared/helpers/error';
+import { IRequest, IResponse, INext, ICustomError } from '../../../shared/shared.types';
+import { ValidationError } from '../../../shared/helpers/validation/error';
 import * as _ from 'lodash';
 
 export class ErrorMiddleware {

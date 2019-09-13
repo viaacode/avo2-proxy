@@ -4,8 +4,8 @@ import { Avo } from '@viaa/avo2-types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
 } from './constants';
-import { CustomError } from '@shared/helpers/error';
-import { logger } from '@shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 interface ElasticsearchResponse {
 	took: number;

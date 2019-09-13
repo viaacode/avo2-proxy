@@ -14,7 +14,7 @@
   "homepage": "https://github.com/viaacode/avo2-proxy",
   "scripts": {
     "start": "npm run serve",
-    "serve": "ts-node-dev --transpileOnly --poll --inspect=0.0.0.0:5858 -- index.ts",
+    "serve": "ts-node-dev --transpileOnly --poll -- index.ts",
     "prebuild": "npm run clean:build",
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -c tslint.json -p tsconfig.json -t stylish",
@@ -44,7 +44,6 @@
     "graphql": "^14.4.2",
     "helmet": "3.20.0",
     "lodash": "^4.17.15",
-    "module-alias": "2.2.1",
     "node-cron": "^2.0.3",
     "passport-saml": "^1.1.0",
     "public-ip": "^3.2.0",
@@ -94,15 +93,6 @@
     "tslint": "5.18.0",
     "tslint-config-airbnb": "5.11.1",
     "typescript": "3.5.2"
-  },
-  "_moduleAliases": {
-    "@app": "src/app",
-    "@config": "src/config",
-    "@modules": "src/modules",
-    "@mocks": "test/mocks",
-    "@pkg": "package.json",
-    "@shared": "src/shared",
-    "@test": "test"
   },
   "license": "ISC"
 }

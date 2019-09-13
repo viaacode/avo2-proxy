@@ -1,8 +1,8 @@
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import AuthController from './controller';
 import AuthService, { LdapUser, SamlCallbackBody } from './service';
-import { CustomError } from '@shared/helpers/error';
-import { logger } from '@shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 interface RelayState {
 	returnToUrl: string;
