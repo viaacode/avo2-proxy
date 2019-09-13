@@ -26,8 +26,8 @@ pipeline {
                     echo "Running login script for the external docker agent"
                     sh '''#!/bin/bash
                     /usr/local/bin/agent-login.sh
-                    oc process -p ENV=int -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
-                    oc create openshift/proxy-cfg-tmpl.yaml
+                   # oc process -p ENV=int -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
+                    oc create -f openshift/proxy-cfg-tmpl.yaml 2>/dev/null || oc replace  -f openshift/proxy-cfg-tmpl.yaml
                     echo template for config maps added , add to project per env,  and fillin the vars
                     '''
                     }
