@@ -47,12 +47,6 @@ if (!process.env.SAML_IPD_META_DATA_ENDPOINT) {
 if (!process.env.SAML_SP_ENTITY_ID) {
 	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
 }
-if (!process.env.SAML_IDP_SSO_LOGIN_URL) {
-	throw new CustomError('The environment variable SAML_IDP_SSO_LOGIN_URL should have a value.');
-}
-if (!process.env.SAML_IDP_SSO_LOGOUT_URL) {
-	throw new CustomError('The environment variable SAML_IDP_SSO_LOGOUT_URL should have a value.');
-}
 
 export default class AuthService {
 	private static serviceProvider: ServiceProvider;
