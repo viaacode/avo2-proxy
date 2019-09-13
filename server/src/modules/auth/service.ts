@@ -1,7 +1,7 @@
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger } from '@shared/helpers/logger';
+import { logger } from '../../shared/helpers/logger';
 import convert = require('xml-js');
 import _ from 'lodash';
 

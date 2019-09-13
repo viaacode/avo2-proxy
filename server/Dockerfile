@@ -22,11 +22,6 @@ ENV PATH /app/node_modules/.bin:$PATH
 # Copy source code
 WORKDIR /app/server
 COPY ./ ./
-# set rights for openshift
-RUN chgrp -R 0 /app/ && chmod -R g+rwX /app && chown node:node -R /app
-
-# add user for openshift
-USER node
 
 # Build source code
 RUN npm run build
@@ -37,14 +32,19 @@ FROM base as run
 # Expose port
 EXPOSE 8080
 
+# set rights for openshift
+RUN chgrp -R 0 /app/ && chmod -R g+rwX /app && chown node:node -R /app
+
+# add user for openshift
+USER node
+
 # Install dependencies (production only)
 WORKDIR /app
 COPY package*.json .npmrc ./
-RUN npm ci --production --silent && npm cache clean --force
+RUN npm ci --production && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Copy built source code
-WORKDIR /app
 COPY --from=builder /app/server/tsconfig*.json ./
 COPY --from=builder /app/server/dist ./
 

@@ -1,7 +1,7 @@
 import { default as supertest } from 'supertest';
 
-import { App } from '@app';
-import { default as config } from '@config';
+import { App } from '../../../src/app';
+import { default as config } from '../../../src/config';
 
 const api = supertest(new App(false).app);
 

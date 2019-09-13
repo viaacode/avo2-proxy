@@ -1,8 +1,8 @@
 import { Avo } from '@viaa/avo2-types';
 import SearchService from './service';
 import QueryBuilder from './queryBuilder';
-import { CustomError } from '@shared/helpers/error';
-import { logger } from '@shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 // import { EsIndex } from '@viaa/avo2-types/types/search/types';
 
 export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed

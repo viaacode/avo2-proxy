@@ -2,7 +2,7 @@ import PlayerTicketService, { PlayerTicket } from './service';
 import DataService from '../data/service';
 import { GET_ITEM_BY_ID } from './queries.gql';
 import * as _ from 'lodash';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 
 export interface PlayerTicketResponse {
 	url: string;
