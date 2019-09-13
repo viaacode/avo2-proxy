@@ -28,7 +28,6 @@ pipeline {
                         /usr/local/bin/agent-login.sh'''
                     openshift.withCluster() {
                         openshift.withProject("sc-avo2") {
-                            echo "Using project: ${openshift.project()}"
                             
                                if (!openshift.selector("configmap", "proxy-qas").exists()) {
                                sh '''#!/bin/bash
@@ -36,7 +35,7 @@ pipeline {
                                oc process -p ENV=qas -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
                                '''
                                }
-                               if (!openshift.selector("configmap", "proxy-tst").exists()) {
+                               if (!openshift.selector("configmap", "proxy-int").exists()) {
                                sh '''#!/bin/bash
                                oc project sc-avo2
                                oc process -p ENV=dev -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
