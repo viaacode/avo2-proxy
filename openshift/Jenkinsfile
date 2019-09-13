@@ -25,33 +25,14 @@ pipeline {
                 script {
                     echo "Running login script for the external docker agent"
                     sh '''#!/bin/bash
-                        /usr/local/bin/agent-login.sh'''
-                    openshift.withCluster() {
-                        openshift.withProject("sc-avo2") {
-                            
-                               if (!openshift.selector("configmap", "proxy-qas").exists()) {
-                               sh '''#!/bin/bash
-                               oc project sc-avo2
-                               oc process -p ENV=qas -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
-                               '''
-                               }
-                               if (!openshift.selector("configmap", "proxy-int").exists()) {
-                               sh '''#!/bin/bash
-                               oc project sc-avo2
-                               oc process -p ENV=dev -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
-                               '''
-                               }
-                               if (!openshift.selector("configmap", "proxy-prd").exists()) {
-                               sh '''#!/bin/bash
-                               oc project sc-avo2
-                               oc process -p ENV=prd -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
-                               '''
-                               }
-
-
-                        }
+                    /usr/local/bin/agent-login.sh
+                    oc process -p ENV=int -f openshift/proxy-cfg-tmpl.yaml | oc apply -f -
+                    oc create openshift/proxy-cfg-tmpl.yaml
+                    echo template for config maps added , add to project per env,  and fillin the vars
+                    '''
                     }
-                }
+                    
+                
             }
         }
         stage('Build Dockerfile in server dir') {
