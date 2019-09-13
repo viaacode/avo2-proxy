@@ -12,7 +12,7 @@ pipeline {
       node {
 
         // spin up a pod to run this build on
-        label 'nodejs'
+        label 'docker'
       }
     }
     options {
@@ -23,14 +23,13 @@ pipeline {
         stage('preamble') {
             steps {
                 script {
+                    echo "Running login script for the external docker agent"
+                    sh '''#!/bin/bash
+                        /usr/local/bin/agent-login.sh'''
                     openshift.withCluster() {
                         openshift.withProject("sc-avo2") {
                             echo "Using project: ${openshift.project()}"
-                            echo "We need anyuid for node"
-			                         sh '''#!/bin/bash
-                               echo this is setup by the bash script
-                               #oc adm policy add-scc-to-user anyuid -n sc-avo2  -z default
-                               '''
+                            
                                if (!openshift.selector("configmap", "proxy-qas").exists()) {
                                sh '''#!/bin/bash
                                oc project sc-avo2
@@ -56,39 +55,20 @@ pipeline {
                 }
             }
         }
-        stage('Build and rollout template') {
+        stage('Build Dockerfile in server dir') {
             steps {
-                script {
-                    openshift.withCluster() {
-                        openshift.withProject("sc-avo2") {
-                            if (openshift.selector("buildconfig", "avo2-proxy").exists()) {
+                script {sh'''#!/bin/bash
+                cd server
+                 docker build  --no-cache \
+                 -t docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` . 
+                 docker push docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags`
+                 oc tag avo2-proxy:`git describe --tags` avo2-proxy:int
+                '''
 
-                            sh'''#!/bin/bash
-                            echo starting a build
-                            oc project sc-avo2
-			                      oc start-build avo2-proxy --wait=true
-                			      echo 'app exists apply changes to template and roll out dev'
-                            oc -n sc-avo2 apply -f openshift/avo2-proxy-tmpl-dc.yaml
-                            oc process -p ENV=dev -f openshift/avo2-proxy-tmpl-dc.yaml | oc apply -f -
-                            '''
-                            } else {sh'''#!/bin/bash
-                                      echo "install tmpl"
-                                      oc -n sc-avo2 apply -f openshift/avo2-proxy-tmpl-dc.yaml
-                                      echo "templete installed , you can use it with add to project choose from project"
-                                      oc project sc-avo2
-                                      echo "start NEW build and follow"
-                        				      oc new-build --name=avo2-proxy --strategy=docker .
-                        				      oc logs -f bc/avo2-proxy
-                                      echo "roll out  dev "
-                                      oc process -p ENV=dev -f openshift/avo2-proxy-tmpl-dc.yaml | oc apply -f -
-                                    '''
-                              }
-                        }
-                    }
-                } // script
+                        } // script
             } // steps
         } // stage
-        stage('Tag qas ') {
+        stage('Tag qas and prd') {
      steps {
      // input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
          script {
@@ -96,8 +76,9 @@ pipeline {
                  openshift.withProject("sc-avo2") {
                       echo "Tag "
                       sh '''#/bin/bash
-                    # oc -n sc-avo2  tag  avo2-proxy:latest  avo2-proxy:prd
-                      oc -n sc-avo2  tag  avo2-proxy:latest  avo2-proxy:qas
+                      oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:qas
+                      oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:prd
+                      
                       '''
                  }
              }
