@@ -10,16 +10,16 @@ import { logger } from '@shared/helpers/logger';
 import { presets as corePresets } from '@modules/core/helpers/presets';
 import { Validator } from '@shared/helpers/validation';
 import { Server } from 'typescript-rest';
+import AuthService from '@modules/auth/service';
 
 import OrganizationService from '@modules/organization/service';
+
 import StatusRoute from '@modules/status/route';
 import SearchRoute from '@modules/search/route';
 import DataRoute from '@modules/data/route';
 import AuthRoute from '@modules/auth/route';
 import PlayerTicketRoute from '@modules/player-ticket/route';
 import FallbackRoute from '@modules/fallback/route';
-import { CustomError } from '@shared/helpers/error';
-import AuthService from '@modules/auth/service';
 
 export class App {
 	public app: Application = express();

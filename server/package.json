@@ -96,13 +96,13 @@
     "typescript": "3.5.2"
   },
   "_moduleAliases": {
-    "@app": "dist/src/app",
-    "@config": "dist/src/config",
-    "@modules": "dist/src/modules",
-    "@mocks": "dist/test/mocks",
-    "@pkg": "dist/package.json",
-    "@shared": "dist/src/shared",
-    "@test": "dist/test"
+    "@app": "src/app",
+    "@config": "src/config",
+    "@modules": "src/modules",
+    "@mocks": "test/mocks",
+    "@pkg": "package.json",
+    "@shared": "src/shared",
+    "@test": "test"
   },
   "license": "ISC"
 }

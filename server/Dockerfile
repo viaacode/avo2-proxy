@@ -44,7 +44,7 @@ RUN npm ci --production --silent && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Copy built source code
-WORKDIR /app/server
+WORKDIR /app
 COPY --from=builder /app/server/tsconfig*.json ./
 COPY --from=builder /app/server/dist ./
 
