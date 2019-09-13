@@ -40,8 +40,11 @@ pipeline {
                 script {sh'''#!/bin/bash
                 cd server
                  docker build  --no-cache \
-                 -t docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` . 
-                 docker push docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags`
+                 -t docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` . '''
+                }//end script
+                script {sh'''#!/bin/bash
+                 docker push docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` '''
+                 sh'''#!/bin/bash
                  oc tag avo2-proxy:`git describe --tags` avo2-proxy:int
                 '''
 
