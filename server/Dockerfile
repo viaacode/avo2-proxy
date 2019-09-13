@@ -33,13 +33,13 @@ FROM base as run
 EXPOSE 8080
 
 # set rights for openshift
+WORKDIR /app
 RUN chgrp -R 0 /app/ && chmod -R g+rwX /app && chown node:node -R /app
 
 # add user for openshift
 USER node
 
 # Install dependencies (production only)
-WORKDIR /app
 COPY package*.json .npmrc ./
 RUN npm ci --production && npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
