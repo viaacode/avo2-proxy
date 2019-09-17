@@ -1,7 +1,7 @@
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger } from '@shared/helpers/logger';
+import { logger } from '../../shared/helpers/logger';
 import convert = require('xml-js');
 import _ from 'lodash';
 
@@ -46,12 +46,6 @@ if (!process.env.SAML_IPD_META_DATA_ENDPOINT) {
 }
 if (!process.env.SAML_SP_ENTITY_ID) {
 	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
-}
-if (!process.env.SAML_IDP_SSO_LOGIN_URL) {
-	throw new CustomError('The environment variable SAML_IDP_SSO_LOGIN_URL should have a value.');
-}
-if (!process.env.SAML_IDP_SSO_LOGOUT_URL) {
-	throw new CustomError('The environment variable SAML_IDP_SSO_LOGOUT_URL should have a value.');
 }
 
 export default class AuthService {

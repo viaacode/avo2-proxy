@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import * as https from 'https';
 import * as fs from 'fs';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 
 export interface PlayerTicket {
 	jwt: string;

@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import cron from 'node-cron';
-import { logger } from '@shared/helpers/logger';
-import { CustomError } from '@shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
 
 interface OrganizationResponse {
 	status: string;

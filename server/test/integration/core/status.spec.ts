@@ -1,7 +1,7 @@
 import { default as supertest } from 'supertest';
 
-import { App } from '@app';
-import { version } from '@pkg';
+import { App } from '../../../src/app';
+import { version } from '../../../package.json';
 
 const api = supertest(new App(false).app);
 

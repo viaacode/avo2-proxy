@@ -1,7 +1,7 @@
 // import { default as supertest } from 'supertest';
 //
-// import { App, CONFIG } from '@app';
-// import { default as config } from '@config';
+// import { App, CONFIG } from '../../../src/app';
+// import { default as config } from '../../../src/config';
 //
 // let api: supertest.SuperTest<supertest.Test>;
 //

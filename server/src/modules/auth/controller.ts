@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { LdapUser } from './service';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 
 interface AvoSession extends Express.SessionCookieData {
 	ldapUser: LdapUser | null;
