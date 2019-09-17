@@ -11,7 +11,7 @@ export class CustomError implements ICustomError {
 	public host: string = config.server.host;
 	public identifier: string = uuid();
 	public name: string = 'Error';
-	public stack: string[];
+	public stack: string;
 	public status: number = 500;
 	public timestamp: string = new Date().toISOString();
 
@@ -22,9 +22,9 @@ export class CustomError implements ICustomError {
 		Error.captureStackTrace(this, this.constructor);
 
 		if (innerException && typeof innerException.stack === 'string') {
-			this.stack = innerException.stack.split('\n');
+			this.stack = innerException.stack;
 		} else {
-			this.stack = (new Error().stack || '').split('\n');
+			this.stack = new Error().stack || '';
 		}
 	}
 
