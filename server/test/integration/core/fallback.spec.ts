@@ -28,7 +28,7 @@ describe('[INTEGRATION - CORE] Fallback route', () => {
 				// expect(res.body.name).toEqual('Not Found');
 				// expect(res.body.message).toEqual('Resource not found');
 				// expect(res.body.details).toBeUndefined();
-				// expect(res.body.stack).toBeArray();
+				// expect(res.body.stack).toBeString();
 				done();
 			})
 			.catch(done);

@@ -49,7 +49,7 @@ export interface ICustomError {
 	name: string;
 	innerException?: any;
 	additionalInfo?: any;
-	stack: string[];
+	stack: string;
 	status: number;
 	timestamp: string;
 }
