@@ -11,4 +11,9 @@ export default class StatusRoute {
 		return StatusController.status();
 	}
 
+	@GET
+	@Path('/')
+	statusRoot(): IStatusResponse {
+		return StatusController.status();
+	}
 }
