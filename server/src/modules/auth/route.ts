@@ -23,10 +23,13 @@ export default class AuthRoute {
 	async checkLogin(): Promise<any> {
 		try {
 			if (AuthController.isAuthenticated(this.context.request)) {
+				logger.info('check login: user is authenticated');
 				return { message: 'LOGGED_IN' };
 			}
+			logger.info('check login: user is not authenticated');
 			return { message: 'LOGGED_OUT' };
 		} catch (err) {
+			logger.info('check login: error', err);
 			const error = new CustomError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
@@ -64,6 +67,7 @@ export default class AuthRoute {
 		try {
 			try {
 				const ldapUser: LdapUser = await AuthService.assertSamlResponse(response);
+				logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
 				const info: RelayState = JSON.parse(response.RelayState);
 
 				AuthController.setLdapUserOnSession(this.context.request, ldapUser);
