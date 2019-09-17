@@ -8,8 +8,8 @@ import {
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from './constants';
-import { CustomError } from '@shared/helpers/error';
-import { logger } from '@shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');

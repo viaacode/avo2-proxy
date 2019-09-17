@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 
 export default class DataService {
 	public static async execute(query: string, variables: {[varName: string]: any}): Promise<any> {

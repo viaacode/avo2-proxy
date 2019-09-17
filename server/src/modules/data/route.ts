@@ -1,6 +1,6 @@
 import { Path, POST } from 'typescript-rest';
 import DataController from './controller';
-import { CustomError } from '@shared/helpers/error';
+import { CustomError } from '../../shared/helpers/error';
 
 interface DataQuery {
 	query: any;

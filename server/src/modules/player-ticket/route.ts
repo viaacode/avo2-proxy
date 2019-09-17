@@ -2,8 +2,8 @@ import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest'
 import PlayerTicketController from './controller';
 import * as util from 'util';
 import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
-import { logger } from '@shared/helpers/logger';
-import { CustomError } from '@shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
 
 const publicIp = require('public-ip');
 
