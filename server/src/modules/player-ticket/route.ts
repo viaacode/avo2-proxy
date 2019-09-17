@@ -43,10 +43,11 @@ export default class PlayerTicketRoute {
 
 	private static async getIp(context: ServiceContext): Promise<string> {
 		const ip = context.request.ip;
-		if (ip === '::1') {
+		if (ip === '::1' || ip.includes('::ffff:')) {
 			// Localhost request (local development) => get external ip of the developer machine
 			return publicIp.v4();
 		}
+
 		return ip;
 	}
 }
