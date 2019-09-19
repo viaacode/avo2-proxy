@@ -2,13 +2,14 @@ import axios, { AxiosResponse } from 'axios';
 import { CustomError } from '../../shared/helpers/error';
 
 export default class DataService {
-	public static async execute(query: string, variables: {[varName: string]: any}): Promise<any> {
+	public static async execute(query: string, variables: {[varName: string]: any}, headers: {[headerName: string]: string} = {}): Promise<any> {
 		let url;
 		try {
 			url = process.env.GRAPHQL_URL;
 			const response: AxiosResponse<any> = await axios(url, {
 				method: 'post',
 				headers: {
+					...headers,
 					'x-hasura-admin-secret': process.env.GRAPHQL_SECRET,
 				},
 				data: {
