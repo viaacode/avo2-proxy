@@ -12,7 +12,7 @@ export default class StamboekRoute {
 	context: ServiceContext;
 
 	/**
-	 * Checks if a stamboek number is valid by querying the klasse stamboek api
+	 * Checks if a stamboek number is valid by querying the klasse stamboek api: https://api.klasse.be/lk/nr
 	 * @param stamboekNumber number of 11 digits identifying an educator
 	 */
 	@Path('validate')
@@ -20,10 +20,6 @@ export default class StamboekRoute {
 	async verifyStamboekNumber(
 		@QueryParam('stamboekNumber') stamboekNumber: string
 	): Promise<any> {
-		if (!AuthController.isAuthenticated(this.context.request)) {
-			return new UnauthorizedError('You must be logged in to get a player token');
-		}
-
 		// Check inputs
 		if (!stamboekNumber) {
 			throw new BadRequestError('query param stamboekNumber is required');
@@ -36,7 +32,7 @@ export default class StamboekRoute {
 			};
 
 		} catch (err) {
-			const error = new CustomError('Failed during get video stills route', err, { stamboekNumber });
+			const error = new CustomError('Failed during validate stamboek route', err, { stamboekNumber });
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
 		}

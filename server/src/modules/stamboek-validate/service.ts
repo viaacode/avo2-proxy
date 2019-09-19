@@ -1,6 +1,9 @@
 import axios, { AxiosResponse } from 'axios';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import _ from 'lodash';
+import { PreProcessor } from 'typescript-rest';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 interface ValidationResponse {
 	provided: string;
@@ -19,10 +22,12 @@ interface ValidationResponse {
 }
 
 if (!process.env.STAMBOEK_VERIFY_ENDPOINT) {
-	logger.error('VIDEO_STILLS_ENDPOINT env variable is not set');
+	/* istanbul ignore next */
+	logger.error('STAMBOEK_VERIFY_ENDPOINT env variable is not set');
 }
 
 if (!process.env.STAMBOEK_VERIFY_TOKEN) {
+	/* istanbul ignore next */
 	logger.error('STAMBOEK_VERIFY_TOKEN env variable is not set');
 }
 
@@ -35,6 +40,7 @@ export default class StamboekService {
 		let url: string;
 		try {
 			if (!process.env.STAMBOEK_VERIFY_ENDPOINT) {
+				/* istanbul ignore next */
 				throw new CustomError(
 					'STAMBOEK_VERIFY_ENDPOINT env variable is not set',
 					null,
@@ -42,6 +48,7 @@ export default class StamboekService {
 				);
 			}
 			if (!process.env.STAMBOEK_VERIFY_TOKEN) {
+				/* istanbul ignore next */
 				throw new CustomError(
 					'STAMBOEK_VERIFY_TOKEN env variable is not set',
 					null,
@@ -51,18 +58,21 @@ export default class StamboekService {
 			url = `${process.env.STAMBOEK_VERIFY_ENDPOINT}/${stamboekNumber}?token=${process.env.STAMBOEK_VERIFY_TOKEN}`;
 			const response: AxiosResponse<ValidationResponse> = await axios(url, {
 				method: 'get',
-				headers: {
-					Authorization: `Basic ${process.env.VIDEO_STILLS_AUTHORIZATION_TOKEN}`,
-				},
 			});
 			return !!response.data.found;
 		} catch (err) {
-			throw new CustomError(
-				'Failed to get player-token from player-token service',
+			const statusCode = _.get(err, 'response.data.status');
+			if (statusCode && statusCode < 500 && statusCode >= 400) {
+				return false; // Invalid input => invalid stamboek number
+			}
+			const error = new CustomError(
+				'Failed to validate the stamboek number through the external api',
 				err,
 				{
 					url,
 				});
+			logger.error(error);
+			throw error;
 		}
 	}
 }

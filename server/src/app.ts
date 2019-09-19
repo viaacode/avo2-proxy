@@ -18,6 +18,7 @@ import VideoStillsRoute from './modules/video-stills/route';
 import DataRoute from './modules/data/route';
 import AuthRoute from './modules/auth/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
+import StamboekRoute from './modules/stamboek-validate/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -85,6 +86,7 @@ export class App {
 			AuthRoute,
 			PlayerTicketRoute,
 			VideoStillsRoute,
+			StamboekRoute,
 			FallbackRoute,
 		);
 	}
