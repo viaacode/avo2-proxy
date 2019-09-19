@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi';
 
-export interface StillRequest {
+export interface StillRequest { // TODO move to types repo
 	externalId: string;
 	startTime: number; // milliseconds
 }
