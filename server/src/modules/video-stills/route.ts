@@ -1,9 +1,10 @@
-import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest';
+import { Context, Path, ServiceContext, QueryParam, GET, PreProcessor } from 'typescript-rest';
 import VideoStillsController from './controller';
 import * as util from 'util';
 import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 @Path('/video-stills')
 export default class VideoStillsRoute {
@@ -19,6 +20,7 @@ export default class VideoStillsRoute {
 	 */
 	@Path('')
 	@GET
+	@PreProcessor(isAuthenticated)
 	async getPlayableUrl(
 		@QueryParam('externalIds') externalIds: string,
 		@QueryParam('numberOfStills') numberOfStills: number = 20,

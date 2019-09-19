@@ -1,7 +1,7 @@
 import { default as supertest } from 'supertest';
 
-import { App } from '../../../src/app';
-import { default as config } from '../../../src/config';
+import { App } from '../../app';
+import { default as config } from '../../config';
 
 const api = supertest(new App(false).app);
 
@@ -10,7 +10,7 @@ describe('[INTEGRATION - CORE] Fallback route', () => {
 		api.get('/gibberish')
 			.expect(404)
 			.then((res: supertest.Response) => {
-				expect(res.text).toContain('Not found');
+				expect(res.text).toContain('Route not found: /gibberish');
 				// expect(res.body).toBeObject();
 				// expect(res.body).toContainAllKeys([
 				// 	'host',
