@@ -17,7 +17,7 @@ export default class DataRoute {
 	@Path('')
 	@POST
 	async post(body: DataQuery): Promise<any> {
-		try {
+		try { // TODO check if the user is logged in
 			return await DataController.execute(body.query, body.variables);
 		} catch (err) {
 			throw new CustomError('Failed to get data from graphql');
