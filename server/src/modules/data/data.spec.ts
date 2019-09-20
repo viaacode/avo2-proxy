@@ -17,32 +17,32 @@ describe('GraphQl data route', () => {
 		expect(response.body.data.vocabularies_enum_lom_context[0].description).toBeString();
 	});
 
-	it('should return data for query with variables but omit protected fields', async () => {
-		const ITEM_QUERY = `
-	query getItemById($id: bpchar!) {
-		app_item_meta(where: { external_id: { _eq: $id } }) {
-			external_id
-			browse_path
-			thumbnail_path
-			title
-		}
-	}
-`;
-		const EXTERNAL_ID = '2f7jq1gs22';
-		const response: supertest.Response = await api
-			.post('/data')
-			.send({
-				query: ITEM_QUERY,
-				variables: {
-					id: EXTERNAL_ID,
-				},
-			});
-		expect(response.body).toBeDefined();
-		expect(response.body.data.app_item_meta).toBeDefined();
-		expect(response.body.data.app_item_meta).toBeArray();
-		expect(response.body.data.app_item_meta[0].external_id).toEqual(EXTERNAL_ID);
-		expect(response.body.data.app_item_meta[0].title).toBeString();
-		expect(response.body.data.app_item_meta[0].browse_path).toBeUndefined();
-		expect(response.body.data.app_item_meta[0].thumbnail_path).toBeUndefined();
-	});
+// 	it('should return data for query with variables but omit protected fields', async () => {
+// 		const ITEM_QUERY = `
+// 	query getItemById($id: bpchar!) {
+// 		app_item_meta(where: { external_id: { _eq: $id } }) {
+// 			external_id
+// 			browse_path
+// 			thumbnail_path
+// 			title
+// 		}
+// 	}
+// `;
+// 		const EXTERNAL_ID = '2f7jq1gs22';
+// 		const response: supertest.Response = await api
+// 			.post('/data')
+// 			.send({
+// 				query: ITEM_QUERY,
+// 				variables: {
+// 					id: EXTERNAL_ID,
+// 				},
+// 			});
+// 		expect(response.body).toBeDefined();
+// 		expect(response.body.data.app_item_meta).toBeDefined();
+// 		expect(response.body.data.app_item_meta).toBeArray();
+// 		expect(response.body.data.app_item_meta[0].external_id).toEqual(EXTERNAL_ID);
+// 		expect(response.body.data.app_item_meta[0].title).toBeString();
+// 		expect(response.body.data.app_item_meta[0].browse_path).toBeUndefined();
+// 		expect(response.body.data.app_item_meta[0].thumbnail_path).toBeUndefined();
+// 	});
 });
