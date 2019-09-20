@@ -10,8 +10,6 @@ module.exports = {
 	globals: {
 		'ts-jest': {
 			diagnostics: false,
-			"skipBabel": true,
-			"enableTsDiagnostics": false,
 		},
 	},
 	collectCoverage: true,

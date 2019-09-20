@@ -14,11 +14,11 @@ import AuthService from './modules/auth/service';
 
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
-import VideoStillsRoute from './modules/video-stills/route';
 import DataRoute from './modules/data/route';
 import AuthRoute from './modules/auth/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
+import VideoStillsRoute from './modules/video-stills/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
