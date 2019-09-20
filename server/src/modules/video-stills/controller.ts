@@ -5,73 +5,83 @@ import * as _ from 'lodash';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import * as promiseUtils from 'blend-promise-utils';
+import { StillRequest } from './validation';
+
+export interface StillInfo { // TODO move this interface to types repo
+	previewImagePath: string;
+	thumbnailImagePath: string;
+}
+
+interface ObjectNameInfo {
+	externalId: string;
+	objectName: string;
+	startTime: number;
+}
+
+interface ObjectNameInfoAndStills {
+	externalId: string;
+	objectName: string;
+	startTime: number;
+	videoStills: VideoStill[];
+}
 
 export default class VideoStillsController {
 
 	/**
-	 * Get a number of video stills for the specified items
-	 * @param externalIds: external_ids of the items you want stills for
-	 * @param numberOfStills only return a specific number of stills, if you pass 0, you'll get all stills for all passed externalIds
+	 * Get the first video still after the provided start times for all provided videos
+	 * @param stillRequests: list of info objects containing the video id and their desired start time
 	 */
-	public static async getVideoStills(externalIds: string[], numberOfStills: number): Promise<VideoStill[]> {
+	public static async getFirstVideoStills(stillRequests: StillRequest[]): Promise<StillInfo[]> {
 		try {
 			// Get browse paths for all items
-			const response = await DataService.execute(GET_ITEMS_BY_IDS, { ids: externalIds });
+			const ids: string[] = stillRequests.map((stillRequest: StillRequest) => stillRequest.externalId);
+			const response = await DataService.execute(GET_ITEMS_BY_IDS, { ids });
 			if (response.errors) {
 				throw new CustomError(
 					'Failed to lookup item info from graphql',
 					null,
-					{ externalIds, numberOfStills, errors: response.errors }
+					{ stillRequests, errors: response.errors }
 				);
 			}
-			const browsePaths: string[] = _.get(response, 'data.app_item_meta', []).map((item: any) => item.browse_path);
-
-			// Extract object name from the browse path
-			const objectNames: string[] = _.compact(browsePaths.map(this.extractObjectName));
-
-			// Only request stills for as many videos as we need
-			const slicedObjectNames = objectNames.slice(0, Math.min(objectNames.length, numberOfStills || objectNames.length));
+			const items = _.get(response, 'data.app_item_meta', []);
+			const objectNameInfos: ObjectNameInfo[] = items.map((item: { external_id: string, browse_path: string }) => ({
+				externalId: item.external_id,
+				objectName: this.extractObjectName(item.browse_path),
+				startTime: _.find(stillRequests, (stillRequest: StillRequest) => stillRequest.externalId === item.external_id).startTime,
+			}));
 
 			// Get stills for all videos
-			const allVideoStillsWithNull: (VideoStill[] | null)[] = await promiseUtils.mapLimit(slicedObjectNames, 20, this.getVideoStillsWithLogging);
-			const allVideoStills: VideoStill[][] = _.compact(allVideoStillsWithNull);
+			const allVideoStills: ObjectNameInfoAndStills[] = _.compact(await promiseUtils.mapLimit(objectNameInfos, 20, this.getVideoStillsWithLogging));
 
-			// If all stills are requested, return all stills
-			const flattenStills = _.flatten(allVideoStills);
-			if (numberOfStills === 0) {
-				return flattenStills;
-			}
-
-			// If a limited number of stills are requested, get one still from every video and repeat until
-			// we have the requested number of stills or if we run out of stills
-			const itemsToTake = Math.min(numberOfStills, flattenStills.length);
-			let arrayIndex = 0;
-			const pickedStills: VideoStill[] = [];
-			while (pickedStills.length < itemsToTake) {
-				const still = allVideoStills[arrayIndex].shift();
-				if (still) {
-					pickedStills.push(still);
+			// Get first video still for each video after their startTime
+			return _.compact(allVideoStills.map((objectNameInfo: ObjectNameInfoAndStills): StillInfo | null => {
+				const firstVideoStill = _.find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime);
+				if (!firstVideoStill) {
+					return null;
 				}
-				arrayIndex = (arrayIndex + 1) % allVideoStills.length;
-			}
-
-			// Sort selected video stills, so the stills from the first externalId come first
-			return _.sortBy(pickedStills, (videoStill: VideoStill) => objectNames.indexOf(this.extractObjectName(videoStill.thumbnailImagePath)));
+				return {
+					previewImagePath: firstVideoStill.previewImagePath,
+					thumbnailImagePath: firstVideoStill.thumbnailImagePath,
+				};
+			}));
 		} catch (err) {
-			throw new CustomError('Failed to get stills in video stills controller', err, { externalIds, numberOfStills });
+			throw new CustomError('Failed to get stills in video stills controller', err, { stillRequests });
 		}
 	}
 
-	private static async getVideoStillsWithLogging(objectName: string): Promise<VideoStill[] | null> {
+	private static async getVideoStillsWithLogging(objectNameInfo: ObjectNameInfo): Promise<(ObjectNameInfo & { videoStills: VideoStill[] }) | null> {
 		try {
-			return await VideoStillsService.getVideoStills(objectName);
+			return {
+				...objectNameInfo,
+				videoStills: await VideoStillsService.getVideoStills(objectNameInfo.objectName),
+			};
 		} catch (err) {
-			logger.error(new CustomError('Failed to get video stills for objectName', err, { objectName }));
+			logger.error(new CustomError('Failed to get video stills for objectName', err, { objectNameInfo }));
 			return null; // Avoid failing on a single error, so the other stills still get returned, We'll just log the error
 		}
 	}
 
-	private static extractObjectName = (browsePath: string) => {
+	private static extractObjectName(browsePath: string) {
 		return browsePath.split(/(\/keyframes|\/browse)/g)[0].split('/').pop();
-	};
+	}
 }
