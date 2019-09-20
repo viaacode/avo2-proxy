@@ -2,8 +2,6 @@ import axios, { AxiosResponse } from 'axios';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import _ from 'lodash';
-import { PreProcessor } from 'typescript-rest';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 interface ValidationResponse {
 	provided: string;

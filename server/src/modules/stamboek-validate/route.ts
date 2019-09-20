@@ -1,10 +1,9 @@
 import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import StamboekController from './controller';
 import * as util from 'util';
-import { BadRequestError, UnauthorizedError } from 'typescript-rest/dist/server/model/errors';
+import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
-import AuthController from '../auth/controller';
 
 @Path('/stamboek')
 export default class StamboekRoute {

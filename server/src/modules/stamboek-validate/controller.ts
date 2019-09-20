@@ -1,7 +1,7 @@
 import { CustomError } from '../../shared/helpers/error';
 import StamboekService from './service';
 
-export default class VideoStillsController {
+export default class StamboekController {
 
 	/**
 	 * Verify the stamboek number against the api of klasse
