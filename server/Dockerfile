@@ -16,7 +16,7 @@ FROM base as builder
 # Install dependencies
 WORKDIR /app
 COPY package*.json .npmrc ./
-RUN npm ci --production=false --silent
+RUN npm ci --production=false
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Copy source code
@@ -41,7 +41,8 @@ USER node
 
 # Install dependencies (production only)
 COPY package*.json .npmrc ./
-RUN npm ci --production && npm cache clean --force
+RUN npm ci --production
+RUN npm cache clean --force
 ENV PATH /app/node_modules/.bin:$PATH
 
 # Copy built source code
