@@ -1,10 +1,23 @@
 import DataService from './service';
 import _ from 'lodash';
+import { IncomingHttpHeaders } from 'http';
+import { logger } from '../../shared/helpers/logger';
 
 export default class DataController {
 
-	public static async execute(query: string, variables: { [varName: string]: any }): Promise<any> {
-		let response = await DataService.execute(query, variables);
+	public static async execute(query: string, variables: { [varName: string]: any }, allHeaders: IncomingHttpHeaders): Promise<any> {
+		// Copy trace id from nginx proxy to a header that hasura will understand
+		// TODO check if trace id header is correct
+		logger.info(`data route headers:
+${JSON.stringify(allHeaders, null, 2)}`);
+		const traceId = allHeaders['x-viaa-trace-id-header'] as string | undefined;
+		const headers: { [headerName: string]: string } = {};
+		if (traceId) {
+			headers['x-hasura-trace-id'] = traceId;
+		}
+
+		// Execute the graphql query
+		let response = await DataService.execute(query, variables, headers);
 		response = this.filterAppMetaData(response);
 		return response;
 	}
