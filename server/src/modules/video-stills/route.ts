@@ -1,4 +1,4 @@
-import { Context, Path, ServiceContext, QueryParam, GET, POST } from 'typescript-rest';
+import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
 import VideoStillsController, { StillInfo } from './controller';
 import * as util from 'util';
 import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
@@ -6,6 +6,7 @@ import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
 import { StillRequest, stillRequestValidation } from './validation';
 import { ValidationResult } from '@hapi/joi';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 @Path('/video-stills')
 export default class VideoStillsRoute {
@@ -17,6 +18,7 @@ export default class VideoStillsRoute {
 	 */
 	@Path('')
 	@POST
+	@PreProcessor(isAuthenticated)
 	async getVideoStills(
 		stillRequests: StillRequest[]
 	): Promise<StillInfo[]> {
@@ -32,11 +34,7 @@ export default class VideoStillsRoute {
 
 		// Execute controller
 		try {
-			// if (AuthController.isAuthenticated(this.context.request)) {
 			return await VideoStillsController.getFirstVideoStills(stillRequests);
-			// } else {
-			// 	return new UnauthorizedError('You must be logged in to get a player token');
-			// }
 		} catch (err) {
 			const error = new CustomError('Failed during get video stills route', err, { stillRequests });
 			logger.error(util.inspect(error));

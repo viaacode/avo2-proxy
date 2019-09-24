@@ -1,8 +1,8 @@
 import SearchController from './controller';
-import { Path, POST } from 'typescript-rest';
-import { Avo } from '@viaa/avo2-types';
+import { Path, POST, PreProcessor } from 'typescript-rest';
 import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 @Path('/search')
 export default class SearchRoute {
@@ -13,6 +13,7 @@ export default class SearchRoute {
 	 */
 	@Path('')
 	@POST
+	@PreProcessor(isAuthenticated)
 	async search(searchRequest: any): Promise<any> {
 		try {
 			return await SearchController.search(searchRequest);
