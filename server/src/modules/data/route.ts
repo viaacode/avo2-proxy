@@ -22,7 +22,7 @@ export default class DataRoute {
 		try { // TODO check if the user is logged in
 			return await DataController.execute(body.query, body.variables);
 		} catch (err) {
-			throw new CustomError('Failed to get data from graphql');
+			throw new CustomError('Failed to get data from graphql', err, { ...body });
 		}
 	}
 }
