@@ -27,25 +27,27 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 	 * @param response response from graphql
 	 */
 	private static filterAppMetaData(response: any): { items: any[], errors: string[] } {
-		const items = _.get(response, 'data.app_item_meta');
-		if (items && items.length) {
-			const errors: string[] = [];
-			response.data.app_item_meta = _.compact((items || []).map((item: any) => {
-				delete item.app_item_meta;
-				if (item.is_deleted) {
-					errors.push('DELETED');
-					return null;
-				}
-				return item;
-			}));
-			if (errors && errors.length) {
-				response.errors = errors.map((error: string) => {
-					return {
-						message: error,
-					};
-				});
-			}
-		}
+		// TODO re-enable once the frontend doesn't use browse_path and thumbnail_path anymore
+		// const items = _.get(response, 'data.app_item_meta');
+		// if (items && items.length) {
+		// 	const errors: string[] = [];
+		// 	response.data.app_item_meta = _.compact((items || []).map((item: any) => {
+		// 		delete item.browse_path;
+		// 		delete item.thumbnail_path;
+		// 		if (item.is_deleted) {
+		// 			errors.push('DELETED');
+		// 			return null;
+		// 		}
+		// 		return item;
+		// 	}));
+		// 	if (errors && errors.length) {
+		// 		response.errors = errors.map((error: string) => {
+		// 			return {
+		// 				message: error,
+		// 			};
+		// 		});
+		// 	}
+		// }
 		return response;
 	}
 }

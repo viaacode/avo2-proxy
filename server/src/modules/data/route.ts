@@ -1,6 +1,7 @@
-import { Context, Path, POST, ServiceContext } from 'typescript-rest';
+import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 import DataController from './controller';
 import { CustomError } from '../../shared/helpers/error';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 interface DataQuery {
 	query: any;
@@ -18,11 +19,12 @@ export default class DataRoute {
 	 */
 	@Path('')
 	@POST
+	@PreProcessor(isAuthenticated)
 	async post(body: DataQuery): Promise<any> {
 		try {
 			return await DataController.execute(body.query, body.variables, this.context.request.headers);
 		} catch (err) {
-			throw new CustomError('Failed to get data from graphql');
+			throw new CustomError('Failed to get data from graphql', err, { ...body });
 		}
 	}
 }
