@@ -1,7 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
 import { CustomError } from '../../shared/helpers/error';
+import { toMilliseconds } from '../../shared/helpers/duration';
 
-export interface VideoStill { // TODO replace with interface from avo2-types when we release v1.7.0
+export interface VideoStill {
+	time: number;
+	previewImagePath: string;
+	thumbnailImagePath: string;
+}
+
+export interface VideoStillRaw {
 	absoluteTimecode: string;
 	relativeTimecode: string;
 	previewImagePath: string;
@@ -35,7 +42,14 @@ export default class VideoStillsService {
 					Authorization: `Basic ${process.env.VIDEO_STILLS_AUTHORIZATION_TOKEN}`,
 				},
 			});
-			return response.data;
+			const videoStills: VideoStillRaw[] = response.data;
+			return videoStills.map((videoStill: VideoStillRaw): VideoStill => {
+				return {
+					thumbnailImagePath: videoStill.thumbnailImagePath,
+					previewImagePath: videoStill.previewImagePath,
+					time: toMilliseconds(videoStill.absoluteTimecode) || 0,
+				};
+			});
 		} catch (err) {
 			throw new CustomError(
 				'Failed to get player-token from player-token service',
