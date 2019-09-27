@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import cron from 'node-cron';
-import { logger } from '@shared/helpers/logger';
-import { CustomError } from '@shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
 
 interface OrganizationResponse {
 	status: string;
@@ -10,20 +10,18 @@ interface OrganizationResponse {
 	data: OrganizationInfo[];
 }
 
-interface OrganizationInfo {
+export interface OrganizationInfo {
 	or_id: string;
 	cp_name: string;
 	category: string | null;
 	sector: string | null;
 	cp_name_catpro: string | null;
-	contact_information: ContactInformation;
-}
-
-interface ContactInformation {
-	phone: string | null;
-	website: string | null;
-	email: string | null;
-	logoUrl: string | null;
+	contact_information: {
+		phone: string | null;
+		website: string | null;
+		email: string | null;
+		logoUrl: string | null;
+	};
 }
 
 export default class OrganizationService {
@@ -34,11 +32,13 @@ export default class OrganizationService {
 			await OrganizationService.updateOrganizationsCache();
 			// Register a cron job to refresh the organizations every night
 			if (process.env.NODE_ENV !== 'test') {
+				/* istanbul ignore next */
 				cron.schedule('0 0 04 * * *', async () => {
 					await OrganizationService.initialize();
 				}).start();
 			}
 		} catch (err) {
+			/* istanbul ignore next */
 			logger.error(new CustomError('Failed to fill initial organizations cache or schedule cron job to renew the cache', err));
 		}
 	}
@@ -57,6 +57,7 @@ export default class OrganizationService {
 				// Return search results
 				OrganizationService.organizations = orgResponse.data.data;
 			} else {
+				/* istanbul ignore next */
 				throw new CustomError(
 					'Request to organizations api was unsuccessful',
 					null,
@@ -69,6 +70,7 @@ export default class OrganizationService {
 			}
 
 		} catch (err) {
+			/* istanbul ignore next */
 			throw new CustomError(
 				'Failed to make request to elasticsearch',
 				err,
@@ -83,6 +85,7 @@ export default class OrganizationService {
 		try {
 			return _.find(OrganizationService.organizations, { or_id: orgId }) || null;
 		} catch (err) {
+			/* istanbul ignore next */
 			throw new CustomError(
 				'Failed to get organization info for id',
 				err,
@@ -90,13 +93,5 @@ export default class OrganizationService {
 					orgId,
 				});
 		}
-	}
-
-	public static getOrganisationName(orgId: string): string | null {
-		const orgInfo = OrganizationService.getOrganisationInfo(orgId);
-		if (orgInfo) {
-			return (orgInfo as OrganizationInfo).cp_name_catpro || null;
-		}
-		return null;
 	}
 }

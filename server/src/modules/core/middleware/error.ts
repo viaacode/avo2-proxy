@@ -1,6 +1,6 @@
-import { CustomError, BodyError, HeadersError, ParamsError, QueryError } from '@shared/helpers/error';
-import { IRequest, IResponse, INext, ICustomError } from '@shared/shared.types';
-import { ValidationError } from '@shared/helpers/validation/error';
+import { CustomError, BodyError, HeadersError, ParamsError, QueryError } from '../../../shared/helpers/error';
+import { IRequest, IResponse, INext, ICustomError } from '../../../shared/shared.types';
+import { ValidationError } from '../../../shared/helpers/validation/error';
 import * as _ from 'lodash';
 
 export class ErrorMiddleware {
@@ -44,19 +44,20 @@ export class ErrorMiddleware {
 		}
 
 		// Convert an Error object to a CustomError object
+		let error: ICustomError = err as ICustomError;
 		if (err instanceof Error) {
-			err = new CustomError(err.message, err); // tslint:disable-line no-parameter-reassignment
+			error = new CustomError(err.message, err); // tslint:disable-line no-parameter-reassignment
 		}
 
-		return res.status(_.get(err, 'innerException.statusCode') || err.status).json({
-			host: err.host,
-			identifier: err.identifier,
-			timestamp: err.timestamp,
-			status: _.get(err, 'innerException.statusCode') || _.get(err, 'innerException.status') || err.status,
-			name: _.get(err, 'innerException.name') || err.name,
-			message: _.get(err, 'innerException.message') || err.message,
-			details: err.details, // Optional
-			stack: _.get(err, 'innerException.stack') || err.stack || [], // Optional and only on local or test environment
+		return res.status(_.get(error, 'innerException.statusCode') || error.status).json({
+			host: error.host,
+			identifier: error.identifier,
+			timestamp: error.timestamp,
+			status: _.get(error, 'innerException.statusCode') || _.get(error, 'innerException.status') || error.status,
+			name: _.get(error, 'innerException.name') || error.name,
+			message: _.get(error, 'innerException.message') || error.message,
+			details: error.details, // Optional
+			stack: _.get(error, 'innerException.stack') || error.stack || '', // Optional and only on local or test environment
 		});
 	}
 }

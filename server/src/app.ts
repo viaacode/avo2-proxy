@@ -2,23 +2,26 @@ import { AddressInfo } from 'net';
 import { default as express, Application } from 'express';
 import * as http from 'http';
 
-import { default as config } from '@config';
-// import { ErrorMiddleware } from '@modules/core/middleware/error';
-import { GlobalMiddleware } from '@modules/core/middleware/global';
-import { IConfig } from '@config/config.types';
-import { logger } from '@shared/helpers/logger';
-import { presets as corePresets } from '@modules/core/helpers/presets';
-import { Validator } from '@shared/helpers/validation';
+import { default as config } from './config';
+import { GlobalMiddleware } from './modules/core/middleware/global';
+import { IConfig } from './config/config.types';
+import { logger } from './shared/helpers/logger';
+import { presets as corePresets } from './modules/core/helpers/presets';
+import { Validator } from './shared/helpers/validation';
 import { Server } from 'typescript-rest';
+import OrganizationService from './modules/organization/service';
+import AuthService from './modules/auth/service';
 
-import OrganizationService from '@modules/organization/service';
-import StatusRoute from '@modules/status/route';
-import SearchRoute from '@modules/search/route';
-import DataRoute from '@modules/data/route';
-import AuthRoute from '@modules/auth/route';
-import PlayerTicketRoute from '@modules/player-ticket/route';
-import FallbackRoute from '@modules/fallback/route';
-import { CustomError } from '@shared/helpers/error';
+import StatusRoute from './modules/status/route';
+import SearchRoute from './modules/search/route';
+import DataRoute from './modules/data/route';
+import AuthRoute from './modules/auth/route';
+import PlayerTicketRoute from './modules/player-ticket/route';
+import StamboekRoute from './modules/stamboek-validate/route';
+import VideoStillsRoute from './modules/video-stills/route';
+
+// This route must be imported as the last route, otherwise it will resolve before the other routes
+import FallbackRoute from './modules/fallback/route';
 
 export class App {
 	public app: Application = express();
@@ -29,9 +32,8 @@ export class App {
 		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
 		// Cache organizations every day
-		OrganizationService.initialize().catch((err) => {
-			logger.error(new CustomError('Failed to cache organizations', err));
-		});
+		OrganizationService.initialize();
+		AuthService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();
@@ -83,6 +85,8 @@ export class App {
 			DataRoute,
 			AuthRoute,
 			PlayerTicketRoute,
+			VideoStillsRoute,
+			StamboekRoute,
 			FallbackRoute,
 		);
 	}

@@ -1,5 +1,5 @@
-import { ICustomError, ICustomErrorDetail } from '@shared/shared.types';
-import { default as config } from '@config';
+import { ICustomError, ICustomErrorDetail } from '../../src/shared/shared.types';
+import { default as config } from '../../src/config';
 
 export const validateError = <T>(err: ICustomError, type: T, status: number, name: string, message: string, details?: ICustomErrorDetail[]): void => {
 	expect(err).toBeDefined();
@@ -8,8 +8,7 @@ export const validateError = <T>(err: ICustomError, type: T, status: number, nam
 	expect(err.identifier).toBeString();
 	expect(err.message).toEqual(message);
 	expect(err.name).toEqual(name);
-	expect(err.stack).toBeArray();
-	expect(err.stack[0]).toBeString();
+	expect(err.stack).toBeString();
 	expect(err.status).toEqual(status);
 	expect(err.timestamp).toBeString();
 
@@ -43,7 +42,7 @@ export const validateErrorBody = (
 	expect(body.status).toEqual(status);
 	expect(body.name).toEqual(name);
 	expect(body.message).toEqual(message);
-	expect(body.stack).toBeArray();
+	expect(body.stack).toBeString();
 
 	if (details) {
 		expect(body).toContainKey('details');

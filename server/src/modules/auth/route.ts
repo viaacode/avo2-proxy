@@ -1,8 +1,8 @@
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import AuthController from './controller';
 import AuthService, { LdapUser, SamlCallbackBody } from './service';
-import { CustomError } from '@shared/helpers/error';
-import { logger } from '@shared/helpers/logger';
+import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 interface RelayState {
 	returnToUrl: string;
@@ -23,10 +23,13 @@ export default class AuthRoute {
 	async checkLogin(): Promise<any> {
 		try {
 			if (AuthController.isAuthenticated(this.context.request)) {
+				logger.info('check login: user is authenticated');
 				return { message: 'LOGGED_IN' };
 			}
+			logger.info('check login: user is not authenticated');
 			return { message: 'LOGGED_OUT' };
 		} catch (err) {
+			logger.info('check login: error', err);
 			const error = new CustomError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
@@ -58,12 +61,13 @@ export default class AuthRoute {
 	 * Called by SAML service to return LDAP info if user successfully logged in
 	 * This function has to redirect the browser back to the app once the information is stored in the user's session
 	 */
-	@Path('callback')
+	@Path('login-callback')
 	@POST
 	async loginCallback(response: SamlCallbackBody): Promise<any> {
 		try {
 			try {
 				const ldapUser: LdapUser = await AuthService.assertSamlResponse(response);
+				logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
 				const info: RelayState = JSON.parse(response.RelayState);
 
 				AuthController.setLdapUserOnSession(this.context.request, ldapUser);
@@ -115,7 +119,7 @@ export default class AuthRoute {
 	 * Called by SAML service to let the proxy know what the logout status is of the user after a logout attempt
 	 * This function has to redirect the browser back to the app
 	 */
-	@Path('logout')
+	@Path('logout-callback')
 	@POST
 	async logoutCallback(response: SamlCallbackBody): Promise<any> {
 		try {
