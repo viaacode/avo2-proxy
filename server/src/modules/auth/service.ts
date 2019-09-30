@@ -4,6 +4,8 @@ import axios, { AxiosResponse } from 'axios';
 import { logger } from '../../shared/helpers/logger';
 import convert = require('xml-js');
 import _ from 'lodash';
+import DataService from '../data/service';
+import { GET_USER_INFO_BY_USER_EMAIL } from './queries.gql';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -23,6 +25,42 @@ interface ResponseHeader {
 	id: string;
 }
 
+/**
+{
+  "name_id": "bert.verhelst@studiohyperdrive.be",
+  "session_index": "_88c4bf190c88565a131ad70ba664c32bc944a35d81",
+  "session_not_on_or_after": "2019-09-30T16:18:25Z",
+  "attributes": {
+    "mail": [
+      "bert.verhelst@studiohyperdrive.be"
+    ],
+    "givenName": [
+      "Bert"
+    ],
+    "sn": [
+      "Verhelst"
+    ],
+    "cn": [
+      "Bert Verhelst"
+    ],
+    "o": [
+      "12345"
+    ],
+    "entryUUID": [
+      "9cd5fc48-3cbe-1039-9d6c-93fac417d71d"
+    ],
+    "entryDN": [
+      "mail=bert.verhelst@studiohyperdrive.be,ou=people,dc=hetarchief,dc=be"
+    ],
+    "apps": [
+      "avo"
+    ],
+    "oNickname": [
+      "Test organisatie"
+    ]
+  }
+}
+ */
 export interface LdapUser {
 	name_id: string; // email address user
 	session_index: string;
@@ -38,7 +76,49 @@ interface LdapAttributes {
 	o: string[]; // organization id
 	entryUUID: string[];
 	entryDN: string[]; // eg: mail=bert.verhelst@studiohyperdrive.be,ou=people,dc=hetarchief,dc=be
+	apps: string[]; // avo
 	oNickname: string[]; // name organization
+}
+
+export interface SharedUser {
+	id: number;
+	first_name: string;
+	last_name: string;
+	profiles: Profile[];
+	created_at: string;
+	expires_at: any;
+	external_uid: number;
+	role: any;
+	type: string;
+	uid: string;
+	updated_at: string;
+	mail: string;
+	organisation_id: string;
+}
+
+export interface Profile {
+	id: number;
+	alias: any;
+	alternative_email: string;
+	avatar: any;
+	created_at: string;
+	location: string;
+	stamboek: any;
+	updated_at: string;
+	user_id: string;
+	groups: {
+		group: {
+			group_user_permission_groups:  {
+				permission_group: {
+					permission_group_user_permissions: {
+						permission: {
+							label: string;
+						};
+					}[];
+				};
+			}[];
+		};
+	}[];
 }
 
 if (!process.env.SAML_IPD_META_DATA_ENDPOINT) {
@@ -171,5 +251,25 @@ export default class AuthService {
 					}
 				});
 		});
+	}
+
+	public static async getUserInfo(email: string): Promise<SharedUser> {
+		try {
+			const response = await DataService.execute(GET_USER_INFO_BY_USER_EMAIL, { email });
+			if (response.errors) {
+				throw new CustomError(
+					'Failed to get user info from graphql by user email',
+					null,
+					{ email, errors: response.errors }
+				);
+			}
+			return _.get(response, 'data.users[0]', null);
+		} catch (err) {
+			throw new CustomError(
+				'Failed to get user info from graphql by user email',
+				err,
+				{ email }
+			);
+		}
 	}
 }
