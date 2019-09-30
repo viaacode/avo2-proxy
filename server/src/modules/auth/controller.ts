@@ -46,25 +46,29 @@ export default class AuthController {
 	}
 
 	public static async getUserInfo(request: Express.Request): Promise<Avo.User.Response | null> {
-		const ldapUser = this.getLdapUserFromSession(request);
-		const email = ldapUser.name_id;
-		const user: SharedUser = await AuthService.getUserInfo(email);
-		if (!user) {
-			return null;
-		}
+		try {
+			const ldapUser = this.getLdapUserFromSession(request);
+			const email = ldapUser.name_id;
+			const user: SharedUser = await AuthService.getUserInfo(email);
+			if (!user) {
+				return null;
+			}
 
-		// Simplify user object structure
-		(user as any).profile = user.profiles[0];
-		const permissions = new Set<string>();
-		_.get(user, 'profiles[0].groups', []).forEach((group: any) => {
-			_.get(group, 'group.group_user_permission_groups', []).forEach((permissionGroup: any) => {
-				_.get(permissionGroup, 'permission_group.permission_group_user_permissions', []).forEach((permission: any) => {
-					permissions.add(permission.permission.label);
+			// Simplify user object structure
+			(user as any).profile = user.profiles[0];
+			const permissions = new Set<string>();
+			_.get(user, 'profiles[0].groups', []).forEach((group: any) => {
+				_.get(group, 'group.group_user_permission_groups', []).forEach((permissionGroup: any) => {
+					_.get(permissionGroup, 'permission_group.permission_group_user_permissions', []).forEach((permission: any) => {
+						permissions.add(permission.permission.label);
+					});
 				});
 			});
-		});
-		(user as any).permissions = permissions.values();
-		delete user.profiles;
-		return ldapUser as any;
+			(user as any).permissions = Array.from(permissions);
+			delete user.profiles;
+			return user as any;
+		} catch (err) {
+			throw new CustomError('Failed to get user info in controller', err);
+		}
 	}
 }

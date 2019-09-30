@@ -1,8 +1,6 @@
-import { gql } from 'apollo-boost';
-
-export const GET_USER_INFO_BY_USER_EMAIL = gql`
+export const GET_USER_INFO_BY_USER_EMAIL = `
 query getUserInfoByMail($email: String!) {
-  shared_users(limit: 1, where: {mail: {_eq: $email}}) {
+  users: shared_users(limit: 1, where: {mail: {_eq: $email}}) {
     id
     first_name
     last_name
