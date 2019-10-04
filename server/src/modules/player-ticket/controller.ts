@@ -40,10 +40,10 @@ export default class PlayerTicketController {
 				});
 			}
 
-			const playerToken: PlayerTicket = await PlayerTicketService.getPlayerTicket(objectName, ip, referrer, expire);
+			const playerTicket: PlayerTicket = await PlayerTicketService.getPlayerTicket(objectName, ip, referrer, expire);
 
 			return {
-				url: `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerToken.jwt}`,
+				url: `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerTicket.jwt}`,
 			};
 		} catch (err) {
 			throw new CustomError('Failed to get player ticket', err, { externalId, ip, referrer, expire });
