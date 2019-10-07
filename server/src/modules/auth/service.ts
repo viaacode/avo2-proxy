@@ -108,7 +108,7 @@ export interface Profile {
 	user_id: string;
 	groups: {
 		group: {
-			group_user_permission_groups:  {
+			group_user_permission_groups: {
 				permission_group: {
 					permission_group_user_permissions: {
 						permission: {

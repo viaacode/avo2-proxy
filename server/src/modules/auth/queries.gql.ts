@@ -4,7 +4,7 @@ query getUserInfoByMail($email: String!) {
     id
     first_name
     last_name
-    profiles(limit: 1) {
+    profiles {
       id
       alias
       alternative_email
@@ -14,7 +14,7 @@ query getUserInfoByMail($email: String!) {
       stamboek
       updated_at
       user_id
-      groups {
+      profile_user_groups {
         group {
           group_user_permission_groups {
             permission_group {
