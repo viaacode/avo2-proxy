@@ -121,8 +121,8 @@ export interface Profile {
 	}[];
 }
 
-if (!process.env.SAML_IPD_META_DATA_ENDPOINT) {
-	throw new CustomError('The environment variable SAML_IPD_META_DATA_ENDPOINT should have a value.');
+if (!process.env.SAML_IDP_META_DATA_ENDPOINT) {
+	throw new CustomError('The environment variable SAML_IDP_META_DATA_ENDPOINT should have a value.');
 }
 if (!process.env.SAML_SP_ENTITY_ID) {
 	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
@@ -136,7 +136,7 @@ export default class AuthService {
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
 	public static async initialize() {
-		const url = process.env.SAML_IPD_META_DATA_ENDPOINT;
+		const url = process.env.SAML_IDP_META_DATA_ENDPOINT;
 		try {
 			const response: AxiosResponse<string> = await axios({
 				url,
