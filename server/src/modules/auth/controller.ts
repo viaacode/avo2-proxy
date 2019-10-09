@@ -45,7 +45,7 @@ export default class AuthController {
 		}
 	}
 
-	public static async getUserInfo(request: Express.Request): Promise<Avo.User.Response | null> {
+	public static async getUserInfo(request: Express.Request): Promise<Avo.User.User | null> {
 		try {
 			const ldapUser = this.getLdapUserFromSession(request);
 			const email = ldapUser.name_id;

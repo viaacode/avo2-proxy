@@ -15,7 +15,7 @@ const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
 
 export default class SearchController {
 
-	public static async search(searchRequest: Avo.Search.Request): Promise<Avo.Search.Response> {
+	public static async search(searchRequest: Avo.Search.Request): Promise<Avo.Search.Search> {
 		try {
 			// Convert filters to ElasticSearch query object using queryBuilder
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
