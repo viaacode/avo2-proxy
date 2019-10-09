@@ -15,34 +15,38 @@ export default class PlayerTicketController {
 	 * https://viaadocumentation.atlassian.net/wiki/spaces/SI/pages/1063453019/Media+Service
 	 * @param externalId: external_id of the media item that you want to view
 	 * @param ip
-	 * @param referer
+	 * @param referrer
 	 * @param expire
 	 */
-	public static async getPlayableUrl(externalId: string, ip: string, referer: string, expire: number): Promise<PlayerTicketResponse> {
-		const response = await DataService.execute(GET_ITEM_BY_ID, { id: externalId });
-		const browsePath: string = _.get(response, 'data.app_item_meta[0].browse_path');
+	public static async getPlayableUrl(externalId: string, ip: string, referrer: string, expire: number): Promise<PlayerTicketResponse> {
+		try {
+			const response = await DataService.execute(GET_ITEM_BY_ID, { id: externalId });
+			const browsePath: string = _.get(response, 'data.app_item_meta[0].browse_path');
 
-		if (!browsePath) {
-			throw new CustomError('Failed to get token for item since it doesn\'t have a browse_path value', null, {
-				browsePath,
-				externalId,
-			});
+			if (!browsePath) {
+				throw new CustomError('Failed to get token for item since it doesn\'t have a browse_path value', null, {
+					browsePath,
+					externalId,
+				});
+			}
+
+			const objectName: string | undefined = browsePath.split('archief-media.viaa.be/viaa/').pop();
+
+			if (!objectName) {
+				throw new CustomError('Failed to extract object name from browse path for media item', null, {
+					browsePath,
+					objectName,
+					externalId,
+				});
+			}
+
+			const playerTicket: PlayerTicket = await PlayerTicketService.getPlayerTicket(objectName, ip, referrer, expire);
+
+			return {
+				url: `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerTicket.jwt}`,
+			};
+		} catch (err) {
+			throw new CustomError('Failed to get player ticket', err, { externalId, ip, referrer, expire });
 		}
-
-		const objectName: string | undefined = browsePath.split('archief-media.viaa.be/viaa/').pop();
-
-		if (!objectName) {
-			throw new CustomError('Failed to extract object name from browse path for media item', null, {
-				browsePath,
-				objectName,
-				externalId,
-			});
-		}
-
-		const playerToken: PlayerTicket = await PlayerTicketService.getPlayerTicket(objectName, ip, referer, expire);
-
-		return {
-			url: `${process.env.MEDIA_SERVICE_URL}/${objectName}?token=${playerToken.jwt}`,
-		};
 	}
 }

@@ -9,12 +9,12 @@ describe('GraphQl data route', () => {
 		const response: supertest.Response = await api
 			.post('/data')
 			.send({
-				query: '{vocabularies_enum_lom_context{description}}',
+				query: '{lookup_enum_lom_context{description}}',
 			});
 		expect(response.body).toBeDefined();
-		expect(response.body.data.vocabularies_enum_lom_context).toBeDefined();
-		expect(response.body.data.vocabularies_enum_lom_context).toBeArray();
-		expect(response.body.data.vocabularies_enum_lom_context[0].description).toBeString();
+		expect(response.body.data.lookup_enum_lom_context).toBeDefined();
+		expect(response.body.data.lookup_enum_lom_context).toBeArray();
+		expect(response.body.data.lookup_enum_lom_context[0].description).toBeString();
 	});
 
 // 	it('should return data for query with variables but omit protected fields', async () => {

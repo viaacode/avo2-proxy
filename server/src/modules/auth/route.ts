@@ -24,7 +24,11 @@ export default class AuthRoute {
 		try {
 			if (AuthController.isAuthenticated(this.context.request)) {
 				logger.info('check login: user is authenticated');
-				return { message: 'LOGGED_IN' };
+				const userInfo = await AuthController.getUserInfo(this.context.request);
+				return {
+					userInfo,
+					message: 'LOGGED_IN',
+				};
 			}
 			logger.info('check login: user is not authenticated');
 			return { message: 'LOGGED_OUT' };
