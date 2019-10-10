@@ -16,6 +16,7 @@ import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import DataRoute from './modules/data/route';
 import AuthRoute from './modules/auth/route';
+import SmartschoolRoute from './modules/auth/smartschool/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
@@ -84,6 +85,7 @@ export class App {
 			SearchRoute,
 			DataRoute,
 			AuthRoute,
+			SmartschoolRoute,
 			PlayerTicketRoute,
 			VideoStillsRoute,
 			StamboekRoute,
