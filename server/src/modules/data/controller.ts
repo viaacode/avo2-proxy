@@ -2,10 +2,12 @@ import DataService from './service';
 import _ from 'lodash';
 import { IncomingHttpHeaders } from 'http';
 import { logger } from '../../shared/helpers/logger';
+import { Avo } from '@viaa/avo2-types';
+import { LdapUser } from '../auth/service';
 
 export default class DataController {
 
-	public static async execute(query: string, variables: { [varName: string]: any }, allHeaders: IncomingHttpHeaders): Promise<any> {
+	public static async execute(query: string, variables: { [varName: string]: any }, allHeaders: IncomingHttpHeaders, user: Avo.User.User | null): Promise<any> {
 		// Copy trace id from nginx proxy to a header that hasura will understand
 		// TODO check if trace id header is correct
 		logger.info(`data route headers:
@@ -18,15 +20,17 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 
 		// Execute the graphql query
 		let response = await DataService.execute(query, variables, headers);
-		response = this.filterAppMetaData(response);
+		response = this.filterAppMetaData(response, user);
+		response = this.filterAssignments(response, user);
 		return response;
 	}
 
 	/**
 	 * Filters items that are deleted or orphaned and adds errors
 	 * @param response response from graphql
+	 * @param user
 	 */
-	private static filterAppMetaData(response: any): { items: any[], errors: string[] } {
+	private static filterAppMetaData(response: any, user: Avo.User.User | null): { items: any[], errors: string[] } {
 		// TODO re-enable once the frontend doesn't use browse_path and thumbnail_path anymore
 		// const items = _.get(response, 'data.app_item_meta');
 		// if (items && items.length) {
@@ -48,6 +52,48 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 		// 		});
 		// 	}
 		// }
+		return response;
+	}
+
+	/**
+	 * Filter assignments that are before their available_at or passed their deadline_at
+	 * @param response response from graphql
+	 * @param user
+	 */
+	private static filterAssignments(response: any, user: Avo.User.User | null): { assignments: any[], errors: string[] } {
+		const assignments = _.get(response, 'data.assignments');
+		if (assignments && assignments.length) {
+			const errors: string[] = [];
+			response.data.assignments = _.compact((assignments || []).map((assignment: Partial<Avo.Assignment.Assignment>) => {
+				const isOwner = assignment.owner_uid && user.uid && assignment.owner_uid === user.uid;
+
+				if (assignment.is_deleted) {
+					errors.push('DELETED');
+					return null;
+				}
+
+				// Owners can always see their assignments even if they are outside of the available_at, deadline_at time interval
+				if (assignment.available_at && new Date(assignment.available_at).getTime() < new Date().getTime() && !isOwner) {
+					errors.push('NOT_YET_AVAILABLE');
+					return null;
+				}
+
+				// Owners can always see their assignments even if they are outside of the available_at, deadline_at time interval
+				if (new Date().getTime() > new Date(assignment.deadline_at).getTime() && !isOwner) {
+					errors.push('PAST_DEADLINE');
+					return null;
+				}
+
+				return assignment;
+			}));
+			if (errors && errors.length) {
+				response.errors = errors.map((error: string) => {
+					return {
+						message: error,
+					};
+				});
+			}
+		}
 		return response;
 	}
 }
