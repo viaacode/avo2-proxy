@@ -19,9 +19,7 @@ export default class VideoStillsRoute {
 	@Path('')
 	@POST
 	@PreProcessor(isAuthenticated)
-	async getVideoStills(
-		stillRequests: StillRequest[]
-	): Promise<StillInfo[]> {
+	async getVideoStills(stillRequests: StillRequest[]): Promise<StillInfo[]> {
 		// Check inputs
 		if (!stillRequests || !stillRequests.length) {
 			throw new BadRequestError('No still requests were passed to the video-stills route');

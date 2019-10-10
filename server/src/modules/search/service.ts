@@ -104,7 +104,7 @@ export default class SearchService {
 
 	}
 
-	public static async search(searchQueryObject: any, index?: string): Promise<Avo.Search.Response> {
+	public static async search(searchQueryObject: any, index?: string): Promise<Avo.Search.Search> {
 		let url;
 		if (!process.env.ELASTICSEARCH_URL) {
 			throw new CustomError('Environment variable ELASTICSEARCH_URL is undefined');
