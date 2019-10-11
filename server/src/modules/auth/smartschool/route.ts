@@ -13,6 +13,7 @@ export default class SmartschoolRoute {
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
 			const serverUrl = `${process.env.HOST}/auth/smartschool/login-callback?returnUrl=${encodeURIComponent(returnToUrl)}`;
+			// TODO store redirect url in session
 			const url = `https://oauth.smartschool.be/OAuth?${querystring.stringify({
 				client_id: process.env.SMARTSCHOOL_CLIENT_ID,
 			  redirect_uri: encodeURIComponent(serverUrl),
