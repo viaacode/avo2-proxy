@@ -14,7 +14,7 @@ query getUserInfoByMail($email: String!) {
       stamboek
       updated_at
       user_id
-      profile_user_groups {
+      profile_user_group {
         group {
           group_user_permission_groups {
             permission_group {
