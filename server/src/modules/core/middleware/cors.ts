@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import { logger } from '../../../shared/helpers/logger';
 
 const WHITE_LIST_DOMAINS = [
 	'http://localhost:8080',
@@ -21,9 +22,12 @@ const WHITE_LIST_DOMAINS = [
 export default function (req: Request, res: Response, next: NextFunction) {
 	cors({
 		origin: (origin, callback) => {
+			logger.info('request from: ', origin);
 			if (WHITE_LIST_DOMAINS.indexOf(origin) !== -1 || (!origin && (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development'))) {
+				logger.info('            : accepted');
 				callback(null, true);
 			} else {
+				logger.info('            : declined');
 				callback(new Error(`Domain: "${origin}" has not been whitelisted`));
 			}
 		},
