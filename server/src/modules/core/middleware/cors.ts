@@ -31,7 +31,8 @@ export default function (req: Request, res: Response, next: NextFunction) {
 				callback(new Error(`Domain: "${origin}" has not been whitelisted`));
 			}
 		},
+		credentials: true,
 		allowedHeaders: 'X-Requested-With, Content-Type, authorization, Origin, Accept, cache-control',
 		methods: 'GET, POST, OPTIONS, PUT, DELETE',
-	});
+	})(req, res, next);
 }
