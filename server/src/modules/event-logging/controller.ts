@@ -42,7 +42,7 @@ export default class EventLoggingController {
 						event_object: clientEvent.event_object,
 						event_source: clientEvent.event_source,
 						event_subject: clientEvent.event_subject,
-						event_timestamp: clientEvent.event_source,
+						event_timestamp: clientEvent.event_timestamp,
 					};
 				}
 				logger.error('Failed to store event into graphql, matching event label was not found', { category: clientEvent.category, name: clientEvent.name });

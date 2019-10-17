@@ -15,12 +15,23 @@ export default class EventLoggingService {
 					'x-hasura-admin-secret': process.env.GRAPHQL_LOGGING_SECRET,
 				},
 				data: {
-					INSERT_EVENTS,
+					query: INSERT_EVENTS,
 					variables: {
 						eventLogEntries: logEvents,
 					},
 				},
 			});
+			const errors = _.get(response, 'data.errors');
+			if (errors) {
+				throw new CustomError(
+					'Failed to insert event into the database',
+					null,
+					{
+						logEvents,
+						url,
+						errors,
+					});
+			}
 			return response.data;
 		} catch (err) {
 			throw new CustomError(
