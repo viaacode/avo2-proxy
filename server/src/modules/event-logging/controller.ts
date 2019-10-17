@@ -14,8 +14,7 @@ export default class EventLoggingController {
 	 */
 	public static async initialize() {
 		try {
-			const response = await DataService.execute(GET_EVENT_LABELS);
-			EventLoggingController.eventLabels = _.get(response, 'data.event_labels', []);
+			EventLoggingController.eventLabels = await EventLoggingService.getEventLabels();
 			if (!EventLoggingController.eventLabels || !EventLoggingController.eventLabels.length) {
 				logger.error('No event labels were found in the database. These are required for event logging to work properly.', { query: GET_EVENT_LABELS });
 			}
