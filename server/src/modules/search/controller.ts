@@ -8,9 +8,9 @@ import { logger } from '../../shared/helpers/logger';
 export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
 
 const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
-	both: 'avo_qas*',
-	items: undefined, // items is the default index that is searched
-	collections: 'avo_qas_collections-*',
+	both: 'avo_*',
+	items: 'avo_items',
+	collections: 'avo_collections',
 };
 
 export default class SearchController {
