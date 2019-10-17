@@ -24,7 +24,7 @@ export default function (req: Request, res: Response, next: NextFunction) {
 		origin: (origin, callback) => {
 			logger.info('request from: ', origin);
 			if (WHITE_LIST_DOMAINS.indexOf(origin) !== -1 ||
-				((!origin || origin === 'null') && (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development'))) {
+				((!origin || origin === 'null' || origin === 'undefined') && (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development'))) {
 				logger.info('            : accepted');
 				callback(null, true);
 			} else {
