@@ -82,6 +82,9 @@ export default class PlayerTicketService {
 
 			return response.data;
 		} catch (err) {
+
+			logger.info('FAILED IN TICKET SERVICE', JSON.stringify(err, null, 2));
+
 			throw new CustomError(
 				'Failed to get player-token from player-token service',
 				err,
