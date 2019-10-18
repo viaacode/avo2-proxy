@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as https from 'https';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import util from 'util';
 
 export interface PlayerTicket {
 	jwt: string;
@@ -82,8 +83,7 @@ export default class PlayerTicketService {
 
 			return response.data;
 		} catch (err) {
-
-			logger.info('FAILED IN TICKET SERVICE', JSON.stringify(err, null, 2));
+			logger.info('FAILED IN TICKET SERVICE', util.inspect(err));
 
 			throw new CustomError(
 				'Failed to get player-token from player-token service',
