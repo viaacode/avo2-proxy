@@ -65,7 +65,7 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 		if (assignments && assignments.length) {
 			const errors: string[] = [];
 			response.data.assignments = _.compact((assignments || []).map((assignment: Partial<Avo.Assignment.Assignment>) => {
-				const isOwner = assignment.owner_uid && user.uid && assignment.owner_uid === user.uid;
+				const isOwner = assignment.owner_profile_id && user.uid && assignment.owner_profile_id === user.profile.id;
 
 				if (assignment.is_deleted) {
 					errors.push('DELETED');

@@ -22,6 +22,8 @@ import VideoStillsRoute from './modules/video-stills/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+import EventLoggingController from './modules/event-logging/controller';
+import EventLoggingRoute from './modules/event-logging/route';
 
 export class App {
 	public app: Application = express();
@@ -34,6 +36,7 @@ export class App {
 		// Cache organizations every day
 		OrganizationService.initialize();
 		AuthService.initialize();
+		EventLoggingController.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();
@@ -87,6 +90,7 @@ export class App {
 			PlayerTicketRoute,
 			VideoStillsRoute,
 			StamboekRoute,
+			EventLoggingRoute,
 			FallbackRoute,
 		);
 	}
