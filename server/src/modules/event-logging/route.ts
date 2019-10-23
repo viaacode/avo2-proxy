@@ -1,11 +1,12 @@
-import { Context, Path, ServiceContext, POST } from 'typescript-rest';
-import EventLoggingController from './controller';
+import _ from 'lodash';
 import * as util from 'util';
+import { Context, Path, ServiceContext, POST } from 'typescript-rest';
+
+import EventLoggingController from './controller';
 import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
-import { ClientEvent } from './types';
-import _ from 'lodash';
+import { ClientEvent } from '@viaa/avo2-types/types/event-logging/types';
 
 const publicIp = require('public-ip');
 

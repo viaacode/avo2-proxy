@@ -1,10 +1,11 @@
-import EventLoggingService from './service';
-import DataService from '../data/service';
 import * as _ from 'lodash';
+
+import EventLoggingService from './service';
 import { CustomError } from '../../shared/helpers/error';
-import { ClientEvent, EventCategory, EventLabel, EventName, LogEvent } from './types';
+import { EventLabel, LogEvent } from './types';
 import { GET_EVENT_LABELS } from './queries.gql';
 import { logger } from '../../shared/helpers/logger';
+import { ClientEvent, EventCategory, EventName } from '@viaa/avo2-types/types/event-logging/types';
 
 export default class EventLoggingController {
 	private static eventLabels: EventLabel[];

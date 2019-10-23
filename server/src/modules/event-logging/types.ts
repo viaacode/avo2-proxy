@@ -1,3 +1,5 @@
+import { EventCategory, EventName } from '@viaa/avo2-types/types/event-logging/types';
+
 export interface LogEvent {
 	id?: string;
 	namespace: 'avo';
