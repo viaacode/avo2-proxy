@@ -34,7 +34,6 @@ export default class AuthController {
 
 	public static setLdapUserOnSession(request: Express.Request, ldapUser: LdapUser | null): void {
 		if (request.session) {
-			request.session.ldapUser = ldapUser;
 			_.set(request, 'session.ldapUser', ldapUser);
 		} else {
 			throw new CustomError(
@@ -67,6 +66,26 @@ export default class AuthController {
 			(user as any).permissions = Array.from(permissions);
 			delete user.profiles;
 			return user as any;
+		} catch (err) {
+			throw new CustomError('Failed to get user info in controller', err);
+		}
+	}
+
+	public static getUserInfoFromSession(request: Express.Request): Avo.User.User | null {
+		return _.get(request, 'session.userInfo', null);
+	}
+
+	public static setUserInfoOnSession(request: Express.Request, userInfo: Avo.User.User): void {
+		try {
+			if (request.session) {
+				_.set(request, 'session.userInfo', userInfo);
+			} else {
+				throw new CustomError(
+					'Failed to store session during setUserInfoOnSession because no session was found on request',
+					null,
+					{ userInfo },
+				);
+			}
 		} catch (err) {
 			throw new CustomError('Failed to get user info in controller', err);
 		}

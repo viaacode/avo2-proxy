@@ -1,6 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 import * as https from 'https';
 import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
+import util from 'util';
 
 export interface PlayerTicket {
 	jwt: string;
@@ -60,18 +62,29 @@ export default class PlayerTicketService {
 					{ url: process.env.TICKET_SERVICE_URL }
 				);
 			}
+
 			const data = {
 				referer,
 				app: 'OR-avo2',
 				client: clientIp,
 			};
+
+			logger.info({
+				data,
+				url: `${process.env.TICKET_SERVICE_URL}/${objectName}`,
+				method: 'get',
+			});
+
 			const response: AxiosResponse<any> = await axios(`${process.env.TICKET_SERVICE_URL}/${objectName}`, {
 				data,
 				method: 'get',
 				httpsAgent: this.httpsAgent,
 			});
+
 			return response.data;
 		} catch (err) {
+			logger.info('FAILED IN TICKET SERVICE', util.inspect(err));
+
 			throw new CustomError(
 				'Failed to get player-token from player-token service',
 				err,

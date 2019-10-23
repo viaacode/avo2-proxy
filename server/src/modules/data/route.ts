@@ -2,6 +2,7 @@ import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-re
 import DataController from './controller';
 import { CustomError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import AuthController from '../auth/controller';
 
 interface DataQuery {
 	query: any;
@@ -22,7 +23,12 @@ export default class DataRoute {
 	@PreProcessor(isAuthenticated)
 	async post(body: DataQuery): Promise<any> {
 		try {
-			return await DataController.execute(body.query, body.variables, this.context.request.headers);
+			return await DataController.execute(
+				body.query,
+				body.variables,
+				this.context.request.headers,
+				AuthController.getUserInfoFromSession(this.context.request)
+			);
 		} catch (err) {
 			throw new CustomError('Failed to get data from graphql', err, { ...body });
 		}
