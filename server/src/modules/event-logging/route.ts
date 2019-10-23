@@ -24,12 +24,7 @@ export default class EventLoggingRoute {
 		if (!clientEvents) {
 			throw new BadRequestError('body must contain the event you want to log');
 		}
-		let clientEventArray: ClientEvent[];
-		if (_.isArray(clientEvents)) {
-			clientEventArray = clientEvents;
-		} else {
-			clientEventArray = [clientEvents];
-		}
+		const clientEventArray: ClientEvent[] = _.isArray(clientEvents) ? clientEvents : [clientEvents];
 		try {
 			return await EventLoggingController.insertEvents(
 				clientEventArray,
