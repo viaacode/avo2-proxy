@@ -41,19 +41,9 @@ export default class PlayerTicketRoute {
 
 	private static async getIp(context: ServiceContext): Promise<string> {
 		const ip = context.request.ip;
-		if (ip.includes('::ffff:')) {
-			const newIp = ip.replace('::ffff:', '');
-
-			logger.info(`Ticket request from ip: ${newIp}`);
-
-			return newIp;
-		}
-
-		if (ip === '::1') {
-			const newIp = publicIp.v4();
-			logger.info(`Ticket request ::1 from ip: ${newIp}`);
+		if (ip === '::1' || ip.includes('::ffff:')) {
 			// Localhost request (local development) => get external ip of the developer machine
-			return newIp;
+			return publicIp.v4();
 		}
 
 		return ip;
