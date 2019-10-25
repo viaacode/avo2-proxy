@@ -41,6 +41,8 @@ export default class PlayerTicketRoute {
 
 	private static async getIp(context: ServiceContext): Promise<string> {
 		const forwardedFor = context.request.headers['X-Forwarded-For'];
+		logger.info('X-FORWARDED-FOR', forwardedFor);
+		logger.info('CONTEXT.REQ.IP', forwardedFor);
 		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || context.request.ip;
 
 		if (ip.includes('::ffff:')) {
