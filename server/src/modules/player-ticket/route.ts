@@ -40,7 +40,6 @@ export default class PlayerTicketRoute {
 	}
 
 	private static async getIp(context: ServiceContext): Promise<string> {
-		logger.info('CONTEXT', context.request);
 		logger.info('HEADERS', context.request.headers);
 		const forwardedFor = context.request.headers['X-Forwarded-For'] || context.request.headers['x-forwarded-for'];
 		logger.info('X-FORWARDED-FOR', context.request.headers['X-Forwarded-For']);
