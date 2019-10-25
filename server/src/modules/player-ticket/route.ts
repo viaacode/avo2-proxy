@@ -43,11 +43,17 @@ export default class PlayerTicketRoute {
 		const forwardedFor = context.request.headers['X-Forwarded-For'];
 		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || context.request.ip;
 
-		if (ip === '::1' || ip.includes('::ffff:')) {
+		if (ip.includes('::ffff:')) {
+			const newIp = ip.replace('::ffff:', '');
+
+			logger.info(`Ticket request from ip: ${newIp}`);
+
+			return newIp;
+		}
+
+		if (ip === '::1') {
 			const newIp = publicIp.v4();
-
 			logger.info(`Ticket request ::1 from ip: ${newIp}`);
-
 			// Localhost request (local development) => get external ip of the developer machine
 			return newIp;
 		}
