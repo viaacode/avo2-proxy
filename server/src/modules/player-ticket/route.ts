@@ -40,7 +40,8 @@ export default class PlayerTicketRoute {
 	}
 
 	private static async getIp(context: ServiceContext): Promise<string> {
-		const ip = context.request.headers['X-Forwarded-For'][0] || context.request.ip;
+		const forwardedFor = context.request.headers['X-Forwarded-For'];
+		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || context.request.ip;
 
 		if (ip === '::1' || ip.includes('::ffff:')) {
 			const newIp = publicIp.v4();
