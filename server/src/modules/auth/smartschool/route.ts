@@ -5,6 +5,7 @@ import * as querystring from 'querystring';
 import { set, get } from 'lodash';
 import Axios from 'axios';
 import SmartschoolService from './service';
+import { Token } from 'simple-oauth2';
 
 @Path('/auth/smartschool')
 export default class SmartschoolRoute {
@@ -37,9 +38,10 @@ export default class SmartschoolRoute {
 	async loginCallback(@QueryParam('code') code: string): Promise<any> {
 		try {
 			try {
-				const user = await SmartschoolService.getToken(this.context.request.originalUrl);
+				// Axios.post('https://oauth.smartschool.be/OAuth/index/token', )
+				const token: Token = await SmartschoolService.getToken(code);
 				logger.log('smartschool code: ', code);
-				logger.log('smartschool tokens: ', user);
+				logger.log('smartschool tokens: ', token);
 				// const response = await Axios.get(`https://oauth.smartschool.be/OAuth/index/token?${querystring.stringify({
 				// 	code,
 				// 	clientId: process.env.SMARTSCHOOL_CLIENT_ID,
@@ -49,7 +51,6 @@ export default class SmartschoolRoute {
 				// 	redirectUri: `${process.env.HOST}/auth/smartschool/login-callback`,
 				// 	scopes: ['userinfo'],
 				// })}`);
-				logger.log(user);
 				return new Return.MovedTemporarily(get(this.context, 'request.session.returnToUrl'));
 			} catch (err) {
 				// Failed to login
