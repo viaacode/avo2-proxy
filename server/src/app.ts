@@ -25,6 +25,7 @@ import VideoStillsRoute from './modules/video-stills/route';
 import FallbackRoute from './modules/fallback/route';
 import EventLoggingController from './modules/event-logging/controller';
 import EventLoggingRoute from './modules/event-logging/route';
+import SmartschoolService from './modules/auth/smartschool/service';
 
 export class App {
 	public app: Application = express();
@@ -34,10 +35,11 @@ export class App {
 	constructor(start: boolean = true) {
 		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
-		// Cache organizations every day
+		// One time initialization of objects needed for operation of the api
 		OrganizationService.initialize();
 		AuthService.initialize();
 		EventLoggingController.initialize();
+		SmartschoolService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();

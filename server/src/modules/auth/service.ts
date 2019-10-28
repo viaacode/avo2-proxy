@@ -180,7 +180,7 @@ export default class AuthService {
 				entity_id: process.env.SAML_SP_ENTITY_ID as string,
 				private_key: process.env.SAML_PRIVATE_KEY as string,
 				certificate: process.env.SAML_SP_CERTIFICATE as string,
-				assert_endpoint: 'http://localhost:3000/auth/login',
+				assert_endpoint: 'http://localhost:3000/auth/login', // dummy url, isn't currently used
 				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 				auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
 				nameid_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
