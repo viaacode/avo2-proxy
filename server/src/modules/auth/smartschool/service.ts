@@ -41,7 +41,7 @@ export default class SmartschoolService {
 				authorizePath: '/OAuth',
 			},
 			options: {
-				bodyFormat: 'json',
+				bodyFormat: 'form',
 				authorizationMethod: 'body',
 			},
 		});
@@ -64,7 +64,7 @@ export default class SmartschoolService {
 		const result = await this.oauth2.authorizationCode.getToken({
 			code,
 			redirect_uri: `${process.env.HOST}/auth/smartschool/login-callback`,
-			scope: 'userinfo', // also can be an array of multiple scopes, ex. ['<scope1>, '<scope2>', '...']
+			scope: 'userinfo',
 		} as any); // TODO remove cast to any once PR is accepted: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/39940
 		return this.oauth2.accessToken.create(result);
 	}
