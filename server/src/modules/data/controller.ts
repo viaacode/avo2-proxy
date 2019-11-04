@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { IncomingHttpHeaders } from 'http';
 import { logger } from '../../shared/helpers/logger';
 import { Avo } from '@viaa/avo2-types';
-import { LdapUser } from '../auth/service';
 
 export default class DataController {
 

@@ -1,6 +1,36 @@
 // import ClientOAuth2 from 'client-oauth2';
-import simpleOauth2, { OAuthClient, Token } from 'simple-oauth2';
-import { CustomError } from '../../../shared/helpers/error';
+import simpleOauth2, { AccessToken, OAuthClient, Token } from 'simple-oauth2';
+import { CustomError } from '../../../../shared/helpers/error';
+import axios, { AxiosResponse } from 'axios';
+import { logger } from '../../../../shared/helpers/logger';
+
+export interface SmartschoolToken {
+	token_type: string;
+	expires_in: number;
+	access_token: string;
+	refresh_token: string;
+	expires_at: string;
+}
+
+export interface SmartschoolUserInfo {
+	userID: string;
+	voornaam: string;
+	naam: string;
+	geboortedatum: string;
+	email: string;
+	klasnaam: string;
+	nummer_adm_groep: string;
+	instellingsnummer: number;
+	basisrol: string;
+	leerling: boolean;
+	profielfoto: string;
+	isMainAccount: number;
+	isCoAccount: number;
+	nrCoAccount: number;
+	typeCoAccount: string;
+	actualUserName: string;
+	actualUserSurname: string;
+}
 
 if (!process.env.SMARTSCHOOL_CLIENT_ID) {
 	throw new CustomError('The environment variable SMARTSCHOOL_CLIENT_ID should have a value.');
@@ -16,19 +46,7 @@ export default class SmartschoolService {
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
 	public static async initialize() {
-		// passport.use(new OAuth2Strategy({
-		// 		authorizationURL: 'https://oauth.smartschool.be/OAuth',
-		// 		tokenURL: 'https://oauth.smartschool.be/OAuth/index/token',
-		// 		clientID: process.env.SMARTSCHOOL_CLIENT_ID,
-		// 		clientSecret: process.env.SMARTSCHOOL_CLIENT_PASSWORD,
-		// 		callbackURL: `${process.env.HOST}/auth/smartschool/login-callback`,
-		// 	},
-		// 	(accessToken, refreshToken, profile, cb) => {
-		// 		User.findOrCreate({ exampleId: profile.id }, function (err, user) {
-		// 			return cb(err, user);
-		// 		});
-		// 	}
-		// ));
+		logger.info('caching idp smartschool...');
 		SmartschoolService.oauth2 = simpleOauth2.create({
 			client: {
 				id: process.env.SMARTSCHOOL_CLIENT_ID,
@@ -45,13 +63,13 @@ export default class SmartschoolService {
 				authorizationMethod: 'body',
 			},
 		});
+		logger.info('caching idp smartschool... done');
 	}
 
 	public static getRedirectUrlForCode(): string {
 		return this.oauth2.authorizationCode.authorizeURL({
 			redirect_uri: `${process.env.HOST}/auth/smartschool/login-callback`,
-			scope: 'userinfo', // also can be an array of multiple scopes, ex. ['<scope1>, '<scope2>', '...']
-			state: '',
+			scope: 'userinfoviaa',
 		});
 		// SmartschoolService.smartschoolAuth.code.getUri({
 		// 	query: {
@@ -60,12 +78,26 @@ export default class SmartschoolService {
 		// });
 	}
 
-	public static async getToken(code: string): Promise<Token> {
+	public static async getToken(code: string): Promise<SmartschoolToken> {
 		const result = await this.oauth2.authorizationCode.getToken({
 			code,
 			redirect_uri: `${process.env.HOST}/auth/smartschool/login-callback`,
 			scope: 'userinfoviaa',
+			response_type: 'code',
 		} as any); // TODO remove cast to any once PR is accepted: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/39940
-		return this.oauth2.accessToken.create(result);
+		const response: AccessToken = this.oauth2.accessToken.create(result);
+		return response.token as SmartschoolToken;
+	}
+
+	public static async getUserInfo(accessToken: string): Promise<any> {
+		const url = `https://oauth.smartschool.be/Api/V1/userinfoviaa?access_token=${accessToken}`;
+		try {
+			const response: AxiosResponse<any> = await axios(url, {
+				method: 'get',
+			});
+			return response.data;
+		} catch (err) {
+			throw new CustomError('Failed to get userinfo from smartschool api', err, { url });
+		}
 	}
 }

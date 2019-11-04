@@ -2,7 +2,7 @@ import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-re
 import DataController from './controller';
 import { CustomError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-import AuthController from '../auth/controller';
+import HetArchiefController from '../auth/idps/hetarchief/controller';
 
 interface DataQuery {
 	query: any;
@@ -27,7 +27,7 @@ export default class DataRoute {
 				body.query,
 				body.variables,
 				this.context.request.headers,
-				AuthController.getUserInfoFromSession(this.context.request)
+				HetArchiefController.getUserInfoFromSession(this.context.request)
 			);
 		} catch (err) {
 			throw new CustomError('Failed to get data from graphql', err, { ...body });
