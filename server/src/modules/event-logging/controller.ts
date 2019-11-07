@@ -15,11 +15,14 @@ export default class EventLoggingController {
 	 */
 	public static async initialize() {
 		try {
+			logger.info('caching event labels...');
 			EventLoggingController.eventLabels = await EventLoggingService.getEventLabels();
 			if (!EventLoggingController.eventLabels || !EventLoggingController.eventLabels.length) {
 				logger.error('No event labels were found in the database. These are required for event logging to work properly.', { query: GET_EVENT_LABELS });
 			}
+			logger.info('caching event labels... done');
 		} catch (err) {
+			logger.info('caching event labels... error');
 			logger.error('Failed to get event labels from graphql', err, { query: GET_EVENT_LABELS });
 		}
 	}
@@ -30,7 +33,7 @@ export default class EventLoggingController {
 
 	public static async insertEvents(clientEvents: ClientEvent[], ip: string): Promise<void> {
 		try {
-			const logEvents: LogEvent[] = _.compact(clientEvents.map((clientEvent: ClientEvent): LogEvent => {
+			const logEvents: LogEvent[] = _.compact(clientEvents.map((clientEvent: ClientEvent): LogEvent | null => {
 				const label: EventLabel | undefined = EventLoggingController.getLabel(clientEvent.category, clientEvent.name);
 				if (label) {
 					return {

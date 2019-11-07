@@ -4,11 +4,15 @@ import { GET_EVENT_LABELS, INSERT_EVENTS } from './queries.gql';
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 
+if (!process.env.GRAPHQL_LOGGING_URL) {
+	throw new CustomError('The environment variable GRAPHQL_LOGGING_URL should have a value.');
+}
+
 export default class EventLoggingService {
 	public static async insertEvents(logEvents: LogEvent[]): Promise<void> {
-		let url: string;
+		let url: string | undefined = undefined;
 		try {
-			url = process.env.GRAPHQL_LOGGING_URL;
+			url = process.env.GRAPHQL_LOGGING_URL as string;
 			const response: AxiosResponse<any> = await axios(url, {
 				method: 'post',
 				headers: {
@@ -45,9 +49,9 @@ export default class EventLoggingService {
 	}
 
 	public static async getEventLabels(): Promise<EventLabel[]> {
-		let url: string;
+		let url: string | undefined = undefined;
 		try {
-			url = process.env.GRAPHQL_LOGGING_URL;
+			url = process.env.GRAPHQL_LOGGING_URL as string;
 			const response: AxiosResponse<any> = await axios(url, {
 				method: 'post',
 				headers: {

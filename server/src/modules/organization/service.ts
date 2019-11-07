@@ -29,6 +29,7 @@ export default class OrganizationService {
 
 	public static async initialize() {
 		try {
+			logger.info('caching organizations...');
 			await OrganizationService.updateOrganizationsCache();
 			// Register a cron job to refresh the organizations every night
 			if (process.env.NODE_ENV !== 'test') {
@@ -37,7 +38,9 @@ export default class OrganizationService {
 					await OrganizationService.initialize();
 				}).start();
 			}
+			logger.info('caching organizations... done');
 		} catch (err) {
+			logger.info('caching organizations... error');
 			/* istanbul ignore next */
 			logger.error(new CustomError('Failed to fill initial organizations cache or schedule cron job to renew the cache', err));
 		}
