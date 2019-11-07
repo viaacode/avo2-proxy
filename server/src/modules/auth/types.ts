@@ -1,99 +1,164 @@
-interface IdpMetaData {
-	'md:EntityDescriptor': MdEntityDescriptor;
+export interface IdpMap {
+	id: number;
+	local_user_id: string; // uuid
+	idp: IdpType; // enum
+	idp_user_id: string;
 }
 
-interface MdEntityDescriptor {
-	_attributes: Attributes;
-	'md:IDPSSODescriptor': MdIdpssodescriptor;
-	'md:ContactPerson': MdContactPerson;
+/**
+ {
+  "name_id": "bert.verhelst@studiohyperdrive.be",
+  "session_index": "_88c4bf190c88565a131ad70ba664c32bc944a35d81",
+  "session_not_on_or_after": "2019-09-30T16:18:25Z",
+  "attributes": {
+    "mail": [
+      "bert.verhelst@studiohyperdrive.be"
+    ],
+    "givenName": [
+      "Bert"
+    ],
+    "sn": [
+      "Verhelst"
+    ],
+    "cn": [
+      "Bert Verhelst"
+    ],
+    "o": [
+      "12345"
+    ],
+    "entryUUID": [
+      "9cd5fc48-3cbe-1039-9d6c-93fac417d71d"
+    ],
+    "entryDN": [
+      "mail=bert.verhelst@studiohyperdrive.be,ou=people,dc=hetarchief,dc=be"
+    ],
+    "apps": [
+      "avo"
+    ],
+    "oNickname": [
+      "Test organisatie"
+    ]
+  }
+}
+ */
+export interface LdapUser {
+	name_id: string; // email address user
+	session_index: string;
+	session_not_on_or_after: string; // date string eg: "2019-07-18T12:08:20Z"
+	attributes: LdapAttributes;
 }
 
-interface Attributes {
-	'xmlns:md': string;
-	'xmlns:ds': string;
-	entityID: string;
+interface LdapAttributes {
+	mail: string[];
+	givenName: string[]; // firstname
+	sn: string[]; // lastname
+	cn: string[]; // fullname
+	o: string[]; // organization id
+	entryUUID: string[];
+	entryDN: string[]; // eg: mail=bert.verhelst@studiohyperdrive.be,ou=people,dc=hetarchief,dc=be
+	apps: string[]; // avo
+	oNickname: string[]; // name organization
 }
 
-interface MdIdpssodescriptor {
-	_attributes: Attributes2;
-	'md:KeyDescriptor': MdKeyDescriptor[];
-	'md:SingleLogoutService': MdSingleLogoutService;
-	'md:NameIDFormat': MdNameIdformat;
-	'md:SingleSignOnService': MdSingleSignOnService;
+export interface SharedUser {
+	id: number;
+	first_name: string;
+	last_name: string;
+	profiles: Profile[];
+	created_at: string;
+	expires_at: any;
+	external_uid: number;
+	role: any;
+	type: string;
+	uid: string;
+	updated_at: string;
+	mail: string;
+	organisation_id: string;
 }
 
-interface Attributes2 {
-	protocolSupportEnumeration: string;
-	WantAuthnRequestsSigned: string;
+export interface Profile {
+	id: number;
+	alias: any;
+	alternative_email: string;
+	avatar: any;
+	created_at: string;
+	location: string;
+	stamboek: any;
+	updated_at: string;
+	user_id: string;
+	groups: {
+		group: {
+			group_user_permission_groups: {
+				permission_group: {
+					permission_group_user_permissions: {
+						permission: {
+							label: string;
+						};
+					}[];
+				};
+			}[];
+		};
+	}[];
 }
 
-interface MdKeyDescriptor {
-	_attributes: Attributes3;
-	'ds:KeyInfo': DsKeyInfo;
-}
+export type IdpType = 'HETARCHIEF' | 'VIAA' | 'SMARTSCHOOL' | 'KLASCEMENT';
 
-interface Attributes3 {
-	use: string;
-}
-
-interface DsKeyInfo {
-	_attributes: Attributes4;
-	'ds:X509Data': DsX509Data;
-}
-
-interface Attributes4 {
-	'xmlns:ds': string;
-}
-
-interface DsX509Data {
-	'ds:X509Certificate': DsX509Certificate;
-}
-
-interface DsX509Certificate {
-	_text: string;
-}
-
-interface MdSingleLogoutService {
-	_attributes: Attributes5;
-}
-
-interface Attributes5 {
-	Binding: string;
-	Location: string;
-}
-
-interface MdNameIdformat {
-	_text: string;
-}
-
-interface MdSingleSignOnService {
-	_attributes: Attributes6;
-}
-
-interface Attributes6 {
-	Binding: string;
-	Location: string;
-}
-
-interface MdContactPerson {
-	_attributes: Attributes7;
-	'md:GivenName': MdGivenName;
-	'md:SurName': MdSurName;
-	'md:EmailAddress': MdEmailAddress;
-}
-
-interface Attributes7 {
-	contactType: string;
-}
-
-interface MdGivenName {
-	_text: string;
-}
-
-interface MdSurName {
-	_text: string;
-}
-
-interface MdEmailAddress {
-	_text: string;
+export interface IdpMetaData {
+	'md:EntityDescriptor': {
+		_attributes: {
+			'xmlns:md': string;
+			'xmlns:ds': string;
+			entityID: string;
+		};
+		'md:IDPSSODescriptor': {
+			_attributes: {
+				protocolSupportEnumeration: string;
+				WantAuthnRequestsSigned: string;
+			};
+			'md:KeyDescriptor': {
+				_attributes: {
+					use: string;
+				};
+				'ds:KeyInfo': {
+					_attributes: {
+						'xmlns:ds': string;
+					};
+					'ds:X509Data': {
+						'ds:X509Certificate': {
+							_text: string;
+						};
+					};
+				};
+			}[];
+			'md:SingleLogoutService': {
+				_attributes: {
+					Binding: string;
+					Location: string;
+				};
+			};
+			'md:NameIDFormat':  {
+				_text: string;
+			};
+			'md:SingleSignOnService': {
+				_attributes:  {
+					Binding: string;
+					Location: string;
+				};
+			};
+		};
+		'md:ContactPerson': {
+			_attributes: {
+				contactType: string;
+			};
+			'md:GivenName': {
+				_text: string;
+			};
+			'md:SurName': {
+				_text: string;
+			};
+			'md:EmailAddress': {
+				_text: string;
+			};
+		};
+	};
 }

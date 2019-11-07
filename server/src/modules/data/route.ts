@@ -2,7 +2,7 @@ import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-re
 import DataController from './controller';
 import { CustomError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-import AuthController from '../auth/controller';
+import { IdpHelper } from '../auth/idp-adapter';
 
 interface DataQuery {
 	query: any;
@@ -27,7 +27,7 @@ export default class DataRoute {
 				body.query,
 				body.variables,
 				this.context.request.headers,
-				AuthController.getUserInfoFromSession(this.context.request)
+				IdpHelper.getAvoUserInfoFromSession(this.context.request)
 			);
 		} catch (err) {
 			throw new CustomError('Failed to get data from graphql', err, { ...body });

@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { IncomingHttpHeaders } from 'http';
 import { logger } from '../../shared/helpers/logger';
 import { Avo } from '@viaa/avo2-types';
-import { LdapUser } from '../auth/service';
 
 export default class DataController {
 
@@ -65,7 +64,7 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 		if (assignments && assignments.length) {
 			const errors: string[] = [];
 			response.data.assignments = _.compact((assignments || []).map((assignment: Partial<Avo.Assignment.Assignment>) => {
-				const isOwner = assignment.owner_uid && user.uid && assignment.owner_uid === user.uid;
+				const isOwner = assignment.owner_profile_id && user && user.profile && user.uid && assignment.owner_profile_id === user.profile.id;
 
 				if (assignment.is_deleted) {
 					errors.push('DELETED');
@@ -79,7 +78,7 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 				}
 
 				// Owners can always see their assignments even if they are outside of the available_at, deadline_at time interval
-				if (new Date().getTime() > new Date(assignment.deadline_at).getTime() && !isOwner) {
+				if (new Date().getTime() > new Date(assignment.deadline_at || 0).getTime() && !isOwner) {
 					errors.push('PAST_DEADLINE');
 					return null;
 				}

@@ -59,7 +59,7 @@ export default class PlayerTicketRoute {
 			const newIp = publicIp.v4();
 			logger.info(`Ticket request ::1 from ip: ${newIp}`);
 			// Localhost request (local development) => get external ip of the developer machine
-			return newIp;
+			return publicIp.v4();
 		}
 
 		return ip;

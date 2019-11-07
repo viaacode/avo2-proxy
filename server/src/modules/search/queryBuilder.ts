@@ -211,7 +211,7 @@ export default class QueryBuilder {
 			}
 			if (filterOptionSearch && filterOptionSearch[aggProperty as AggProps]) {
 				// An extra search filter should be applied for these filter options
-				const filterOptionsTerm: string = filterOptionSearch[aggProperty as AggProps];
+				const filterOptionsTerm: string | undefined = filterOptionSearch[aggProperty as AggProps];
 				aggs[elasticProperty] = {
 					filter: {
 						term: {

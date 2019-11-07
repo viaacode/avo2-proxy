@@ -1,11 +1,15 @@
 import axios, { AxiosResponse } from 'axios';
 import { CustomError } from '../../shared/helpers/error';
 
+if (!process.env.GRAPHQL_URL) {
+	throw new CustomError('The environment variable GRAPHQL_URL should have a value.');
+}
+
 export default class DataService {
-	public static async execute(query: string, variables: {[varName: string]: any}, headers: {[headerName: string]: string} = {}): Promise<any> {
+	public static async execute(query: string, variables: {[varName: string]: any} = {}, headers: {[headerName: string]: string} = {}): Promise<any> {
 		let url;
 		try {
-			url = process.env.GRAPHQL_URL;
+			url = process.env.GRAPHQL_URL as string;
 			const response: AxiosResponse<any> = await axios(url, {
 				method: 'post',
 				headers: {
