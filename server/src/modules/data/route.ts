@@ -2,7 +2,6 @@ import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-re
 import DataController from './controller';
 import { CustomError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-import HetArchiefController from '../auth/idps/hetarchief/controller';
 import { IdpHelper } from '../auth/idp-adapter';
 
 interface DataQuery {
