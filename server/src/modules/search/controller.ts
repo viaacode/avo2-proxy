@@ -2,13 +2,10 @@ import { Avo } from '@viaa/avo2-types';
 import SearchService from './service';
 import QueryBuilder from './queryBuilder';
 import { CustomError } from '../../shared/helpers/error';
-import { logger } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
 import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
-import { get } from 'lodash';
 import _ from 'lodash';
-// import { EsIndex } from '@viaa/avo2-types/types/search/types';
 
 export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
 
