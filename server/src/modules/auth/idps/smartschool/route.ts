@@ -49,4 +49,11 @@ export default class SmartschoolRoute {
 			throw error; // TODO redirect to failed login page
 		}
 	}
+
+	@Path('logout')
+	@GET
+	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
+		IdpHelper.logout(this.context.request);
+		return new Return.MovedTemporarily(returnToUrl);
+	}
 }

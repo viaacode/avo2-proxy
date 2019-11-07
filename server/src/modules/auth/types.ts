@@ -1,3 +1,11 @@
+import { Avo } from '@viaa/avo2-types';
+
+export interface LoginResponse { // TODO use type from types repo
+	message: 'LOGGED_IN' | 'LOGGED_OUT';
+	logoutPath?: string;
+	userInfo?: Avo.User.User;
+}
+
 export interface IdpMap {
 	id: number;
 	local_user_id: string; // uuid

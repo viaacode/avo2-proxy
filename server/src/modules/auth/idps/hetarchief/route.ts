@@ -76,7 +76,7 @@ export default class HetArchiefRoute {
 			const ldapUser: LdapUser | null = IdpHelper.getIdpUserInfoFromSession(this.context.request);
 
 			// Remove the ldap user from the session
-			AuthController.logout(this.context.request);
+			IdpHelper.logout(this.context.request);
 
 			if (ldapUser) {
 				// Logout by redirecting to the identity server logout page

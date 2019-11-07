@@ -82,4 +82,9 @@ export class IdpHelper {
 		const expires = _.get(request, 'session.cookie.expires', null);
 		return !expires || !expires.valueOf || expires.valueOf() < Date.now();
 	}
+
+	public static logout(req: Request) {
+		IdpHelper.setIdpUserInfoOnSession(req, null, null);
+		IdpHelper.setAvoUserInfoOnSession(req, null);
+	}
 }
