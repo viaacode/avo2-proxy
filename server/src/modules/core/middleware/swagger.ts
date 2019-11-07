@@ -27,14 +27,14 @@ export class SwaggerMiddleware {
 			},
 		}));
 
-		app.use('/docs', swaggerServe, swaggerSetup(
-			null, // SwaggerDoc
-			null, // SwaggerUiOptions
-			null, // SwaggerOptions
-			false, // Custom CSS
-			false, // Custom favicon
-			'/docs/json', // URL for swagger file
-			name // Title for documentation page
-		));
+		// app.use('/docs', swaggerServe, swaggerSetup(
+		// 	null, // SwaggerDoc
+		// 	null, // SwaggerUiOptions
+		// 	null, // SwaggerOptions
+		// 	false, // Custom CSS
+		// 	false, // Custom favicon
+		// 	'/docs/json', // URL for swagger file
+		// 	name // Title for documentation page
+		// ));
 	}
 }

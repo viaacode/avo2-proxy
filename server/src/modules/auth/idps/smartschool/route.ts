@@ -2,7 +2,7 @@ import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescri
 import { CustomError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { set, get } from 'lodash';
-import SmartschoolService  from './service';
+import SmartschoolService from './service';
 import SmartschoolController, { LoginErrorResponse, LoginSuccessResponse, SmartschoolUserLoginResponse } from './controller';
 import { IdpHelper } from '../../idp-adapter';
 
@@ -35,14 +35,14 @@ export default class SmartschoolRoute {
 			if ((userOrError as LoginErrorResponse).error) {
 				// TODO redirect to error login page
 
-				return new Return.MovedTemporarily(`http://localhost:8080/login-or-register?error=${(userOrError as LoginErrorResponse).error}`);
-			} else {
-				const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
-				IdpHelper.setIdpUserInfoOnSession(this.context.request, response.smartschoolUserInfo, 'SMARTSCHOOL');
-				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
-
-				return new Return.MovedTemporarily(get(this.context, REDIRECT_URL_PATH));
+				return new Return.MovedTemporarily(`http://localhost:8080/error?message=${(userOrError as LoginErrorResponse).error}`);
 			}
+
+			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
+			IdpHelper.setIdpUserInfoOnSession(this.context.request, response.smartschoolUserInfo, 'SMARTSCHOOL');
+			IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
+
+			return new Return.MovedTemporarily(get(this.context, REDIRECT_URL_PATH));
 		} catch (err) {
 			const error = new CustomError('Failed during auth login route', err, {});
 			logger.error(error.toString());

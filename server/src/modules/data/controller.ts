@@ -64,7 +64,7 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 		if (assignments && assignments.length) {
 			const errors: string[] = [];
 			response.data.assignments = _.compact((assignments || []).map((assignment: Partial<Avo.Assignment.Assignment>) => {
-				const isOwner = assignment.owner_profile_id && user.uid && assignment.owner_profile_id === user.profile.id;
+				const isOwner = assignment.owner_profile_id && user && user.profile && user.uid && assignment.owner_profile_id === user.profile.id;
 
 				if (assignment.is_deleted) {
 					errors.push('DELETED');
@@ -78,7 +78,7 @@ ${JSON.stringify(allHeaders, null, 2)}`);
 				}
 
 				// Owners can always see their assignments even if they are outside of the available_at, deadline_at time interval
-				if (new Date().getTime() > new Date(assignment.deadline_at).getTime() && !isOwner) {
+				if (new Date().getTime() > new Date(assignment.deadline_at || 0).getTime() && !isOwner) {
 					errors.push('PAST_DEADLINE');
 					return null;
 				}

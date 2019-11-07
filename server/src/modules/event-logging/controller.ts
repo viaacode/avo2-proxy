@@ -33,7 +33,7 @@ export default class EventLoggingController {
 
 	public static async insertEvents(clientEvents: ClientEvent[], ip: string): Promise<void> {
 		try {
-			const logEvents: LogEvent[] = _.compact(clientEvents.map((clientEvent: ClientEvent): LogEvent => {
+			const logEvents: LogEvent[] = _.compact(clientEvents.map((clientEvent: ClientEvent): LogEvent | null => {
 				const label: EventLabel | undefined = EventLoggingController.getLabel(clientEvent.category, clientEvent.name);
 				if (label) {
 					return {

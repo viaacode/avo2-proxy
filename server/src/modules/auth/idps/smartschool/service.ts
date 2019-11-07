@@ -49,8 +49,8 @@ export default class SmartschoolService {
 		logger.info('caching idp smartschool...');
 		SmartschoolService.oauth2 = simpleOauth2.create({
 			client: {
-				id: process.env.SMARTSCHOOL_CLIENT_ID,
-				secret: process.env.SMARTSCHOOL_CLIENT_PASSWORD,
+				id: process.env.SMARTSCHOOL_CLIENT_ID as string,
+				secret: process.env.SMARTSCHOOL_CLIENT_PASSWORD as string,
 			},
 			auth: {
 				tokenHost: 'https://oauth.smartschool.be',

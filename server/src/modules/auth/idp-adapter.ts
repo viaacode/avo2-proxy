@@ -18,7 +18,7 @@ export class IdpHelper {
 		return _.get(request, IDP_USER_INFO_PATH, null);
 	}
 
-	public static setIdpUserInfoOnSession(request: Express.Request, idpUserInfo: any, idpType: IdpType): void {
+	public static setIdpUserInfoOnSession(request: Express.Request, idpUserInfo: any, idpType: IdpType | null): void {
 		if (request.session) {
 			_.set(request, IDP_USER_INFO_PATH, idpUserInfo);
 			_.set(request, IDP_TYPE_PATH, idpType);

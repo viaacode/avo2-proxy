@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { Avo } from '@viaa/avo2-types';
 import { IdpHelper } from '../../idp-adapter';
 import { Request } from 'express';
 import { IdpType, LdapUser, SharedUser } from '../../types';
@@ -27,10 +26,6 @@ export default class HetArchiefController {
 
 		const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
 		return !!avoUserInfo;
-	}
-
-	public static getUserInfoFromSession(request: Express.Request): Avo.User.User | null {
-		return _.get(request, 'session.userInfo', null);
 	}
 
 	public static async getAvoUserInfoFromDatabase(ldapUserInfo: LdapUser): Promise<SharedUser> {
