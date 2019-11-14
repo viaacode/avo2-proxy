@@ -81,12 +81,10 @@ export class App {
 		 * Temp route rewrite to change /auth to /auth/hetarchief, so we can keep all the idp providers uniform
 		 */
 		this.app.use((req: Request, res: Response, next: NextFunction) => {
-			logger.info('before: ', req.url);
 			req.url = req.url.replace(/^\/auth\/login($|\?)/, '/auth/hetarchief/login$1');
 			req.url = req.url.replace(/^\/auth\/login-callback($|\?)/, '/auth/hetarchief/login-callback$1');
 			req.url = req.url.replace(/^\/auth\/logout($|\?)/, '/auth/hetarchief/logout$1');
 			req.url = req.url.replace(/^\/auth\/logout-callback($|\?)/, '/auth/hetarchief/logout-callback$1');
-			logger.info('after: ', req.url);
 			next();
 		});
 		// if (this.config.state.docs) {
