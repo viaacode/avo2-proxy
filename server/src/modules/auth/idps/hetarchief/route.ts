@@ -11,6 +11,10 @@ interface RelayState {
 	returnToUrl: string;
 }
 
+if (!process.env.SUMM_REGISTRATION_PAGE) {
+	throw new CustomError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
+}
+
 @Path('/auth/hetarchief')
 export default class HetArchiefRoute {
 	@Context
@@ -114,6 +118,22 @@ export default class HetArchiefRoute {
 			}
 		} catch (err) {
 			const error = new CustomError('Failed during auth login route', err, {});
+			logger.error(error.toString());
+			throw error;
+		}
+	}
+
+	/**
+	 * Forward the client to the summ registration page
+	 * This way we can avoid needing to set the summ url in the client for every environment
+	 */
+	@Path('register')
+	@GET
+	async register(): Promise<any> {
+		try {
+			return new Return.MovedTemporarily<void>(process.env.SUMM_REGISTRATION_PAGE);
+		} catch (err) {
+			const error = new CustomError('Failed during auth registration route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
