@@ -6,6 +6,10 @@ import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
+export interface ValidateStamboekResponse {
+	isValid: boolean;
+}
+
 @Path('/stamboek')
 export default class StamboekRoute {
 	@Context
@@ -17,10 +21,9 @@ export default class StamboekRoute {
 	 */
 	@Path('validate')
 	@GET
-	@PreProcessor(isAuthenticated)
 	async verifyStamboekNumber(
 		@QueryParam('stamboekNumber') stamboekNumber: string
-	): Promise<any> {
+	): Promise<ValidateStamboekResponse> {
 		// Check inputs
 		if (!stamboekNumber) {
 			throw new BadRequestError('query param stamboekNumber is required');
