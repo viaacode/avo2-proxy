@@ -6,10 +6,19 @@ import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-adapter';
 import AuthController from '../../controller';
 import { LdapUser } from '../../types';
+import * as queryString from 'querystring';
+import { set } from 'lodash';
+import _ from 'lodash';
+import StamboekService from '../../../stamboek-validate/service';
+import StamboekController from '../../../stamboek-validate/controller';
+import { getHost } from '../../../../shared/helpers/url';
+import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 
 interface RelayState {
 	returnToUrl: string;
 }
+
+const STAMBOEK_NUMBER_PATH = 'request.session.stamboekNumber';
 
 if (!process.env.SUMM_REGISTRATION_PAGE) {
 	throw new CustomError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
@@ -55,7 +64,12 @@ export default class HetArchiefRoute {
 				const info: RelayState = JSON.parse(response.RelayState);
 
 				IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
-				IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabase(ldapUser));
+				try {
+					IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser));
+				} catch (err) {
+					// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
+					logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
+				}
 
 				return new Return.MovedTemporarily(info.returnToUrl);
 			} catch (err) {
@@ -129,13 +143,85 @@ export default class HetArchiefRoute {
 	 */
 	@Path('register')
 	@GET
-	async register(): Promise<any> {
+	async register(
+		@QueryParam('returnToUrl') returnToUrl: string,
+		@QueryParam('stamboekNumber') stamboekNumber: string | undefined,
+	): Promise<any> {
 		try {
-			return new Return.MovedTemporarily<void>(process.env.SUMM_REGISTRATION_PAGE);
+			set(this.context, STAMBOEK_NUMBER_PATH, stamboekNumber);
+			const serverRedirectUrl = encodeURIComponent(`${process.env.HOST}/auth/hetarchief/verify-email-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: encrypt(stamboekNumber),
+			})}`);
+			return new Return.MovedTemporarily<void>(`${process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
 		} catch (err) {
 			const error = new CustomError('Failed during auth registration route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
 	}
+
+	/**
+	 * This will be the return url that the summ verification email links to
+	 * Here we'll forward the user to the login form, so we can identify the user
+	 */
+	@Path('verify-email-callback')
+	@GET
+	async verifyEmailCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
+		try {
+			// TODO get saml login data straight from registration form callback => so we can skip this login form step
+			const serverRedirectUrl = encodeURIComponent(`${process.env.HOST}/auth/hetarchief/register-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: encryptedStamboekNumber,
+			})}`);
+			return new Return.MovedTemporarily<void>(`${process.env.SAML_IDP_SSO_LOGIN_URL}?redirect_to=${serverRedirectUrl}`);
+		} catch (err) {
+			const error = new CustomError('Failed during auth verify email callback route', err, {});
+			logger.error(error.toString());
+			throw error;
+		}
+	}
+
+	/**
+	 * This will verify that the user logged in if the user has access, and create an avo user and profile record in the database
+	 */
+	@Path('register-callback')
+	@GET
+	async registerCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
+		try {
+			const stamboekNumber = decrypt(encryptedStamboekNumber);
+			const clientHost = getHost(returnToUrl);
+			if (!stamboekNumber) {
+				logger.error('Failed to register user since the register callback function was called without a stamboek number', {
+					returnToUrl,
+					encryptedStamboekNumber,
+				});
+				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+					message: 'Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren',
+					icon: 'slash',
+				})}`);
+			}
+			const stamboekValidateStatus = await StamboekController.validate(stamboekNumber);
+			if (stamboekValidateStatus === 'VALID') {
+				await HetArchiefController.createUserAndProfile(this.context.request, stamboekNumber);
+				return new Return.MovedTemporarily<void>(returnToUrl);
+			}
+			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
+				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+					message: 'Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.',
+					icon: 'users',
+				})}`);
+			}
+			// INVALID
+			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+				message: 'Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.',
+				icon: 'x-circle',
+			})}`);
+		} catch (err) {
+			const error = new CustomError('Failed during auth registration route', err, {});
+			logger.error(error.toString());
+			throw error;
+		}
+	}
+
 }
