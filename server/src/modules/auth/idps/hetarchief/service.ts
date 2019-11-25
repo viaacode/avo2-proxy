@@ -34,6 +34,8 @@ if (!process.env.SAML_SP_ENTITY_ID) {
 export default class HetArchiefService {
 	private static serviceProvider: ServiceProvider;
 	private static identityProvider: IdentityProvider;
+	private static ssoLoginUrl: string | undefined;
+	private static ssoLogoutUrl: string | undefined;
 
 	/**
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
@@ -60,21 +62,21 @@ export default class HetArchiefService {
 			const ssoLoginUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleSignOnService._attributes.Location';
 			const ssoLogoutUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleLogoutService._attributes.Location';
 			const idpCertificate = _.get(metaData, idpCertificatePath);
-			const ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
-			const ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
+			this.ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
+			this.ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
 			if (!idpCertificate) {
 				throw new CustomError('Failed to find certificate in idp metadata', null, {
 					metaData,
 					idpCertificatePath,
 				});
 			}
-			if (!ssoLoginUrl) {
+			if (!this.ssoLoginUrl) {
 				throw new CustomError('Failed to find ssoLoginUrl in idp metadata', null, {
 					metaData,
 					ssoLoginUrlPath,
 				});
 			}
-			if (!ssoLogoutUrl) {
+			if (!this.ssoLogoutUrl) {
 				throw new CustomError('Failed to find ssoLogoutUrl in idp metadata', null, {
 					metaData,
 					ssoLogoutUrlPath,
@@ -92,8 +94,8 @@ export default class HetArchiefService {
 				allow_unencrypted_assertion: true,
 			});
 			this.identityProvider = new saml2.IdentityProvider({
-				sso_login_url: ssoLoginUrl,
-				sso_logout_url: ssoLogoutUrl,
+				sso_login_url: this.ssoLoginUrl,
+				sso_logout_url: this.ssoLogoutUrl,
 				certificates: [idpCertificate],
 				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 				sign_get_request: false,
@@ -157,5 +159,13 @@ export default class HetArchiefService {
 					}
 				});
 		});
+	}
+
+	public static getLoginUrl(): string | undefined {
+		return this.ssoLoginUrl;
+	}
+
+	public static getLogoutUrl(): string | undefined {
+		return this.ssoLogoutUrl;
 	}
 }

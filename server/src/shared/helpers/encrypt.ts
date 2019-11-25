@@ -4,7 +4,7 @@ const algorithm = 'aes-256-cbc';
 
 // Ideally generated once per day and stays the same after server restarts / across multiple servers
 const key = 'Aj_b*-@Wx6-BTdPjbyQNjURa8Wk5Lmr+';
-const iv = 'pfu!V!hEzq!RL^dGbczrcF34Hyw9bU4y';
+const iv = 'pfu!V!hEzq!RL^dG';
 
 export function encrypt(text: string): string {
 	const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);

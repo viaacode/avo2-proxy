@@ -10,7 +10,7 @@ import { INSERT_PROFILE, INSERT_USER } from '../../queries.gql';
 import { CustomError } from '../../../../shared/helpers/error';
 import AuthController from '../../controller';
 import axios, { AxiosResponse } from 'axios';
-import { logger } from 'src/shared/helpers/logger';
+import { logger } from '../../../../shared/helpers/logger';
 
 const LDAP_ROLE_TO_USER_ROLE: { [ldapRole: string]: number } = {
 	Admin: 1,

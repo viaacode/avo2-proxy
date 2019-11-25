@@ -170,11 +170,14 @@ export default class HetArchiefRoute {
 	async verifyEmailCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
 		try {
 			// TODO get saml login data straight from registration form callback => so we can skip this login form step
-			const serverRedirectUrl = encodeURIComponent(`${process.env.HOST}/auth/hetarchief/register-callback?${queryString.stringify({
+			const serverRedirectUrl = `${process.env.HOST}/auth/hetarchief/register-callback?${queryString.stringify({
 				returnToUrl,
-				stamboekNumber: encryptedStamboekNumber,
-			})}`);
-			return new Return.MovedTemporarily<void>(`${process.env.SAML_IDP_SSO_LOGIN_URL}?redirect_to=${serverRedirectUrl}`);
+				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once summ correctly adds "?announce_account_confirmation=true" query param
+			})}`;
+			const url = `${process.env.HOST}/auth/hetarchief/login?${queryString.stringify({
+				returnToUrl: serverRedirectUrl,
+			})}`;
+			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new CustomError('Failed during auth verify email callback route', err, {});
 			logger.error(error.toString());
