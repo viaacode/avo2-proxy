@@ -10,9 +10,9 @@ import _ from 'lodash';
 export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
 
 const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
-	both: 'avo_*',
-	items: 'avo_items',
-	collections: 'avo_collections',
+	both: process.env.ELASTICSEARCH_INDEX,
+	items: process.env.ELASTICSEARCH_INDEX_ITEMS,
+	collections: process.env.ELASTICSEARCH_INDEX_COLLECTIONS,
 };
 
 export default class SearchController {
