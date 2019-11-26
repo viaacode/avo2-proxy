@@ -1,4 +1,5 @@
-import { Context, Path, ServiceContext, GET } from 'typescript-rest';
+import { Context, Path, ServiceContext, GET, QueryParam } from 'typescript-rest';
+
 import AuthController from './controller';
 import { logger } from '../../shared/helpers/logger';
 import { CustomError } from '../../shared/helpers/error';
@@ -20,5 +21,11 @@ export default class AuthRoute {
 			logger.error(error.toString());
 			throw error;
 		}
+	}
+
+	@Path('logout')
+	@GET
+	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
+		return AuthController.getIdpSpecificLogoutPage(this.context.request, returnToUrl);
 	}
 }
