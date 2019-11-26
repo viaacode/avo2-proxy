@@ -7,7 +7,7 @@ const key = 'Aj_b*-@Wx6-BTdPjbyQNjURa8Wk5Lmr+';
 const iv = 'pfu!V!hEzq!RL^dG';
 
 export function encrypt(text: string): string {
-	const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+	const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
 	let encrypted = cipher.update(text);
 	encrypted = Buffer.concat([encrypted, cipher.final()]);
 	return encrypted.toString('hex');
@@ -15,7 +15,7 @@ export function encrypt(text: string): string {
 
 export function decrypt(text: string): string {
 	const encryptedText = Buffer.from(text, 'hex');
-	const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+	const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
 	let decrypted = decipher.update(encryptedText);
 	decrypted = Buffer.concat([decrypted, decipher.final()]);
 	return decrypted.toString();

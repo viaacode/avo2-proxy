@@ -31,7 +31,7 @@ export default class SmartschoolController extends IdpHelper {
 		const smartschoolUserInfo: SmartschoolUserInfo = await this.getSmartschoolUserInfo(code);
 
 		// Pupil
-		if (smartschoolUserInfo.leerling === true) {
+		if (smartschoolUserInfo.leerling) { // if leerling is true (not false or undefined)
 			// logged in user is a student
 			let userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
 

@@ -23,8 +23,8 @@ describe('Stamboek number', () => {
 				stamboekNumber: VALID_STAMBOEK_NUMBER_1,
 			});
 		expect(response.body).toBeObject();
-		expect(response.body).toContainAllKeys(['isValid']);
-		expect(response.body.isValid).toBeTrue();
+		expect(response.body).toContainAllKeys(['status']);
+		expect(response.body.status).toEqual('VALID');
 	});
 
 	it('should return true for a valid teacher card number', async () => {
@@ -34,8 +34,8 @@ describe('Stamboek number', () => {
 				stamboekNumber: VALID_STAMBOEK_NUMBER_2,
 			});
 		expect(response.body).toBeObject();
-		expect(response.body).toContainAllKeys(['isValid']);
-		expect(response.body.isValid).toBeTrue();
+		expect(response.body).toContainAllKeys(['status']);
+		expect(response.body.status).toEqual('VALID');
 	});
 
 	it('should return false for an invalid stamboek number too short', async () => {
@@ -45,8 +45,8 @@ describe('Stamboek number', () => {
 				stamboekNumber: INVALID_STAMBOEK_NUMBER_1,
 			});
 		expect(response.body).toBeObject();
-		expect(response.body).toContainAllKeys(['isValid']);
-		expect(response.body.isValid).toBeFalse();
+		expect(response.body).toContainAllKeys(['status']);
+		expect(response.body.status).toEqual('INVALID');
 	});
 
 	it('should return false for an invalid stamboek number correct length but invalid', async () => {
@@ -56,7 +56,7 @@ describe('Stamboek number', () => {
 				stamboekNumber: INVALID_STAMBOEK_NUMBER_2,
 			});
 		expect(response.body).toBeObject();
-		expect(response.body).toContainAllKeys(['isValid']);
-		expect(response.body.isValid).toBeFalse();
+		expect(response.body).toContainAllKeys(['status']);
+		expect(response.body.status).toEqual('INVALID');
 	});
 });

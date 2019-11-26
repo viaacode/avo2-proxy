@@ -1,4 +1,7 @@
+import _ from 'lodash';
+import * as queryString from 'querystring';
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
+
 import HetArchiefController from './controller';
 import HetArchiefService, { SamlCallbackBody } from './service';
 import { CustomError } from '../../../../shared/helpers/error';
@@ -6,10 +9,6 @@ import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-adapter';
 import AuthController from '../../controller';
 import { LdapUser } from '../../types';
-import * as queryString from 'querystring';
-import { set } from 'lodash';
-import _ from 'lodash';
-import StamboekService from '../../../stamboek-validate/service';
 import StamboekController from '../../../stamboek-validate/controller';
 import { getHost } from '../../../../shared/helpers/url';
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
@@ -148,7 +147,7 @@ export default class HetArchiefRoute {
 		@QueryParam('stamboekNumber') stamboekNumber: string | undefined,
 	): Promise<any> {
 		try {
-			set(this.context, STAMBOEK_NUMBER_PATH, stamboekNumber);
+			_.set(this.context, STAMBOEK_NUMBER_PATH, stamboekNumber);
 			const serverRedirectUrl = encodeURIComponent(`${process.env.HOST}/auth/hetarchief/verify-email-callback?${queryString.stringify({
 				returnToUrl,
 				stamboekNumber: encrypt(stamboekNumber),
@@ -226,5 +225,4 @@ export default class HetArchiefRoute {
 			throw error;
 		}
 	}
-
 }
