@@ -1,7 +1,8 @@
+import _ from 'lodash';
+
 import DataService from '../data/service';
 import { GET_USER_INFO_BY_ID, GET_USER_INFO_BY_USER_EMAIL } from './queries.gql';
 import { CustomError } from '../../shared/helpers/error';
-import _ from 'lodash';
 import { SharedUser } from './types';
 
 export class AuthService {
