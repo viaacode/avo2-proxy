@@ -28,7 +28,8 @@ export default class EventLoggingRoute {
 		try {
 			return await EventLoggingController.insertEvents(
 				clientEventArray,
-				await EventLoggingRoute.getIp(this.context),
+				EventLoggingRoute.getIp(this.context),
+				EventLoggingRoute.getViaaRequestId(this.context),
 			);
 		} catch (err) {
 			const error = new CustomError('Failed during insert event route', err, {});
@@ -37,13 +38,11 @@ export default class EventLoggingRoute {
 		}
 	}
 
-	private static async getIp(context: ServiceContext): Promise<string> {
-		const ip = context.request.ip;
-		if (ip === '::1' || ip.includes('::ffff:')) {
-			// Localhost request (local development) => get external ip of the developer machine
-			return publicIp.v4();
-		}
+	private static getIp(context: ServiceContext): string | null {
+		return context.request.headers['x-real-ip'] as string || null;
+	}
 
-		return ip;
+	private static getViaaRequestId(context: ServiceContext): string | null {
+		return context.request.headers['x-viaa-request-id'] as string || null;
 	}
 }

@@ -1,28 +1,26 @@
 import { EventCategory, EventName } from '@viaa/avo2-types/types/event-logging/types';
+import { Avo } from '@viaa/avo2-types';
+
+export interface EventLabel {
+	value: EventName;
+	category: EventCategory;
+}
 
 export interface LogEvent {
 	id?: string;
+	parent_id: string | null;
+	event_label: EventName;
 	namespace: 'avo';
 	component: 'client';
-	agent_id: '7680d455-c6ff-42ab-b09c-9487bcc133e0';
-	event_label_id: number;
-	event_timestamp: string;
-	event_subject: {
-		type: 'user' | 'system';
-		identifier: string;
-	}; // entity doing the modification
-	event_object: {
-		type: 'item' | 'collection' | 'bundle' | 'user';
-		identifier: string;
-	}; // entity being modified
-	event_message: any; // user played item xxx on avo
+	event_subject: string; // entity doing the modification
+	event_subject_type: Avo.EventLogging.SubjectType;
+	event_object: string;
+	event_object_type: Avo.EventLogging.ObjectType; // entity being modified
 	event_source: string; // eg: url when the event was triggered
+	event_message: any | null; // user played item xxx on avo
+	ip: string | null;
+	event_timestamp: string;
 	record_created_at?: string; // defaults to now()
-	ip: string;
-}
-
-export interface EventLabel {
-	id: number;
-	name: EventName;
-	category: EventCategory;
+	trace_id: string | null;
+	is_system: boolean | null; // defaults to false
 }

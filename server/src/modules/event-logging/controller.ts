@@ -27,26 +27,30 @@ export default class EventLoggingController {
 		}
 	}
 
-	private static getLabel(category: EventCategory, name: EventName): EventLabel | undefined {
-		return _.find(EventLoggingController.eventLabels, { category, name });
+	private static getLabel(category: EventCategory, value: EventName): EventLabel | undefined {
+		return _.find(EventLoggingController.eventLabels, { category, value });
 	}
 
-	public static async insertEvents(clientEvents: ClientEvent[], ip: string): Promise<void> {
+	public static async insertEvents(clientEvents: ClientEvent[], ip: string, requestId: string): Promise<void> {
 		try {
 			const logEvents: LogEvent[] = _.compact(clientEvents.map((clientEvent: ClientEvent): LogEvent | null => {
 				const label: EventLabel | undefined = EventLoggingController.getLabel(clientEvent.category, clientEvent.name);
 				if (label) {
 					return {
 						ip,
-						agent_id: '7680d455-c6ff-42ab-b09c-9487bcc133e0',
 						component: 'client',
 						namespace: 'avo',
-						event_label_id: label.id,
+						event_label: label.value,
 						event_message: clientEvent.event_message,
 						event_object: clientEvent.event_object,
+						event_object_type: clientEvent.event_object_type,
 						event_source: clientEvent.event_source,
 						event_subject: clientEvent.event_subject,
+						event_subject_type: clientEvent.event_subject_type,
 						event_timestamp: clientEvent.event_timestamp,
+						is_system: false,
+						trace_id: requestId,
+						parent_id: null,
 					};
 				}
 				logger.error('Failed to store event into graphql, matching event label was not found', { category: clientEvent.category, name: clientEvent.name });
