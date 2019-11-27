@@ -8,6 +8,7 @@ import { IdpMap, IdpType, SharedUser } from '../../types';
 import { IdpHelper } from '../../idp-adapter';
 import { Request } from 'express';
 import { AuthService } from '../../service';
+import AuthController from '../../controller';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
@@ -30,13 +31,13 @@ export default class SmartschoolController extends IdpHelper {
 		const smartschoolUserInfo: SmartschoolUserInfo = await this.getSmartschoolUserInfo(code);
 
 		// Pupil
-		if (smartschoolUserInfo.leerling === true) {
+		if (smartschoolUserInfo.leerling) { // if leerling is true (not false or undefined)
 			// logged in user is a student
 			let userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
 
 			if (!userUid) {
 				// Create avo user through graphql
-				userUid = await this.createUserFromSmartschoolInfo(smartschoolUserInfo);
+				userUid = await this.createUser(smartschoolUserInfo);
 			}
 
 			let profileId: string | null = _.first(await this.getProfileIdsByUserUid(userUid));
@@ -87,7 +88,7 @@ export default class SmartschoolController extends IdpHelper {
 		return userInfo;
 	}
 
-	private static async createUserFromSmartschoolInfo(smartschoolUserInfo: SmartschoolUserInfo): Promise<string> {
+	private static async createUser(smartschoolUserInfo: SmartschoolUserInfo): Promise<string> {
 		try {
 			const user: Partial<Avo.User.User> = {
 				first_name: smartschoolUserInfo.voornaam,
@@ -96,21 +97,7 @@ export default class SmartschoolController extends IdpHelper {
 				organisation_id: smartschoolUserInfo.instellingsnummer ? String(smartschoolUserInfo.instellingsnummer) : null,
 				role_id: 4, // TODO switch this to a lookup in the database for role with name 'student'
 			};
-			const response = await DataService.execute(INSERT_USER, { user });
-			if (!response || response.errors && response.errors.length) {
-				throw new CustomError(
-					'Failed to create avo user. Response from insert request was undefined',
-					null,
-					{ insertUserResponse: response, query: INSERT_USER });
-			}
-
-			const userUid = _.get(response, 'data.insert_shared_users.returning[0].uid');
-			if (_.isNil(userUid)) {
-				throw new CustomError(
-					'Failed to create avo user. Response from insert request didn\'t contain a uid',
-					null,
-					{ response, query: INSERT_USER });
-			}
+			const userUid = await AuthController.createUser(user);
 
 			// Add idp to user object
 			await this.createIdpMap('SMARTSCHOOL', smartschoolUserInfo.userID, userUid);
@@ -128,22 +115,7 @@ export default class SmartschoolController extends IdpHelper {
 			location: 'nvt',
 			alias: userUid,
 		};
-		const response = await DataService.execute(INSERT_PROFILE, { profile });
-		if (!response || response.errors && response.errors.length) {
-			throw new CustomError(
-				'Failed to create avo user profile. Response from insert request was undefined',
-				null,
-				{ insertProfileResponse: response, query: INSERT_PROFILE });
-		}
-
-		const profileId = _.get(response, 'data.insert_users_profiles.returning[0].id');
-		if (_.isNil(profileId)) {
-			throw new CustomError(
-				'Failed to create avo user profile. Response from insert request didn\'t contain a uid',
-				null,
-				{ response, query: INSERT_PROFILE });
-		}
-		return profileId;
+		return AuthController.createProfile(profile);
 	}
 
 	private static async createIdpMap(idp: IdpType, idpUserId: string, localUserId: string) {
@@ -173,6 +145,6 @@ export default class SmartschoolController extends IdpHelper {
 		const response = await DataService.execute(GET_PROFILE_IDS_BY_USER_UID, {
 			userUid,
 		});
-		return _.get(response, 'data.users_profiles', []).map((profile: {id: string}) => profile.id);
+		return _.get(response, 'data.users_profiles', []).map((profile: { id: string }) => profile.id);
 	}
 }

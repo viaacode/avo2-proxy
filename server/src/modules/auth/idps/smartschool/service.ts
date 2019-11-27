@@ -1,5 +1,4 @@
-// import ClientOAuth2 from 'client-oauth2';
-import simpleOauth2, { AccessToken, OAuthClient, Token } from 'simple-oauth2';
+import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
 import { CustomError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
 import { logger } from '../../../../shared/helpers/logger';
