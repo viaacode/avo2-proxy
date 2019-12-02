@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import DataService from '../data/service';
 import { GET_USER_INFO_BY_ID, GET_USER_INFO_BY_USER_EMAIL } from './queries.gql';
-import { CustomError } from '../../shared/helpers/error';
+import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SharedUser } from './types';
 
 export class AuthService {
@@ -10,7 +10,7 @@ export class AuthService {
 		try {
 			const response = await DataService.execute(GET_USER_INFO_BY_USER_EMAIL, { email });
 			if (response.errors) {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to get user info from graphql by user email',
 					null,
 					{ email, errors: response.errors }
@@ -18,7 +18,7 @@ export class AuthService {
 			}
 			return _.get(response, 'data.users[0]', null);
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to get user info from graphql by user email',
 				err,
 				{ email }
@@ -30,7 +30,7 @@ export class AuthService {
 		try {
 			const response = await DataService.execute(GET_USER_INFO_BY_ID, { userId });
 			if (response.errors) {
-				throw new CustomError(
+				throw new ExternalServerError(
 					'Failed to get user info from graphql by user uid',
 					null,
 					{ userId, errors: response.errors }
@@ -38,7 +38,7 @@ export class AuthService {
 			}
 			return _.get(response, 'data.users[0]', null);
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to get user info from graphql by user uid',
 				err,
 				{ userId }

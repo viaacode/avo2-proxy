@@ -1,7 +1,7 @@
-import { ICustomError, ICustomErrorDetail } from '../../src/shared/shared.types';
+import { IInternalServerError, IInternalServerErrorDetail } from '../../src/shared/shared.types';
 import { default as config } from '../../src/config';
 
-export const validateError = <T>(err: ICustomError, type: T, status: number, name: string, message: string, details?: ICustomErrorDetail[]): void => {
+export const validateError = <T>(err: IInternalServerError, type: T, statusCode: number, name: string, message: string, details?: IInternalServerErrorDetail[]): void => {
 	expect(err).toBeDefined();
 	expect(err).toBeInstanceOf(type);
 	expect(err.host).toEqual(config.server.host);
@@ -9,7 +9,7 @@ export const validateError = <T>(err: ICustomError, type: T, status: number, nam
 	expect(err.message).toEqual(message);
 	expect(err.name).toEqual(name);
 	expect(err.stack).toBeString();
-	expect(err.status).toEqual(status);
+	expect(err.statusCode).toEqual(statusCode);
 	expect(err.timestamp).toBeString();
 
 	if (details) {
@@ -21,10 +21,10 @@ export const validateError = <T>(err: ICustomError, type: T, status: number, nam
 
 export const validateErrorBody = (
 	body: any, // tslint:disable-line no-any
-	status: number,
+	statusCode: number,
 	name: string,
 	message: string,
-	details?: ICustomErrorDetail[]
+	details?: IInternalServerErrorDetail[]
 ): void => {
 	expect(body).toBeObject();
 	expect(body).toContainKeys([
@@ -39,7 +39,7 @@ export const validateErrorBody = (
 	expect(body.host).toEqual(config.server.host);
 	expect(body.identifier).toBeString();
 	expect(body.timestamp).toBeString();
-	expect(body.status).toEqual(status);
+	expect(body.statusCode).toEqual(statusCode);
 	expect(body.name).toEqual(name);
 	expect(body.message).toEqual(message);
 	expect(body.stack).toBeString();

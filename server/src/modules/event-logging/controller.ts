@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import EventLoggingService from './service';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { LogEvent } from './types';
 import { ClientEvent } from '@viaa/avo2-types/types/event-logging/types';
 
@@ -30,7 +30,7 @@ export default class EventLoggingController {
 
 			await EventLoggingService.insertEvents(logEvents);
 		} catch (err) {
-			throw new CustomError('Failed to insert log events in controller', err, { clientEvents, ip, requestId, logEvents });
+			throw new InternalServerError('Failed to insert log events in controller', err, { clientEvents, ip, requestId, logEvents });
 		}
 	}
 }

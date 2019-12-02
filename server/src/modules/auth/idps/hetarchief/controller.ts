@@ -3,14 +3,11 @@ import { IdpHelper } from '../../idp-adapter';
 import { Request } from 'express';
 import { IdpType, LdapUser, SharedUser } from '../../types';
 import { AuthService } from '../../service';
-import { SmartschoolUserInfo } from '../smartschool/service';
 import { Avo } from '@viaa/avo2-types';
-import DataService from '../../../data/service';
-import { INSERT_PROFILE, INSERT_USER } from '../../queries.gql';
-import { CustomError } from '../../../../shared/helpers/error';
 import AuthController from '../../controller';
 import axios, { AxiosResponse } from 'axios';
 import { logger } from '../../../../shared/helpers/logger';
+import { InternalServerError } from '../../../../shared/helpers/error';
 
 const LDAP_ROLE_TO_USER_ROLE: { [ldapRole: string]: number } = {
 	Admin: 1,
@@ -55,7 +52,7 @@ export default class HetArchiefController {
 		try {
 			idpUserInfo = IdpHelper.getIdpUserInfoFromSession(req);
 			if (!idpUserInfo) {
-				throw new CustomError('Failed to create user because ldap object is undefined', null);
+				throw new InternalServerError('Failed to create user because ldap object is undefined', null);
 			}
 			const userUuid = await this.createUser(idpUserInfo);
 			await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
@@ -67,7 +64,7 @@ export default class HetArchiefController {
 			// TODO Create permissions, permissionGroups and userGroups
 			// TODO Add this user to the correct userGroups based on smartschoolUserInfo.leerling and smartschoolUserInfo.basisrol
 		} catch (err) {
-			throw new CustomError('Failed to create user and profile in the avo database', err, { stamboekNumber, idpUserInfo });
+			throw new InternalServerError('Failed to create user and profile in the avo database', err, { stamboekNumber, idpUserInfo });
 		}
 	}
 
@@ -104,7 +101,7 @@ export default class HetArchiefController {
 			// Request avo be added to ldap apps through ldap api
 			const ldapUuid = _.get(ldapObject, 'attributes.entryUUID[0]');
 			if (!ldapUuid) {
-				throw new CustomError('Failed to get uuid from ldap object');
+				throw new InternalServerError('Failed to get uuid from ldap object');
 			}
 			const url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
 			const data = {
@@ -120,7 +117,7 @@ export default class HetArchiefController {
 
 			return;
 		} catch (err) {
-			throw new CustomError('Failed to add avo app to ldap user object', err, { ldapObject });
+			throw new InternalServerError('Failed to add avo app to ldap user object', err, { ldapObject });
 		}
 	}
 }

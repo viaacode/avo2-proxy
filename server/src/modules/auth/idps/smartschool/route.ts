@@ -1,5 +1,5 @@
 import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
-import { CustomError } from '../../../../shared/helpers/error';
+import { InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { set, get } from 'lodash';
 import SmartschoolService from './service';
@@ -21,7 +21,7 @@ export default class SmartschoolRoute {
 			const url = SmartschoolService.getRedirectUrlForCode();
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -44,7 +44,7 @@ export default class SmartschoolRoute {
 
 			return new Return.MovedTemporarily(get(this.context, REDIRECT_URL_PATH));
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error; // TODO redirect to failed login page
 		}

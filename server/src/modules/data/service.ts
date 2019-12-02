@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 
 if (!process.env.GRAPHQL_URL) {
-	throw new CustomError('The environment variable GRAPHQL_URL should have a value.');
+	throw new InternalServerError('The environment variable GRAPHQL_URL should have a value.');
 }
 
 export default class DataService {
@@ -23,7 +23,7 @@ export default class DataService {
 			});
 			return response.data;
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to get data from database',
 				err,
 				{

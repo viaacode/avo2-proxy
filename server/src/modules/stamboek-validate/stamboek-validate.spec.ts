@@ -13,7 +13,7 @@ describe('Stamboek number', () => {
 	it('should throw an error if no stamboek number are passed', async () => {
 		const response = await api
 			.get('/stamboek/validate');
-		expect(response.text).toContain('query param stamboekNumber is required');
+		expect(response.body.message).toEqual('query param stamboekNumber is required');
 	});
 
 	it('should return true for a valid stamboek number', async () => {

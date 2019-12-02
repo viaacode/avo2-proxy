@@ -1,5 +1,5 @@
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
-import { CustomError } from '../../../../shared/helpers/error';
+import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
 import { logger } from '../../../../shared/helpers/logger';
 import convert = require('xml-js');
@@ -25,10 +25,10 @@ interface ResponseHeader {
 }
 
 if (!process.env.SAML_IDP_META_DATA_ENDPOINT) {
-	throw new CustomError('The environment variable SAML_IDP_META_DATA_ENDPOINT should have a value.');
+	throw new InternalServerError('The environment variable SAML_IDP_META_DATA_ENDPOINT should have a value.');
 }
 if (!process.env.SAML_SP_ENTITY_ID) {
-	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
+	throw new InternalServerError('The environment variable SAML_SP_ENTITY_ID should have a value.');
 }
 
 export default class HetArchiefService {
@@ -41,7 +41,7 @@ export default class HetArchiefService {
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
 	public static async initialize() {
-		logger.info('caching idp info hetarchief...');
+		if (process.env.NODE_ENV !== 'test') logger.info('caching idp info hetarchief...');
 		const url = process.env.SAML_IDP_META_DATA_ENDPOINT;
 		try {
 			const response: AxiosResponse<string> = await axios({
@@ -65,19 +65,19 @@ export default class HetArchiefService {
 			this.ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
 			this.ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
 			if (!idpCertificate) {
-				throw new CustomError('Failed to find certificate in idp metadata', null, {
+				throw new ExternalServerError('Failed to find certificate in idp metadata', null, {
 					metaData,
 					idpCertificatePath,
 				});
 			}
 			if (!this.ssoLoginUrl) {
-				throw new CustomError('Failed to find ssoLoginUrl in idp metadata', null, {
+				throw new ExternalServerError('Failed to find ssoLoginUrl in idp metadata', null, {
 					metaData,
 					ssoLoginUrlPath,
 				});
 			}
 			if (!this.ssoLogoutUrl) {
-				throw new CustomError('Failed to find ssoLogoutUrl in idp metadata', null, {
+				throw new ExternalServerError('Failed to find ssoLogoutUrl in idp metadata', null, {
 					metaData,
 					ssoLogoutUrlPath,
 				});
@@ -101,10 +101,10 @@ export default class HetArchiefService {
 				sign_get_request: false,
 				allow_unencrypted_assertion: true,
 			});
-			logger.info('caching idp info hetarchief... done');
+			if (process.env.NODE_ENV !== 'test') logger.info('caching idp info hetarchief... done');
 		} catch (err) {
-			logger.info('caching idp info hetarchief... error');
-			logger.error(new CustomError('Failed to get meta data from idp server', err, { endpoint: url }));
+			if (process.env.NODE_ENV !== 'test') logger.info('caching idp info hetarchief... error');
+			logger.error(new InternalServerError('Failed to get meta data from idp server', err, { endpoint: url }));
 		}
 	}
 
@@ -117,7 +117,7 @@ export default class HetArchiefService {
 				},
 				(error: any, loginUrl: string, requestId: string) => {
 					if (error) {
-						reject(new CustomError('Failed to create login request url on SAML service provider', error));
+						reject(new InternalServerError('Failed to create login request url on SAML service provider', error));
 					} else {
 						resolve(loginUrl);
 					}
@@ -135,7 +135,7 @@ export default class HetArchiefService {
 				},
 				(err, samlResponse: DecodedSamlResponse) => {
 					if (err) {
-						reject(new CustomError('Failed to verify SAML response', err, { requestBody }));
+						reject(new InternalServerError('Failed to verify SAML response', err, { requestBody }));
 					} else {
 						resolve(samlResponse.user);
 					}
@@ -153,7 +153,7 @@ export default class HetArchiefService {
 				},
 				(error: any, logoutUrl: string) => {
 					if (error) {
-						reject(new CustomError('Failed to create logout request url on saml service provider', error));
+						reject(new InternalServerError('Failed to create logout request url on saml service provider', error));
 					} else {
 						resolve(logoutUrl);
 					}

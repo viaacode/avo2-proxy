@@ -1,9 +1,8 @@
 import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import StamboekController from './controller';
 import * as util from 'util';
-import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
 
 export type StamboekValidationStatuses = 'VALID' | 'ALREADY_IN_USE' | 'INVALID'; // TODO use typings version
 
@@ -37,7 +36,7 @@ export default class StamboekRoute {
 			};
 
 		} catch (err) {
-			const error = new CustomError('Failed during validate stamboek route', err, { stamboekNumber });
+			const error = new InternalServerError('Failed during validate stamboek route', err, { stamboekNumber });
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
 		}

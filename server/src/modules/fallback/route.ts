@@ -1,5 +1,5 @@
 import { Path, GET, Context, ServiceContext } from 'typescript-rest';
-import { NotFoundError } from 'typescript-rest/dist/server/model/errors';
+import { NotFoundError } from '../../shared/helpers/error';
 
 @Path('/')
 export default class FallbackRoute {
@@ -9,6 +9,6 @@ export default class FallbackRoute {
 	@GET
 	@Path('/*')
 	fallback() {
-		throw new NotFoundError(`Route not found: ${this.context.request.path}`);
+		throw new NotFoundError('Route not found', null, { route: this.context.request.path });
 	}
 }

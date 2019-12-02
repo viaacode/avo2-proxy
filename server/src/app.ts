@@ -26,6 +26,7 @@ import AuthRoute from './modules/auth/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+import { ErrorMiddleware } from './modules/core/middleware/error';
 
 export class App {
 	public app: Application = express();
@@ -42,7 +43,7 @@ export class App {
 
 		this.loadMiddleware();
 		this.loadModules();
-		// this.loadErrorHandling();
+		this.loadErrorHandling();
 
 		if (start) {
 			this.start();
@@ -56,7 +57,9 @@ export class App {
 				return process.exit(1);
 			}
 
-			logger.info(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
+			if (process.env.NODE_ENV !== 'test') {
+				logger.info(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
+			}
 		});
 	}
 
@@ -113,9 +116,9 @@ export class App {
 		);
 	}
 
-	// private loadErrorHandling(): void {
-	// 	this.app.use(ErrorMiddleware.handleError);
-	// }
+	private loadErrorHandling(): void {
+		this.app.use(ErrorMiddleware.handleError);
+	}
 }
 
 export const CONFIG: IConfig = config;

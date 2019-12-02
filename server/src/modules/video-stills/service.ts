@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { toMilliseconds } from '../../shared/helpers/duration';
 
 export interface VideoStill {
@@ -16,7 +16,7 @@ export interface VideoStillRaw {
 }
 
 if (!process.env.VIDEO_STILLS_ENDPOINT) {
-	throw new CustomError('Environment variable VIDEO_STILLS_ENDPOINT has to be filled in');
+	throw new InternalServerError('Environment variable VIDEO_STILLS_ENDPOINT has to be filled in');
 }
 
 export default class VideoStillsService {
@@ -29,7 +29,7 @@ export default class VideoStillsService {
 		let url: string;
 		try {
 			if (!process.env.VIDEO_STILLS_ENDPOINT) {
-				throw new CustomError(
+				throw new InternalServerError(
 					'VIDEO_STILLS_ENDPOINT env variable is not set',
 					null,
 					{ VIDEO_STILLS_ENDPOINT: process.env.VIDEO_STILLS_ENDPOINT }
@@ -51,7 +51,7 @@ export default class VideoStillsService {
 				};
 			});
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to get player-token from player-token service',
 				err,
 				{
