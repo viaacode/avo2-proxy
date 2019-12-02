@@ -20,7 +20,6 @@ import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
-import EventLoggingController from './modules/event-logging/controller';
 import EventLoggingRoute from './modules/event-logging/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
@@ -39,7 +38,6 @@ export class App {
 		// One time initialization of objects needed for operation of the api
 		OrganizationService.initialize();
 		HetArchiefService.initialize();
-		EventLoggingController.initialize();
 		SmartschoolService.initialize();
 
 		this.loadMiddleware();
