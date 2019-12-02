@@ -5,12 +5,3 @@ export const INSERT_EVENTS = `
 		}
 	}
 `;
-
-export const GET_EVENT_LABELS = `
-	query getEventLabels {
-		event_labels {
-			category
-			value
-		}
-	}
-`;
