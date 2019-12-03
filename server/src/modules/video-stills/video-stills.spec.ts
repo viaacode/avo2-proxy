@@ -20,7 +20,7 @@ describe('Video stills', () => {
 	});
 
 	it('should throw an error if the wrong still requests format is passed', async () => {
-		const response: any = await api
+		const response = await api
 			.post('/video-stills').send([{ incorrectFormat: 'externalId', startTime: 5 }]);
 		expect(response.body.message).toEqual('The still requests array doesn\'t have the expected format');
 	});

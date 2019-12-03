@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 export interface LdapEducationOrganization {
 	id: string;
@@ -27,20 +28,11 @@ export interface Unit {
 	postal_code: string;
 }
 
-if (!process.env.LDAP_API_ENDPOINT) {
-	/* istanbul ignore next */
-	logger.error('LDAP_API_ENDPOINT env variable is not set');
-}
-
-if (!process.env.LDAP_API_USERNAME) {
-	/* istanbul ignore next */
-	logger.error('LDAP_API_USERNAME env variable is not set');
-}
-
-if (!process.env.LDAP_API_PASSWORD) {
-	/* istanbul ignore next */
-	logger.error('LDAP_API_PASSWORD env variable is not set');
-}
+checkRequiredEnvs([
+	'LDAP_API_ENDPOINT',
+	'LDAP_API_USERNAME',
+	'LDAP_API_PASSWORD',
+]);
 
 export default class EducationOrganizationsService {
 	/**

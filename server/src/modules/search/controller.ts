@@ -47,7 +47,7 @@ export default class SearchController {
 				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { collectionId: itemId });
 				const collection = _.get(response, 'data.app_collections[0]');
 				if (!collection) {
-					throw new BadRequestError(`Failed to get collection by id`, null, { itemId, index, limit });
+					throw new BadRequestError('Failed to get collection by id', null, { itemId, index, limit });
 				}
 				if (!collection.is_public) {
 					privateCollection = collection;

@@ -3,10 +3,11 @@ import { LogEvent } from './types';
 import { INSERT_EVENTS } from './queries.gql';
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
-if (!process.env.GRAPHQL_LOGGING_URL) {
-	throw new InternalServerError('The environment variable GRAPHQL_LOGGING_URL should have a value.');
-}
+checkRequiredEnvs([
+	'GRAPHQL_LOGGING_URL',
+]);
 
 export default class EventLoggingService {
 	public static async insertEvents(logEvents: LogEvent[]): Promise<void> {

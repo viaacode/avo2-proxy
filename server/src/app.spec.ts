@@ -32,7 +32,6 @@ describe('[UNIT - APP] Application', () => {
 		expect(app).toBeDefined();
 		expect(app.app).toBeDefined();
 		expect(app.server).toBeDefined();
-		// expect(loggerInfoSpy).toHaveBeenCalledWith('Server running on test environment at port 3001');
 
 		app.server.close();
 	});
@@ -45,7 +44,6 @@ describe('[UNIT - APP] Application', () => {
 		expect(app).toBeDefined();
 		expect(app.app).toBeDefined();
 		expect(app.server).toBeDefined();
-		// expect(loggerInfoSpy).toHaveBeenCalledWith('Server running on test environment at port 3001');
 
 		app.server.close();
 	});

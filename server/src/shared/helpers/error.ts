@@ -7,6 +7,9 @@ import { default as config } from '../../config';
 import { IInternalServerError, IInternalServerErrorDetail, IValidationError } from '../shared.types';
 
 export class CustomError implements IInternalServerError {
+	public message: string;
+	public innerException: any | null;
+	public additionalInfo: any | null;
 	public details?: IInternalServerErrorDetail[];
 	public host: string = config.server.host;
 	public identifier: string = uuid();
@@ -16,9 +19,12 @@ export class CustomError implements IInternalServerError {
 	public timestamp: string = new Date().toISOString();
 
 	constructor(
-		public message: string = 'Something went wrong',
-		public innerException: any = null,
-		public additionalInfo: any = null) {
+		message: string = 'Something went wrong',
+		innerException: any = null,
+		additionalInfo: any = null) {
+		this.message = message;
+		this.innerException = innerException;
+		this.additionalInfo = additionalInfo;
 		Error.captureStackTrace(this, this.constructor);
 
 		if (innerException && typeof innerException.stack === 'string') {
