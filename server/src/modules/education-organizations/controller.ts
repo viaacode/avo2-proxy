@@ -23,13 +23,11 @@ export default class EducationOrganizationsController {
 			return _.uniqBy(_.flatten(orgs.map((org) => {
 				if (org.units && org.units.length) {
 					// Organizations with units
-					return org.units.map((unit: Unit): ClientEducationOrganization => {
-						return {
-							organizationId: org.id,
-							unitId: unit.id,
-							label: `${org.name} - ${unit.address}`,
-						};
-					});
+					return org.units.map((unit: Unit): ClientEducationOrganization => ({
+						organizationId: org.id,
+						unitId: unit.id,
+						label: `${org.name} - ${unit.address}`,
+					}));
 				}
 				// Organizations without any units
 				return {
