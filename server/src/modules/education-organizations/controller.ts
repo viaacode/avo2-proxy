@@ -21,13 +21,22 @@ export default class EducationOrganizationsController {
 
 			// Map ldap orgs to client ldap orgs so less data has to be sent to the client
 			return _.uniqBy(_.flatten(orgs.map((org) => {
-				return org.units.map((unit: Unit): ClientEducationOrganization => {
-					return {
-						organizationId: org.id,
-						unitId: unit.id,
-						label: `${org.name} - ${unit.address}`,
-					};
-				});
+				if (org.units && org.units.length) {
+					// Organizations with units
+					return org.units.map((unit: Unit): ClientEducationOrganization => {
+						return {
+							organizationId: org.id,
+							unitId: unit.id,
+							label: `${org.name} - ${unit.address}`,
+						};
+					});
+				}
+				// Organizations without any units
+				return {
+					organizationId: org.id,
+					unitId: null,
+					label: `${org.name}`,
+				};
 			})), 'label');
 		} catch (err) {
 			throw new InternalServerError('Failed to get organizations from the ldap api', err, { zipCode });
