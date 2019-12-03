@@ -23,6 +23,7 @@ import VideoStillsRoute from './modules/video-stills/route';
 import EventLoggingRoute from './modules/event-logging/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
+import EducationOrganizationsRoute from './modules/education-organizations/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -105,6 +106,7 @@ export class App {
 			HetArchiefRoute,
 			SmartschoolRoute,
 
+			EducationOrganizationsRoute,
 			SearchRoute,
 			DataRoute,
 			PlayerTicketRoute,
