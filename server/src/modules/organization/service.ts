@@ -1,8 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
-import _ from 'lodash';
+import { find } from 'lodash';
 import cron from 'node-cron';
+
 import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import { InternalServerError } from '../../shared/helpers/error';
+import DataService from '../data/service';
+
+import { INSERT_ORGANIZATIONS, DELETE_ORGANIZATIONS } from './queries.gql';
 
 interface OrganizationResponse {
 	status: string;
@@ -10,18 +14,32 @@ interface OrganizationResponse {
 	data: OrganizationInfo[];
 }
 
+export interface OrganizationContactInfo {
+	phone?: string;
+	website?: string;
+	email?: string;
+	logoUrl?: string;
+	form_url?: string;
+}
+
 export interface OrganizationInfo {
 	or_id: string;
 	cp_name: string;
-	category: string | null;
-	sector: string | null;
-	cp_name_catpro: string | null;
-	contact_information: {
-		phone: string | null;
-		website: string | null;
-		email: string | null;
-		logoUrl: string | null;
-	};
+	category?: string;
+	sector?: string;
+	cp_name_catpro?: string;
+	description?: string;
+	contact_information: OrganizationContactInfo;
+	accountmanager?: string;
+}
+
+export interface ParsedOrganization {
+	or_id: string;
+	name: string;
+	logo_url: string | null;
+	description: string | null;
+	website: string | null;
+	data: OrganizationInfo;
 }
 
 export default class OrganizationService {
@@ -30,7 +48,9 @@ export default class OrganizationService {
 	public static async initialize() {
 		try {
 			logIfNotTestEnv('caching organizations...');
+
 			await OrganizationService.updateOrganizationsCache();
+
 			// Register a cron job to refresh the organizations every night
 			if (process.env.NODE_ENV !== 'test') {
 				/* istanbul ignore next */
@@ -38,9 +58,11 @@ export default class OrganizationService {
 					await OrganizationService.initialize();
 				}).start();
 			}
+
 			logIfNotTestEnv('caching organizations... done');
 		} catch (err) {
 			logIfNotTestEnv('caching organizations... error');
+
 			/* istanbul ignore next */
 			logger.error(new InternalServerError('Failed to fill initial organizations cache or schedule cron job to renew the cache', err));
 		}
@@ -48,8 +70,10 @@ export default class OrganizationService {
 
 	private static async updateOrganizationsCache() {
 		let url;
+
 		try {
 			url = process.env.ORGANIZATIONS_API_URL;
+
 			const orgResponse: AxiosResponse<OrganizationResponse> = await axios({
 				url,
 				method: 'get',
@@ -59,6 +83,9 @@ export default class OrganizationService {
 			if (orgResponse.status >= 200 && orgResponse.status < 400) {
 				// Return search results
 				OrganizationService.organizations = orgResponse.data.data;
+
+				await OrganizationService.emptyOrganizations();
+				await OrganizationService.insertOrganizations();
 			} else {
 				/* istanbul ignore next */
 				throw new InternalServerError(
@@ -86,7 +113,7 @@ export default class OrganizationService {
 
 	public static getOrganisationInfo(orgId: string): OrganizationInfo | null {
 		try {
-			return _.find(OrganizationService.organizations, { or_id: orgId }) || null;
+			return find(OrganizationService.organizations, { or_id: orgId }) || null;
 		} catch (err) {
 			/* istanbul ignore next */
 			throw new InternalServerError(
@@ -95,6 +122,39 @@ export default class OrganizationService {
 				{
 					orgId,
 				});
+		}
+	}
+
+	private static async insertOrganizations(): Promise<void> {
+		const parsedOrganizations: ParsedOrganization[] = OrganizationService.organizations.map((organization: OrganizationInfo) => ({
+			or_id: organization.or_id,
+			name: organization.cp_name,
+			website: organization.contact_information.website,
+			logo_url: organization.contact_information.logoUrl,
+			description: organization.description,
+			data: organization,
+		}));
+
+		try {
+			return await DataService.execute(INSERT_ORGANIZATIONS, {
+				organizations: parsedOrganizations,
+			});
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to insert organizations',
+				err
+			);
+		}
+	}
+
+	private static async emptyOrganizations(): Promise<void> {
+		try {
+			return await DataService.execute(DELETE_ORGANIZATIONS);
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to empty organizations',
+				err
+			);
 		}
 	}
 }
