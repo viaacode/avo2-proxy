@@ -8,7 +8,7 @@ import {
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from './constants';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 const escapeElastic = require('elasticsearch-sanitize');
@@ -56,7 +56,7 @@ export default class QueryBuilder {
 
 			return queryObject;
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to build query object',
 				err,
 				{
@@ -152,7 +152,7 @@ export default class QueryBuilder {
 			// Map frontend filter names to elasticsearch names
 			const elasticKey = READABLE_TO_ELASTIC_FILTER_NAMES[readableKey as Avo.Search.FilterProp];
 			if (!elasticKey) {
-				throw new CustomError(`Failed to resolve agg property: ${readableKey}`);
+				throw new InternalServerError(`Failed to resolve agg property: ${readableKey}`);
 			}
 			if (_.isArray(value) && _.every(value, (val: any) => _.isString(val))) {
 				// Array of options
@@ -174,7 +174,7 @@ export default class QueryBuilder {
 					},
 				});
 			} else {
-				logger.error(new CustomError(
+				logger.error(new InternalServerError(
 					'Unknown filter during search',
 					null,
 					{ value, key: elasticKey }));
@@ -207,7 +207,7 @@ export default class QueryBuilder {
 		_.forEach(AGGS_PROPERTIES, (aggProperty) => {
 			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
 			if (!elasticProperty) {
-				throw new CustomError(`Failed to resolve agg property: ${aggProperty}`);
+				throw new InternalServerError(`Failed to resolve agg property: ${aggProperty}`);
 			}
 			if (filterOptionSearch && filterOptionSearch[aggProperty as AggProps]) {
 				// An extra search filter should be applied for these filter options

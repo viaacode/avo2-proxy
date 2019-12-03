@@ -1,12 +1,13 @@
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { LogEvent } from './types';
 import { INSERT_EVENTS } from './queries.gql';
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
-if (!process.env.GRAPHQL_LOGGING_URL) {
-	throw new CustomError('The environment variable GRAPHQL_LOGGING_URL should have a value.');
-}
+checkRequiredEnvs([
+	'GRAPHQL_LOGGING_URL',
+]);
 
 export default class EventLoggingService {
 	public static async insertEvents(logEvents: LogEvent[]): Promise<void> {
@@ -27,7 +28,7 @@ export default class EventLoggingService {
 			});
 			const errors = _.get(response, 'data.errors');
 			if (errors) {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to insert event into the database',
 					null,
 					{
@@ -38,7 +39,7 @@ export default class EventLoggingService {
 			}
 			return response.data;
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to insert event into the database',
 				err,
 				{

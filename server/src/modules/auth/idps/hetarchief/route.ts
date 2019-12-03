@@ -4,7 +4,7 @@ import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'ty
 
 import HetArchiefController from './controller';
 import HetArchiefService, { SamlCallbackBody } from './service';
-import { CustomError } from '../../../../shared/helpers/error';
+import { InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-adapter';
 import AuthController from '../../controller';
@@ -20,7 +20,7 @@ interface RelayState {
 const STAMBOEK_NUMBER_PATH = 'request.session.stamboekNumber';
 
 if (!process.env.SUMM_REGISTRATION_PAGE) {
-	throw new CustomError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
+	throw new InternalServerError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
 }
 
 @Path('/auth/hetarchief')
@@ -43,7 +43,7 @@ export default class HetArchiefRoute {
 			const url = await HetArchiefService.createLoginRequestUrl(returnToUrl);
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -76,7 +76,7 @@ export default class HetArchiefRoute {
 				logger.error(err); // TODO redirect to failed login page
 			}
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -100,14 +100,14 @@ export default class HetArchiefRoute {
 				const url = await HetArchiefService.createLogoutRequestUrl(ldapUser.name_id, returnToUrl);
 				return new Return.MovedTemporarily<void>(url);
 			}
-			logger.error(new CustomError(
+			logger.error(new InternalServerError(
 				'ldap user wasn\'t found on the session',
 				null,
 				{ returnToUrl },
 			));
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -130,7 +130,7 @@ export default class HetArchiefRoute {
 				logger.error(err); // TODO redirect to failed login page
 			}
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -154,7 +154,7 @@ export default class HetArchiefRoute {
 			})}`);
 			return new Return.MovedTemporarily<void>(`${process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
 		} catch (err) {
-			const error = new CustomError('Failed during auth registration route', err, {});
+			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -178,7 +178,7 @@ export default class HetArchiefRoute {
 			})}`;
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new CustomError('Failed during auth verify email callback route', err, {});
+			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -220,7 +220,7 @@ export default class HetArchiefRoute {
 				icon: 'x-circle',
 			})}`);
 		} catch (err) {
-			const error = new CustomError('Failed during auth registration route', err, {});
+			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}

@@ -1,8 +1,9 @@
 import axios, { AxiosResponse } from 'axios';
 import * as https from 'https';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import util from 'util';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 export interface PlayerTicket {
 	jwt: string;
@@ -19,15 +20,11 @@ export interface PlayerTicket {
 	};
 }
 
-if (!process.env.TICKET_SERVICE_CERT) {
-	throw new CustomError('Environment variable TICKET_SERVICE_CERT has to be filled in');
-}
-if (!process.env.TICKET_SERVICE_KEY) {
-	throw new CustomError('Environment variable TICKET_SERVICE_KEY has to be filled in');
-}
-if (!process.env.TICKET_SERVICE_PASSPHRASE) {
-	throw new CustomError('Environment variable TICKET_SERVICE_PASSPHRASE has to be filled in');
-}
+checkRequiredEnvs([
+	'TICKET_SERVICE_CERT',
+	'TICKET_SERVICE_KEY',
+	'TICKET_SERVICE_PASSPHRASE',
+]);
 
 export default class PlayerTicketService {
 	private static certEnv = Buffer.from(
@@ -56,7 +53,7 @@ export default class PlayerTicketService {
 	public static async getPlayerTicket(objectName: string, clientIp: string, referer: string, expire: number): Promise<PlayerTicket> {
 		try {
 			if (!process.env.TICKET_SERVICE_URL) {
-				throw new CustomError(
+				throw new InternalServerError(
 					'TICKET_SERVICE_URL env variable is not set',
 					null,
 					{ url: process.env.TICKET_SERVICE_URL }
@@ -85,7 +82,7 @@ export default class PlayerTicketService {
 		} catch (err) {
 			logger.info('FAILED IN TICKET SERVICE', util.inspect(err));
 
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to get player-token from player-token service',
 				err,
 				{

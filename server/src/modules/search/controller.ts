@@ -1,10 +1,9 @@
 import { Avo } from '@viaa/avo2-types';
 import SearchService from './service';
 import QueryBuilder from './queryBuilder';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
-import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import _ from 'lodash';
 
 export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
@@ -26,12 +25,12 @@ export default class SearchController {
 			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index || 'both']); // TODO remove any when typings build is fixed
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
 					{ ...searchRequest }); // TODO remove dev error
 			} else {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to do search',
 					err,
 					{ ...searchRequest });
@@ -48,7 +47,7 @@ export default class SearchController {
 				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { collectionId: itemId });
 				const collection = _.get(response, 'data.app_collections[0]');
 				if (!collection) {
-					throw new BadRequestError(`Failed to get collection by id: ${itemId}`);
+					throw new BadRequestError('Failed to get collection by id', null, { itemId, index, limit });
 				}
 				if (!collection.is_public) {
 					privateCollection = collection;
@@ -88,12 +87,12 @@ export default class SearchController {
 			return await SearchService.search(esQueryObject, ES_INDEX_MAP[index || 'items']);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
 					{ itemId, index, limit });
 			} else {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to do search',
 					err,
 					{ itemId, index, limit });

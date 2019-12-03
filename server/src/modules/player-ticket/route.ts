@@ -1,9 +1,8 @@
 import { Context, Path, ServiceContext, QueryParam, GET, PreProcessor } from 'typescript-rest';
 import PlayerTicketController from './controller';
 import * as util from 'util';
-import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
-import { CustomError } from '../../shared/helpers/error';
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 const publicIp = require('public-ip');
@@ -33,7 +32,7 @@ export default class PlayerTicketRoute {
 				8 * 60 * 60 * 1000,
 			);
 		} catch (err) {
-			const error = new CustomError('Failed during get player token route', err, {});
+			const error = new InternalServerError('Failed during get player token route', err, {});
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
 		}

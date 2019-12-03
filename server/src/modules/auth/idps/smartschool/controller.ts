@@ -1,4 +1,3 @@
-import { CustomError } from '../../../../shared/helpers/error';
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
 import DataService from '../../../data/service';
 import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from '../../queries.gql';
@@ -9,6 +8,7 @@ import { IdpHelper } from '../../idp-adapter';
 import { Request } from 'express';
 import { AuthService } from '../../service';
 import AuthController from '../../controller';
+import { InternalServerError } from '../../../../shared/helpers/error';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
@@ -62,7 +62,7 @@ export default class SmartschoolController extends IdpHelper {
 			if (userUid) {
 				const avoUser = await AuthService.getAvoUserInfoById(userUid);
 				if (!avoUser) {
-					throw new CustomError('Failed to get user by id from the database after smartschool login', null, { userUid });
+					throw new InternalServerError('Failed to get user by id from the database after smartschool login', null, { userUid });
 				}
 				return { avoUser, smartschoolUserInfo };
 			}
@@ -77,13 +77,13 @@ export default class SmartschoolController extends IdpHelper {
 		// Get api token
 		const token: SmartschoolToken = await SmartschoolService.getToken(code);
 		if (!token || !token.access_token) {
-			throw new CustomError('Failed to get api token from smartschool api', null, { token });
+			throw new InternalServerError('Failed to get api token from smartschool api', null, { token });
 		}
 
 		// Get user info
 		const userInfo: SmartschoolUserInfo = await SmartschoolService.getUserInfo(token.access_token);
 		if (!userInfo) {
-			throw new CustomError('Failed to get userinfo from smartschool api', null, { userInfo });
+			throw new InternalServerError('Failed to get userinfo from smartschool api', null, { userInfo });
 		}
 		return userInfo;
 	}
@@ -104,7 +104,7 @@ export default class SmartschoolController extends IdpHelper {
 
 			return userUid;
 		} catch (err) {
-			throw new CustomError('Failed to create user from smartschool login', err, { smartschoolUserInfo });
+			throw new InternalServerError('Failed to create user from smartschool login', err, { smartschoolUserInfo });
 		}
 	}
 
@@ -126,7 +126,7 @@ export default class SmartschoolController extends IdpHelper {
 		};
 		const response = await DataService.execute(INSERT_IDP_MAP, { idpMap });
 		if (!response || response.errors && response.errors.length) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to link avo user to an idp. Response from insert request was undefined',
 				null,
 				{ response, query: INSERT_PROFILE });

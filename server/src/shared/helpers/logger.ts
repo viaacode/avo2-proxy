@@ -4,3 +4,9 @@ const Logger = require('@studiohyperdrive/logger'); // tslint:disable-line varia
 import { default as config } from '../../config';
 
 export const logger = new Logger(config.logger);
+
+export function logIfNotTestEnv(message: string) {
+	if (process.env.NODE_ENV !== 'test') {
+		logger.info(message);
+	}
+}

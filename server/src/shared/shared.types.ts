@@ -37,12 +37,12 @@ import { CustomValidationError } from './helpers/error';
 
 export type ICustomValidationError = CustomValidationError;
 
-export interface ICustomErrorDetail {
+export interface IInternalServerErrorDetail {
 	err: string;
 }
 
-export interface ICustomError {
-	details?: ICustomErrorDetail[];
+export interface IInternalServerError {
+	details?: IInternalServerErrorDetail[];
 	host: string;
 	identifier: string;
 	message: string;
@@ -50,20 +50,19 @@ export interface ICustomError {
 	innerException?: any;
 	additionalInfo?: any;
 	stack: string;
-	status: number;
+	statusCode: number;
 	timestamp: string;
 }
-export type IBodyError = ICustomError;
-export type IHeadersError = ICustomError;
-export type IParamsError = ICustomError;
-export type IQueryError = ICustomError;
-export type IUnauthorizedError = ICustomError;
-export type IForbiddenError = ICustomError;
-export type INotFoundError = ICustomError;
-export type IConflictError = ICustomError;
-export type IInternalServerError = ICustomError;
+export type IBodyError = IInternalServerError;
+export type IHeadersError = IInternalServerError;
+export type IParamsError = IInternalServerError;
+export type IQueryError = IInternalServerError;
+export type IUnauthorizedError = IInternalServerError;
+export type IForbiddenError = IInternalServerError;
+export type INotFoundError = IInternalServerError;
+export type IConflictError = IInternalServerError;
 export type IErrors =
-	ICustomError |
+	IInternalServerError |
 	IBodyError |
 	IHeadersError |
 	IParamsError |

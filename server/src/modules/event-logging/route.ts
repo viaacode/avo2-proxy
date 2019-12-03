@@ -3,9 +3,8 @@ import * as util from 'util';
 import { Context, Path, ServiceContext, POST } from 'typescript-rest';
 
 import EventLoggingController from './controller';
-import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
-import { CustomError } from '../../shared/helpers/error';
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { ClientEvent } from '@viaa/avo2-types/types/event-logging/types';
 
 const publicIp = require('public-ip');
@@ -32,7 +31,7 @@ export default class EventLoggingRoute {
 				EventLoggingRoute.getViaaRequestId(this.context),
 			);
 		} catch (err) {
-			const error = new CustomError('Failed during insert event route', err, {});
+			const error = new InternalServerError('Failed during insert event route', err, {});
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
 		}

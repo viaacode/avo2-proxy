@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import StamboekService from './service';
 import { AuthService } from '../auth/service';
 import { IdpHelper } from '../auth/idp-adapter';
@@ -36,7 +36,7 @@ export default class StamboekController {
 			}
 			return 'INVALID';
 		} catch (err) {
-			throw new CustomError('Failed to validate the provided stamboek number', err, { stamboekNumber });
+			throw new InternalServerError('Failed to validate the provided stamboek number', err, { stamboekNumber });
 		}
 	}
 }

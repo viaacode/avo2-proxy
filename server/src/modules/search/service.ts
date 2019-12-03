@@ -4,7 +4,7 @@ import { Avo } from '@viaa/avo2-types';
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
 } from './constants';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 interface ElasticsearchResponse {
@@ -77,7 +77,7 @@ export default class SearchService {
 			});
 			return authTokenResponse.data.authorization_token;
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to get JWT token from auth server',
 				err,
 				{ url, data });
@@ -107,7 +107,7 @@ export default class SearchService {
 	public static async search(searchQueryObject: any, index?: string): Promise<Avo.Search.Search> {
 		let url;
 		if (!process.env.ELASTICSEARCH_URL) {
-			throw new CustomError('Environment variable ELASTICSEARCH_URL is undefined');
+			throw new InternalServerError('Environment variable ELASTICSEARCH_URL is undefined');
 		}
 		try {
 			url = process.env.ELASTICSEARCH_URL;
@@ -139,7 +139,7 @@ export default class SearchService {
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
 			}
-			throw new CustomError(
+			throw new InternalServerError(
 				'Request to elasticsearch was unsuccessful',
 				null,
 				{
@@ -151,7 +151,7 @@ export default class SearchService {
 				});
 
 		} catch (err) {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to make request to elasticsearch',
 				err,
 				{
