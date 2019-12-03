@@ -11,7 +11,7 @@ export default class EventLoggingController {
 		try {
 			logEvents = _.compact(clientEvents.map((clientEvent: ClientEvent): LogEvent | null => {
 				return {
-					subject_ip: ip,
+					subject_ip: ip || '127.0.0.1',
 					component: 'webapp',
 					namespace: 'avo',
 					action: clientEvent.action,
