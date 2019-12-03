@@ -5,6 +5,7 @@ import { logger } from '../../../../shared/helpers/logger';
 import convert = require('xml-js');
 import _ from 'lodash';
 import { IdpMetaData, LdapUser } from '../../types';
+import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -24,12 +25,10 @@ interface ResponseHeader {
 	id: string;
 }
 
-if (!process.env.SAML_IDP_META_DATA_ENDPOINT) {
-	throw new InternalServerError('The environment variable SAML_IDP_META_DATA_ENDPOINT should have a value.');
-}
-if (!process.env.SAML_SP_ENTITY_ID) {
-	throw new InternalServerError('The environment variable SAML_SP_ENTITY_ID should have a value.');
-}
+checkRequiredEnvs([
+	'SAML_IDP_META_DATA_ENDPOINT',
+	'SAML_SP_ENTITY_ID',
+]);
 
 export default class HetArchiefService {
 	private static serviceProvider: ServiceProvider;

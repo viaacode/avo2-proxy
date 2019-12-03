@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { InternalServerError } from '../../shared/helpers/error';
 import { toMilliseconds } from '../../shared/helpers/duration';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 export interface VideoStill {
 	time: number;
@@ -15,9 +16,9 @@ export interface VideoStillRaw {
 	thumbnailImagePath: string;
 }
 
-if (!process.env.VIDEO_STILLS_ENDPOINT) {
-	throw new InternalServerError('Environment variable VIDEO_STILLS_ENDPOINT has to be filled in');
-}
+checkRequiredEnvs([
+	'VIDEO_STILLS_ENDPOINT',
+]);
 
 export default class VideoStillsService {
 	/**

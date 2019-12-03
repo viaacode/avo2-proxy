@@ -2,6 +2,7 @@ import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
 import { InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
 import { logger } from '../../../../shared/helpers/logger';
+import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 
 export interface SmartschoolToken {
 	token_type: string;
@@ -31,12 +32,10 @@ export interface SmartschoolUserInfo {
 	actualUserSurname: string;
 }
 
-if (!process.env.SMARTSCHOOL_CLIENT_ID) {
-	throw new InternalServerError('The environment variable SMARTSCHOOL_CLIENT_ID should have a value.');
-}
-if (!process.env.SMARTSCHOOL_CLIENT_PASSWORD) {
-	throw new InternalServerError('The environment variable SMARTSCHOOL_CLIENT_PASSWORD should have a value.');
-}
+checkRequiredEnvs([
+	'SMARTSCHOOL_CLIENT_ID',
+	'SMARTSCHOOL_CLIENT_PASSWORD',
+]);
 
 export default class SmartschoolService {
 	private static oauth2: OAuthClient;

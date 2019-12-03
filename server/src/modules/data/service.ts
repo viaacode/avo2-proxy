@@ -1,9 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import { InternalServerError } from '../../shared/helpers/error';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
-if (!process.env.GRAPHQL_URL) {
-	throw new InternalServerError('The environment variable GRAPHQL_URL should have a value.');
-}
+checkRequiredEnvs([
+	'GRAPHQL_URL',
+]);
 
 export default class DataService {
 	public static async execute(query: string, variables: {[varName: string]: any} = {}, headers: {[headerName: string]: string} = {}): Promise<any> {

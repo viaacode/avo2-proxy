@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import _ from 'lodash';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 interface ValidationResponse {
 	provided: string;
@@ -19,15 +20,10 @@ interface ValidationResponse {
 	message: string;
 }
 
-if (!process.env.STAMBOEK_VERIFY_ENDPOINT) {
-	/* istanbul ignore next */
-	logger.error('STAMBOEK_VERIFY_ENDPOINT env variable is not set');
-}
-
-if (!process.env.STAMBOEK_VERIFY_TOKEN) {
-	/* istanbul ignore next */
-	logger.error('STAMBOEK_VERIFY_TOKEN env variable is not set');
-}
+checkRequiredEnvs([
+	'STAMBOEK_VERIFY_ENDPOINT',
+	'STAMBOEK_VERIFY_TOKEN',
+]);
 
 export default class StamboekService {
 	/**

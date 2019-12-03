@@ -13,6 +13,7 @@ export class ErrorMiddleware {
 			stack: _.get(err, 'stack', '').split('\n'),
 			statusCode: _.get(err, 'statusCode', 500),
 			name: _.get(err, 'name', ''),
+			additionalInfo: _.get(err, 'additionalInfo', null),
 		});
 	}
 }

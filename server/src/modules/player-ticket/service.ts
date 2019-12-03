@@ -3,6 +3,7 @@ import * as https from 'https';
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import util from 'util';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 export interface PlayerTicket {
 	jwt: string;
@@ -19,15 +20,11 @@ export interface PlayerTicket {
 	};
 }
 
-if (!process.env.TICKET_SERVICE_CERT) {
-	throw new InternalServerError('Environment variable TICKET_SERVICE_CERT has to be filled in');
-}
-if (!process.env.TICKET_SERVICE_KEY) {
-	throw new InternalServerError('Environment variable TICKET_SERVICE_KEY has to be filled in');
-}
-if (!process.env.TICKET_SERVICE_PASSPHRASE) {
-	throw new InternalServerError('Environment variable TICKET_SERVICE_PASSPHRASE has to be filled in');
-}
+checkRequiredEnvs([
+	'TICKET_SERVICE_CERT',
+	'TICKET_SERVICE_KEY',
+	'TICKET_SERVICE_PASSPHRASE',
+]);
 
 export default class PlayerTicketService {
 	private static certEnv = Buffer.from(
