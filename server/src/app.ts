@@ -5,7 +5,7 @@ import * as http from 'http';
 import { default as config } from './config';
 import { GlobalMiddleware } from './modules/core/middleware/global';
 import { IConfig } from './config/config.types';
-import { logger } from './shared/helpers/logger';
+import { logger, logIfNotTestEnv } from './shared/helpers/logger';
 import { presets as corePresets } from './modules/core/helpers/presets';
 import { Validator } from './shared/helpers/validation';
 import { Server } from 'typescript-rest';
@@ -58,9 +58,7 @@ export class App {
 				return process.exit(1);
 			}
 
-			if (process.env.NODE_ENV !== 'test') {
-				logger.info(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
-			}
+			logIfNotTestEnv(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
 		});
 	}
 

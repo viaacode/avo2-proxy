@@ -1,7 +1,7 @@
 import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
 import { InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger } from '../../../../shared/helpers/logger';
+import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 
 export interface SmartschoolToken {
@@ -44,7 +44,7 @@ export default class SmartschoolService {
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
 	public static async initialize() {
-		if (process.env.NODE_ENV !== 'test') logger.info('caching idp smartschool...');
+		logIfNotTestEnv('caching idp smartschool...');
 		SmartschoolService.oauth2 = simpleOauth2.create({
 			client: {
 				id: process.env.SMARTSCHOOL_CLIENT_ID as string,
@@ -61,7 +61,7 @@ export default class SmartschoolService {
 				authorizationMethod: 'body',
 			},
 		});
-		if (process.env.NODE_ENV !== 'test') logger.info('caching idp smartschool... done');
+		logIfNotTestEnv('caching idp smartschool... done');
 	}
 
 	public static getRedirectUrlForCode(): string {

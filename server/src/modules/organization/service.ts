@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import cron from 'node-cron';
-import { logger } from '../../shared/helpers/logger';
+import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import { InternalServerError } from '../../shared/helpers/error';
 
 interface OrganizationResponse {
@@ -29,7 +29,7 @@ export default class OrganizationService {
 
 	public static async initialize() {
 		try {
-			if (process.env.NODE_ENV !== 'test') logger.info('caching organizations...');
+			logIfNotTestEnv('caching organizations...');
 			await OrganizationService.updateOrganizationsCache();
 			// Register a cron job to refresh the organizations every night
 			if (process.env.NODE_ENV !== 'test') {
@@ -38,9 +38,9 @@ export default class OrganizationService {
 					await OrganizationService.initialize();
 				}).start();
 			}
-			if (process.env.NODE_ENV !== 'test') logger.info('caching organizations... done');
+			logIfNotTestEnv('caching organizations... done');
 		} catch (err) {
-			if (process.env.NODE_ENV !== 'test') logger.info('caching organizations... error');
+			logIfNotTestEnv('caching organizations... error');
 			/* istanbul ignore next */
 			logger.error(new InternalServerError('Failed to fill initial organizations cache or schedule cron job to renew the cache', err));
 		}

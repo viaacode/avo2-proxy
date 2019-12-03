@@ -1,7 +1,7 @@
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
 import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger } from '../../../../shared/helpers/logger';
+import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
 import convert = require('xml-js');
 import _ from 'lodash';
 import { IdpMetaData, LdapUser } from '../../types';
@@ -40,7 +40,7 @@ export default class HetArchiefService {
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
 	public static async initialize() {
-		if (process.env.NODE_ENV !== 'test') logger.info('caching idp info hetarchief...');
+		logIfNotTestEnv('caching idp info hetarchief...');
 		const url = process.env.SAML_IDP_META_DATA_ENDPOINT;
 		try {
 			const response: AxiosResponse<string> = await axios({
@@ -100,9 +100,9 @@ export default class HetArchiefService {
 				sign_get_request: false,
 				allow_unencrypted_assertion: true,
 			});
-			if (process.env.NODE_ENV !== 'test') logger.info('caching idp info hetarchief... done');
+			logIfNotTestEnv('caching idp info hetarchief... done');
 		} catch (err) {
-			if (process.env.NODE_ENV !== 'test') logger.info('caching idp info hetarchief... error');
+			logIfNotTestEnv('caching idp info hetarchief... error');
 			logger.error(new InternalServerError('Failed to get meta data from idp server', err, { endpoint: url }));
 		}
 	}
