@@ -54,9 +54,27 @@ export default class HetArchiefController {
 			if (!idpUserInfo) {
 				throw new InternalServerError('Failed to create user because ldap object is undefined', null);
 			}
-			const userUuid = await this.createUser(idpUserInfo);
+
+			// Create avo user object
+			const user: Partial<Avo.User.User> = this.parseLdapObject(idpUserInfo);
+			const existingUser = await AuthService.getAvoUserInfoByEmail(user.mail);
+			if (existingUser) {
+				throw new InternalServerError(
+					'Failed to create user because an avo user with this email address already exists',
+					null,
+					{
+						existingUser,
+						newUser: user,
+					});
+			}
+			const userUuid = await AuthController.createUser(user);
+
+			// Create avo profile object
 			await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
-			await HetArchiefController.addAvoAppToLdap(idpUserInfo);
+
+			// TODO add avo group to ldap once we get a service account (AVO2-153)
+			// await HetArchiefController.addAvoAppToLdap(idpUserInfo);
+
 			const userInfo = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
@@ -66,11 +84,6 @@ export default class HetArchiefController {
 		} catch (err) {
 			throw new InternalServerError('Failed to create user and profile in the avo database', err, { stamboekNumber, idpUserInfo });
 		}
-	}
-
-	private static async createUser(ldapObject: LdapUser): Promise<string> {
-		const user: Partial<Avo.User.User> = this.parseLdapObject(ldapObject);
-		return AuthController.createUser(user);
 	}
 
 	private static async createProfile(ldapObject: LdapUser, userUid: string, stamboekNumber: string): Promise<string> {
