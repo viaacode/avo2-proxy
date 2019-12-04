@@ -43,8 +43,6 @@ export interface ParsedOrganization {
 }
 
 export default class OrganizationService {
-	private static organizations: OrganizationInfo[];
-
 	public static async initialize() {
 		try {
 			logIfNotTestEnv('caching organizations...');
@@ -80,12 +78,9 @@ export default class OrganizationService {
 			});
 
 			// Handle response
-			if (orgResponse.status >= 200 && orgResponse.status < 400) {
-				// Return search results
-				OrganizationService.organizations = orgResponse.data.data;
-
+			if (orgResponse.status >= 200 && orgResponse.status < 400 && orgResponse.data.data.length > 50) {
 				await OrganizationService.emptyOrganizations();
-				await OrganizationService.insertOrganizations();
+				await OrganizationService.insertOrganizations(orgResponse.data.data);
 			} else {
 				/* istanbul ignore next */
 				throw new InternalServerError(
@@ -111,22 +106,8 @@ export default class OrganizationService {
 		}
 	}
 
-	public static getOrganisationInfo(orgId: string): OrganizationInfo | null {
-		try {
-			return find(OrganizationService.organizations, { or_id: orgId }) || null;
-		} catch (err) {
-			/* istanbul ignore next */
-			throw new InternalServerError(
-				'Failed to get organization info for id',
-				err,
-				{
-					orgId,
-				});
-		}
-	}
-
-	private static async insertOrganizations(): Promise<void> {
-		const parsedOrganizations: ParsedOrganization[] = OrganizationService.organizations.map((organization: OrganizationInfo) => ({
+	private static async insertOrganizations(organizations: OrganizationInfo[]): Promise<void> {
+		const parsedOrganizations: ParsedOrganization[] = organizations.map((organization: OrganizationInfo) => ({
 			or_id: organization.or_id,
 			name: organization.cp_name,
 			website: organization.contact_information.website,

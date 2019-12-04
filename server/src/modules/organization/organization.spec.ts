@@ -18,29 +18,3 @@ const VRT = {
 			'{first_name}&mail_user={email}&local_id={local_cp_id}&viaa_id={pid}&surname_user={last_name}',
 	},
 };
-
-describe('Organization api', () => {
-	it('should return null if cache hasn\'t been initialized', async () => {
-		const orgInfo: OrganizationInfo | null = OrganizationService.getOrganisationInfo(VRT.or_id);
-		expect(orgInfo).toBeNull();
-	});
-
-	it('should get an organization\'s info by org_id', async () => {
-		await OrganizationService.initialize();
-		const orgInfo: OrganizationInfo | null = OrganizationService.getOrganisationInfo(VRT.or_id);
-		expect(orgInfo.cp_name).toEqual(VRT.cp_name);
-		expect(orgInfo.cp_name_catpro).toEqual(VRT.cp_name_catpro);
-	});
-
-	it('should return null if organization isn\'t found', async () => {
-		await OrganizationService.initialize();
-		const orgInfo: OrganizationInfo | null = OrganizationService.getOrganisationInfo('abc');
-		expect(orgInfo).toBeNull();
-	});
-
-	it('should return null if passed org id is null', async () => {
-		await OrganizationService.initialize();
-		const orgInfo: OrganizationInfo | null = OrganizationService.getOrganisationInfo(null);
-		expect(orgInfo).toBeNull();
-	});
-});
