@@ -24,6 +24,10 @@ export default class StamboekController {
 	public static async validate(stamboekNumber: string): Promise<StamboekValidationStatuses> {
 		try {
 			// Check if valid stamboek number through external klasse api
+			if (process.env.STAMBOEK_FAKE_TEST_NUMBER && stamboekNumber === process.env.STAMBOEK_FAKE_TEST_NUMBER) {
+				// allow debug stamboek number to be used multiple times for testing purposes
+				return 'VALID';
+			}
 			const isValid = await StamboekService.validate(stamboekNumber);
 			if (isValid) {
 				// check if already in use in our local db

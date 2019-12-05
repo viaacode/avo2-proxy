@@ -190,9 +190,9 @@ export default class HetArchiefRoute {
 	@Path('register-callback')
 	@GET
 	async registerCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
+		const clientHost = getHost(returnToUrl);
 		try {
 			const stamboekNumber = decrypt(encryptedStamboekNumber);
-			const clientHost = getHost(returnToUrl);
 			if (!stamboekNumber) {
 				logger.error('Failed to register user since the register callback function was called without a stamboek number', {
 					returnToUrl,
@@ -222,6 +222,12 @@ export default class HetArchiefRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(error.toString());
+			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
+				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+					message: 'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
+					icon: 'users',
+				})}`);
+			}
 			throw error;
 		}
 	}
