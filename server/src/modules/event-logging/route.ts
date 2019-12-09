@@ -7,8 +7,6 @@ import { logger } from '../../shared/helpers/logger';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { ClientEvent } from '@viaa/avo2-types/types/event-logging/types';
 
-const publicIp = require('public-ip');
-
 @Path('/event-logging')
 export default class EventLoggingRoute {
 	@Context
@@ -19,22 +17,23 @@ export default class EventLoggingRoute {
 	 */
 	@Path('')
 	@POST
-	async insertEvent(clientEvents: ClientEvent | ClientEvent[] | null): Promise<any> {
+	async insertEvent(clientEvents: ClientEvent | ClientEvent[] | null): Promise<void> {
 		if (!clientEvents) {
 			throw new BadRequestError('body must contain the event you want to log');
 		}
 		const clientEventArray: ClientEvent[] = _.isArray(clientEvents) ? clientEvents : [clientEvents];
-		try {
-			return await EventLoggingController.insertEvents(
-				clientEventArray,
-				EventLoggingRoute.getIp(this.context),
-				EventLoggingRoute.getViaaRequestId(this.context),
-			);
-		} catch (err) {
+		EventLoggingController.insertEvents(
+			clientEventArray,
+			EventLoggingRoute.getIp(this.context),
+			EventLoggingRoute.getViaaRequestId(this.context),
+		).then(() => {
+			logger.info('event inserted');
+		}).catch((err) => {
 			const error = new InternalServerError('Failed during insert event route', err, {});
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
-		}
+		});
+		return; // Return before event is inserted, since we do not want to hold up the client if the event fails to be inserted
 	}
 
 	private static getIp(context: ServiceContext): string | null {
