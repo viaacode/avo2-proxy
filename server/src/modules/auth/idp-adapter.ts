@@ -2,7 +2,7 @@ import { IdpType, SharedUser } from './types';
 import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import { Request } from 'express';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
 const AVO_USER_INFO_PATH = 'session.avoUserInfo';
@@ -23,7 +23,7 @@ export class IdpHelper {
 			_.set(request, IDP_USER_INFO_PATH, idpUserInfo);
 			_.set(request, IDP_TYPE_PATH, idpType);
 		} else {
-			throw new CustomError(
+			throw new InternalServerError(
 				'Failed to store idp user info / ipd type because no session was found on the request object',
 				null,
 				{ idpUserInfo },
@@ -59,14 +59,14 @@ export class IdpHelper {
 			if (request.session) {
 				_.set(request, AVO_USER_INFO_PATH, user);
 			} else {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to store avo user info because no session was found on the request object',
 					null,
 					{ user },
 				);
 			}
 		} catch (err) {
-			throw new CustomError('Failed to store avo user info', err);
+			throw new InternalServerError('Failed to store avo user info', err);
 		}
 	}
 

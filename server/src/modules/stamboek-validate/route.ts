@@ -1,10 +1,14 @@
-import { Context, Path, ServiceContext, QueryParam, GET, PreProcessor } from 'typescript-rest';
+import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest';
 import StamboekController from './controller';
 import * as util from 'util';
-import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
-import { CustomError } from '../../shared/helpers/error';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
+
+export type StamboekValidationStatuses = 'VALID' | 'ALREADY_IN_USE' | 'INVALID'; // TODO use typings version
+
+export interface ValidateStamboekResponse { // TODO use typings version
+	status: StamboekValidationStatuses;
+}
 
 @Path('/stamboek')
 export default class StamboekRoute {
@@ -17,10 +21,9 @@ export default class StamboekRoute {
 	 */
 	@Path('validate')
 	@GET
-	@PreProcessor(isAuthenticated)
 	async verifyStamboekNumber(
 		@QueryParam('stamboekNumber') stamboekNumber: string
-	): Promise<any> {
+	): Promise<ValidateStamboekResponse> {
 		// Check inputs
 		if (!stamboekNumber) {
 			throw new BadRequestError('query param stamboekNumber is required');
@@ -29,11 +32,11 @@ export default class StamboekRoute {
 		// Execute controller
 		try {
 			return {
-				isValid: await StamboekController.validate(stamboekNumber),
+				status: await StamboekController.validate(stamboekNumber),
 			};
 
 		} catch (err) {
-			const error = new CustomError('Failed during validate stamboek route', err, { stamboekNumber });
+			const error = new InternalServerError('Failed during validate stamboek route', err, { stamboekNumber });
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
 		}

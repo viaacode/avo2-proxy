@@ -2,7 +2,7 @@ import VideoStillsService, { VideoStill } from './service';
 import DataService from '../data/service';
 import { GET_ITEMS_BY_IDS } from './queries.gql';
 import * as _ from 'lodash';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import * as promiseUtils from 'blend-promise-utils';
 import { StillRequest } from './validation';
@@ -37,7 +37,7 @@ export default class VideoStillsController {
 			const ids: string[] = stillRequests.map((stillRequest: StillRequest) => stillRequest.externalId);
 			const response = await DataService.execute(GET_ITEMS_BY_IDS, { ids });
 			if (response.errors) {
-				throw new CustomError(
+				throw new InternalServerError(
 					'Failed to lookup item info from graphql',
 					null,
 					{ stillRequests, errors: response.errors }
@@ -65,7 +65,7 @@ export default class VideoStillsController {
 				};
 			}));
 		} catch (err) {
-			throw new CustomError('Failed to get stills in video stills controller', err, { stillRequests });
+			throw new InternalServerError('Failed to get stills in video stills controller', err, { stillRequests });
 		}
 	}
 
@@ -76,7 +76,7 @@ export default class VideoStillsController {
 				videoStills: await VideoStillsService.getVideoStills(objectNameInfo.objectName),
 			};
 		} catch (err) {
-			logger.error(new CustomError('Failed to get video stills for objectName', err, { objectNameInfo }));
+			logger.error(new InternalServerError('Failed to get video stills for objectName', err, { objectNameInfo }));
 			return null; // Avoid failing on a single error, so the other stills still get returned, We'll just log the error
 		}
 	}

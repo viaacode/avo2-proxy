@@ -1,7 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import _ from 'lodash';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 interface ValidationResponse {
 	provided: string;
@@ -19,15 +20,10 @@ interface ValidationResponse {
 	message: string;
 }
 
-if (!process.env.STAMBOEK_VERIFY_ENDPOINT) {
-	/* istanbul ignore next */
-	logger.error('STAMBOEK_VERIFY_ENDPOINT env variable is not set');
-}
-
-if (!process.env.STAMBOEK_VERIFY_TOKEN) {
-	/* istanbul ignore next */
-	logger.error('STAMBOEK_VERIFY_TOKEN env variable is not set');
-}
+checkRequiredEnvs([
+	'STAMBOEK_VERIFY_ENDPOINT',
+	'STAMBOEK_VERIFY_TOKEN',
+]);
 
 export default class StamboekService {
 	/**
@@ -39,7 +35,7 @@ export default class StamboekService {
 		try {
 			if (!process.env.STAMBOEK_VERIFY_ENDPOINT) {
 				/* istanbul ignore next */
-				throw new CustomError(
+				throw new InternalServerError(
 					'STAMBOEK_VERIFY_ENDPOINT env variable is not set',
 					null,
 					{ STAMBOEK_VERIFY_ENDPOINT: process.env.STAMBOEK_VERIFY_ENDPOINT }
@@ -47,7 +43,7 @@ export default class StamboekService {
 			}
 			if (!process.env.STAMBOEK_VERIFY_TOKEN) {
 				/* istanbul ignore next */
-				throw new CustomError(
+				throw new InternalServerError(
 					'STAMBOEK_VERIFY_TOKEN env variable is not set',
 					null,
 					{ STAMBOEK_VERIFY_TOKEN: process.env.STAMBOEK_VERIFY_TOKEN }
@@ -63,7 +59,7 @@ export default class StamboekService {
 			if (statusCode && statusCode < 500 && statusCode >= 400) {
 				return false; // Invalid input => invalid stamboek number
 			}
-			const error = new CustomError(
+			const error = new InternalServerError(
 				'Failed to validate the stamboek number through the external api',
 				err,
 				{

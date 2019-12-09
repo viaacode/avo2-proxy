@@ -1,10 +1,11 @@
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
-import { CustomError } from '../../../../shared/helpers/error';
+import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger } from '../../../../shared/helpers/logger';
+import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
 import convert = require('xml-js');
 import _ from 'lodash';
 import { IdpMetaData, LdapUser } from '../../types';
+import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -24,22 +25,22 @@ interface ResponseHeader {
 	id: string;
 }
 
-if (!process.env.SAML_IDP_META_DATA_ENDPOINT) {
-	throw new CustomError('The environment variable SAML_IDP_META_DATA_ENDPOINT should have a value.');
-}
-if (!process.env.SAML_SP_ENTITY_ID) {
-	throw new CustomError('The environment variable SAML_SP_ENTITY_ID should have a value.');
-}
+checkRequiredEnvs([
+	'SAML_IDP_META_DATA_ENDPOINT',
+	'SAML_SP_ENTITY_ID',
+]);
 
 export default class HetArchiefService {
 	private static serviceProvider: ServiceProvider;
 	private static identityProvider: IdentityProvider;
+	private static ssoLoginUrl: string | undefined;
+	private static ssoLogoutUrl: string | undefined;
 
 	/**
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
 	public static async initialize() {
-		logger.info('caching idp info hetarchief...');
+		logIfNotTestEnv('caching idp info hetarchief...');
 		const url = process.env.SAML_IDP_META_DATA_ENDPOINT;
 		try {
 			const response: AxiosResponse<string> = await axios({
@@ -60,22 +61,22 @@ export default class HetArchiefService {
 			const ssoLoginUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleSignOnService._attributes.Location';
 			const ssoLogoutUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleLogoutService._attributes.Location';
 			const idpCertificate = _.get(metaData, idpCertificatePath);
-			const ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
-			const ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
+			this.ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
+			this.ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
 			if (!idpCertificate) {
-				throw new CustomError('Failed to find certificate in idp metadata', null, {
+				throw new ExternalServerError('Failed to find certificate in idp metadata', null, {
 					metaData,
 					idpCertificatePath,
 				});
 			}
-			if (!ssoLoginUrl) {
-				throw new CustomError('Failed to find ssoLoginUrl in idp metadata', null, {
+			if (!this.ssoLoginUrl) {
+				throw new ExternalServerError('Failed to find ssoLoginUrl in idp metadata', null, {
 					metaData,
 					ssoLoginUrlPath,
 				});
 			}
-			if (!ssoLogoutUrl) {
-				throw new CustomError('Failed to find ssoLogoutUrl in idp metadata', null, {
+			if (!this.ssoLogoutUrl) {
+				throw new ExternalServerError('Failed to find ssoLogoutUrl in idp metadata', null, {
 					metaData,
 					ssoLogoutUrlPath,
 				});
@@ -92,17 +93,17 @@ export default class HetArchiefService {
 				allow_unencrypted_assertion: true,
 			});
 			this.identityProvider = new saml2.IdentityProvider({
-				sso_login_url: ssoLoginUrl,
-				sso_logout_url: ssoLogoutUrl,
+				sso_login_url: this.ssoLoginUrl,
+				sso_logout_url: this.ssoLogoutUrl,
 				certificates: [idpCertificate],
 				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 				sign_get_request: false,
 				allow_unencrypted_assertion: true,
 			});
-			logger.info('caching idp info hetarchief... done');
+			logIfNotTestEnv('caching idp info hetarchief... done');
 		} catch (err) {
-			logger.info('caching idp info hetarchief... error');
-			logger.error(new CustomError('Failed to get meta data from idp server', err, { endpoint: url }));
+			logIfNotTestEnv('caching idp info hetarchief... error');
+			logger.error(new InternalServerError('Failed to get meta data from idp server', err, { endpoint: url }));
 		}
 	}
 
@@ -115,7 +116,7 @@ export default class HetArchiefService {
 				},
 				(error: any, loginUrl: string, requestId: string) => {
 					if (error) {
-						reject(new CustomError('Failed to create login request url on SAML service provider', error));
+						reject(new InternalServerError('Failed to create login request url on SAML service provider', error));
 					} else {
 						resolve(loginUrl);
 					}
@@ -133,7 +134,7 @@ export default class HetArchiefService {
 				},
 				(err, samlResponse: DecodedSamlResponse) => {
 					if (err) {
-						reject(new CustomError('Failed to verify SAML response', err, { requestBody }));
+						reject(new InternalServerError('Failed to verify SAML response', err, { requestBody }));
 					} else {
 						resolve(samlResponse.user);
 					}
@@ -151,11 +152,19 @@ export default class HetArchiefService {
 				},
 				(error: any, logoutUrl: string) => {
 					if (error) {
-						reject(new CustomError('Failed to create logout request url on saml service provider', error));
+						reject(new InternalServerError('Failed to create logout request url on saml service provider', error));
 					} else {
 						resolve(logoutUrl);
 					}
 				});
 		});
+	}
+
+	public static getLoginUrl(): string | undefined {
+		return this.ssoLoginUrl;
+	}
+
+	public static getLogoutUrl(): string | undefined {
+		return this.ssoLogoutUrl;
 	}
 }

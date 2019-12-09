@@ -5,7 +5,7 @@ import * as http from 'http';
 import { default as config } from './config';
 import { GlobalMiddleware } from './modules/core/middleware/global';
 import { IConfig } from './config/config.types';
-import { logger } from './shared/helpers/logger';
+import { logger, logIfNotTestEnv } from './shared/helpers/logger';
 import { presets as corePresets } from './modules/core/helpers/presets';
 import { Validator } from './shared/helpers/validation';
 import { Server } from 'typescript-rest';
@@ -20,13 +20,14 @@ import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
-import EventLoggingController from './modules/event-logging/controller';
 import EventLoggingRoute from './modules/event-logging/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
+import EducationOrganizationsRoute from './modules/education-organizations/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+import { ErrorMiddleware } from './modules/core/middleware/error';
 
 export class App {
 	public app: Application = express();
@@ -39,12 +40,11 @@ export class App {
 		// One time initialization of objects needed for operation of the api
 		OrganizationService.initialize();
 		HetArchiefService.initialize();
-		EventLoggingController.initialize();
 		SmartschoolService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();
-		// this.loadErrorHandling();
+		this.loadErrorHandling();
 
 		if (start) {
 			this.start();
@@ -58,7 +58,7 @@ export class App {
 				return process.exit(1);
 			}
 
-			logger.info(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
+			logIfNotTestEnv(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
 		});
 	}
 
@@ -104,6 +104,7 @@ export class App {
 			HetArchiefRoute,
 			SmartschoolRoute,
 
+			EducationOrganizationsRoute,
 			SearchRoute,
 			DataRoute,
 			PlayerTicketRoute,
@@ -115,9 +116,9 @@ export class App {
 		);
 	}
 
-	// private loadErrorHandling(): void {
-	// 	this.app.use(ErrorMiddleware.handleError);
-	// }
+	private loadErrorHandling(): void {
+		this.app.use(ErrorMiddleware.handleError);
+	}
 }
 
 export const CONFIG: IConfig = config;

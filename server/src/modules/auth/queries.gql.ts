@@ -116,8 +116,7 @@ mutation insertProfile($profile: users_profiles_insert_input!) {
  */
 export const INSERT_IDP_MAP = `
 mutation insertIdp($idpMap: users_idp_map_insert_input!) {
-	insert_users_idps(objects: [$idpMap]) {
-		returning
+	insert_users_idp_map(objects: [$idpMap]) {
 		affected_rows
 	}
 }
@@ -127,6 +126,14 @@ export const GET_USER_BY_IDP_ID = `
 query getUserByIdpId($idpType: users_idps_enum!, $idpId: uuid!) {
   shared_users(where: {_and: {idp: {_eq: $idpType}, local_user_id: {_eq: $idpId}}}) {
     local_user_id
+  }
+}
+`;
+
+export const GET_PROFILE_IDS_BY_USER_UID = `
+query getProfileIdsByUserUid($userUid: uuid!) {
+  users_profiles(where: {user_id: {_eq: $userUid}}) {
+    id
   }
 }
 `;

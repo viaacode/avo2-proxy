@@ -1,9 +1,8 @@
 import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
 import VideoStillsController, { StillInfo } from './controller';
 import * as util from 'util';
-import { BadRequestError } from 'typescript-rest/dist/server/model/errors';
 import { logger } from '../../shared/helpers/logger';
-import { CustomError } from '../../shared/helpers/error';
+import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
 import { StillRequest, stillRequestValidation } from './validation';
 import { ValidationResult } from '@hapi/joi';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
@@ -26,15 +25,18 @@ export default class VideoStillsRoute {
 		}
 		const validationResult: ValidationResult<StillRequest[]> = stillRequestValidation.validate(stillRequests);
 		if (validationResult.error) {
-			throw new BadRequestError(`The still requests array doesn't have the expected format.
-			${JSON.stringify(validationResult.error.details, null, 2)}`);
+			throw new BadRequestError(
+				'The still requests array doesn\'t have the expected format',
+				null,
+				{ validationResult: validationResult.error }
+			);
 		}
 
 		// Execute controller
 		try {
 			return await VideoStillsController.getFirstVideoStills(stillRequests);
 		} catch (err) {
-			const error = new CustomError('Failed during get video stills route', err, { stillRequests });
+			const error = new InternalServerError('Failed during get video stills route', err, { stillRequests });
 			logger.error(util.inspect(error));
 			throw util.inspect(error);
 		}

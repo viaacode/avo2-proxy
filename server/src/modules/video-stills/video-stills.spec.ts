@@ -16,13 +16,13 @@ describe('Video stills', () => {
 	it('should throw an error if no still requests are passed', async () => {
 		const response = await api
 			.post('/video-stills');
-		expect(response.text).toContain('No still requests were passed to the video-stills route');
+		expect(response.body.message).toEqual('No still requests were passed to the video-stills route');
 	});
 
 	it('should throw an error if the wrong still requests format is passed', async () => {
 		const response = await api
 			.post('/video-stills').send([{ incorrectFormat: 'externalId', startTime: 5 }]);
-		expect(response.text).toContain('The still requests array doesn&#39;t have the expected format');
+		expect(response.body.message).toEqual('The still requests array doesn\'t have the expected format');
 	});
 
 	it('should return stills for the requested items', async () => {
@@ -33,8 +33,8 @@ describe('Video stills', () => {
 		expect(response.body).toHaveLength(stillRequests.length);
 		expect(response.body[0]).toBeDefined();
 		expect(response.body[0]).toContainAllKeys(['previewImagePath', 'thumbnailImagePath']);
-		expect(response.body[0].thumbnailImagePath).toContain('82694db09788419a926cb278c83d6059039243c8db8743a1b083f0cc34245661');
-		expect(response.body[1].thumbnailImagePath).not.toContain('82694db09788419a926cb278c83d6059039243c8db8743a1b083f0cc34245661');
+		expect(response.body[0].thumbnailImagePath).toContain('41feeda0461246a2bfbb51f9ec4e1de12c5a51beea3544dc94b5c05e8468559a');
+		expect(response.body[1].thumbnailImagePath).not.toContain('41feeda0461246a2bfbb51f9ec4e1de12c5a51beea3544dc94b5c05e8468559a');
 	});
 
 	it('should return different stills if starttime is different', async () => {

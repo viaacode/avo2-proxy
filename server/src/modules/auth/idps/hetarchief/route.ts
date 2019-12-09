@@ -1,14 +1,26 @@
+import _ from 'lodash';
+import * as queryString from 'querystring';
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
+
 import HetArchiefController from './controller';
 import HetArchiefService, { SamlCallbackBody } from './service';
-import { CustomError } from '../../../../shared/helpers/error';
+import { InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-adapter';
 import AuthController from '../../controller';
 import { LdapUser } from '../../types';
+import StamboekController from '../../../stamboek-validate/controller';
+import { getHost } from '../../../../shared/helpers/url';
+import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 
 interface RelayState {
 	returnToUrl: string;
+}
+
+const STAMBOEK_NUMBER_PATH = 'request.session.stamboekNumber';
+
+if (!process.env.SUMM_REGISTRATION_PAGE) {
+	throw new InternalServerError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
 }
 
 @Path('/auth/hetarchief')
@@ -31,7 +43,7 @@ export default class HetArchiefRoute {
 			const url = await HetArchiefService.createLoginRequestUrl(returnToUrl);
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -51,7 +63,12 @@ export default class HetArchiefRoute {
 				const info: RelayState = JSON.parse(response.RelayState);
 
 				IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
-				IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabase(ldapUser));
+				try {
+					IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser));
+				} catch (err) {
+					// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
+					logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
+				}
 
 				return new Return.MovedTemporarily(info.returnToUrl);
 			} catch (err) {
@@ -59,7 +76,7 @@ export default class HetArchiefRoute {
 				logger.error(err); // TODO redirect to failed login page
 			}
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -83,14 +100,14 @@ export default class HetArchiefRoute {
 				const url = await HetArchiefService.createLogoutRequestUrl(ldapUser.name_id, returnToUrl);
 				return new Return.MovedTemporarily<void>(url);
 			}
-			logger.error(new CustomError(
+			logger.error(new InternalServerError(
 				'ldap user wasn\'t found on the session',
 				null,
 				{ returnToUrl },
 			));
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
 			throw error;
 		}
@@ -113,8 +130,104 @@ export default class HetArchiefRoute {
 				logger.error(err); // TODO redirect to failed login page
 			}
 		} catch (err) {
-			const error = new CustomError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error.toString());
+			throw error;
+		}
+	}
+
+	/**
+	 * Forward the client to the summ registration page
+	 * This way we can avoid needing to set the summ url in the client for every environment
+	 */
+	@Path('register')
+	@GET
+	async register(
+		@QueryParam('returnToUrl') returnToUrl: string,
+		@QueryParam('stamboekNumber') stamboekNumber: string | undefined,
+	): Promise<any> {
+		try {
+			_.set(this.context, STAMBOEK_NUMBER_PATH, stamboekNumber);
+			const serverRedirectUrl = encodeURIComponent(`${process.env.HOST}/auth/hetarchief/verify-email-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: encrypt(stamboekNumber),
+			})}`);
+			return new Return.MovedTemporarily<void>(`${process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
+		} catch (err) {
+			const error = new InternalServerError('Failed during auth registration route', err, {});
+			logger.error(error.toString());
+			throw error;
+		}
+	}
+
+	/**
+	 * This will be the return url that the summ verification email links to
+	 * Here we'll forward the user to the login form, so we can identify the user
+	 */
+	@Path('verify-email-callback')
+	@GET
+	async verifyEmailCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
+		try {
+			// TODO get saml login data straight from registration form callback => so we can skip this login form step
+			const serverRedirectUrl = `${process.env.HOST}/auth/hetarchief/register-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once summ correctly adds "?announce_account_confirmation=true" query param
+			})}`;
+			const url = `${process.env.HOST}/auth/hetarchief/login?${queryString.stringify({
+				returnToUrl: serverRedirectUrl,
+			})}`;
+			return new Return.MovedTemporarily<void>(url);
+		} catch (err) {
+			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
+			logger.error(error.toString());
+			throw error;
+		}
+	}
+
+	/**
+	 * This will verify that the user logged in if the user has access, and create an avo user and profile record in the database
+	 */
+	@Path('register-callback')
+	@GET
+	async registerCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
+		const clientHost = getHost(returnToUrl);
+		try {
+			const stamboekNumber = decrypt(encryptedStamboekNumber);
+			if (!stamboekNumber) {
+				logger.error('Failed to register user since the register callback function was called without a stamboek number', {
+					returnToUrl,
+					encryptedStamboekNumber,
+				});
+				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+					message: 'Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren',
+					icon: 'slash',
+				})}`);
+			}
+			const stamboekValidateStatus = await StamboekController.validate(stamboekNumber);
+			if (stamboekValidateStatus === 'VALID') {
+				await HetArchiefController.createUserAndProfile(this.context.request, stamboekNumber);
+				return new Return.MovedTemporarily<void>(returnToUrl);
+			}
+			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
+				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+					message: 'Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.',
+					icon: 'users',
+				})}`);
+			}
+			// INVALID
+			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+				message: 'Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.',
+				icon: 'x-circle',
+			})}`);
+		} catch (err) {
+			const error = new InternalServerError('Failed during auth registration route', err, {});
+			logger.error(error.toString());
+			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
+				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+					message: 'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
+					icon: 'users',
+				})}`);
+			}
 			throw error;
 		}
 	}

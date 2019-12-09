@@ -1,7 +1,7 @@
 import { default as Joi, ValidationResult } from '@hapi/joi';
 
 import { allowUnknown, stripUnknown } from './options';
-import { CustomError } from '../error';
+import { InternalServerError } from '../error';
 import { IValidationPreset } from '../../shared.types';
 import { Validator } from './index';
 
@@ -68,7 +68,7 @@ describe('[UNIT - SHARED] Validation - Validator', () => {
 
 	it('Should throw a custom error if there are errors and a custom error is provided', (done: jest.DoneCallback) => {
 		expect(() => {
-			Validator.validate({}, preset, new CustomError());
+			Validator.validate({}, preset, new InternalServerError());
 		}).toThrowError('Something went wrong');
 		done();
 	});
