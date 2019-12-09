@@ -5,8 +5,15 @@ import { InternalServerError, BadRequestError } from '../../shared/helpers/error
 import DataService from '../data/service';
 import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
 import _ from 'lodash';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
+
+checkRequiredEnvs([
+	'ELASTICSEARCH_INDEX',
+	'ELASTICSEARCH_INDEX_ITEMS',
+	'ELASTICSEARCH_INDEX_COLLECTIONS',
+]);
 
 const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
 	both: process.env.ELASTICSEARCH_INDEX,
