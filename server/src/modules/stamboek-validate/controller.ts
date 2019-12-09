@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { InternalServerError } from '../../shared/helpers/error';
 import StamboekService from './service';
 import { AuthService } from '../auth/service';
-import { IdpHelper } from '../auth/idp-adapter';
+import { IdpHelper } from '../auth/idp-helper';
 import DataService from '../data/service';
 import { GET_PROFILES_BY_STAMBOEK } from './queries.gql';
 import _ from 'lodash';

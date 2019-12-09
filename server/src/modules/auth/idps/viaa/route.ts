@@ -1,5 +1,5 @@
 import { Context, Path, ServiceContext, QueryParam, GET, Return } from 'typescript-rest';
-import { IdpHelper } from '../../idp-adapter';
+import { IdpHelper } from '../../idp-helper';
 
 @Path('/auth/viaa')
 export default class ViaaRoute {

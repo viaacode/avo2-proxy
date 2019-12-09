@@ -6,7 +6,7 @@ import HetArchiefController from './controller';
 import HetArchiefService, { SamlCallbackBody } from './service';
 import { InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
-import { IdpHelper } from '../../idp-adapter';
+import { IdpHelper } from '../../idp-helper';
 import AuthController from '../../controller';
 import { LdapUser } from '../../types';
 import StamboekController from '../../../stamboek-validate/controller';

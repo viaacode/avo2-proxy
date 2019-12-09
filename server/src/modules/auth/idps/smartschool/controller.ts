@@ -4,7 +4,7 @@ import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID, INSERT_IDP_MAP, INSERT
 import { Avo } from '@viaa/avo2-types';
 import _ from 'lodash';
 import { IdpMap, IdpType, SharedUser } from '../../types';
-import { IdpHelper } from '../../idp-adapter';
+import { IdpHelper } from '../../idp-helper';
 import { Request } from 'express';
 import { AuthService } from '../../service';
 import AuthController from '../../controller';
@@ -12,7 +12,7 @@ import { InternalServerError } from '../../../../shared/helpers/error';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
-export type LoginSuccessResponse = { avoUser: SharedUser, smartschoolUserInfo: SmartschoolUserInfo };
+export type LoginSuccessResponse = { avoUser?: SharedUser, smartschoolUserInfo: SmartschoolUserInfo };
 export type SmartschoolUserLoginResponse = LoginErrorResponse | LoginSuccessResponse;
 
 export default class SmartschoolController extends IdpHelper {
@@ -59,14 +59,17 @@ export default class SmartschoolController extends IdpHelper {
 		// Teacher
 		if (smartschoolUserInfo.basisrol === 'leerkracht') {
 			const userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
+			let avoUser: SharedUser | undefined;
 			if (userUid) {
-				const avoUser = await AuthService.getAvoUserInfoById(userUid);
+				avoUser = await AuthService.getAvoUserInfoById(userUid);
 				if (!avoUser) {
 					throw new InternalServerError('Failed to get user by id from the database after smartschool login', null, { userUid });
 				}
-				return { avoUser, smartschoolUserInfo };
 			}
-			return { error: 'FIRST_LINK_ACCOUNT' };
+
+			return { avoUser, smartschoolUserInfo };
+			// }
+			// return { error: 'FIRST_LINK_ACCOUNT' };
 		}
 
 		// Other

@@ -1,11 +1,3 @@
-import { Avo } from '@viaa/avo2-types';
-
-export interface LoginResponse { // TODO use type from types repo
-	message: 'LOGGED_IN' | 'LOGGED_OUT';
-	logoutPath?: string;
-	userInfo?: Avo.User.User;
-}
-
 export interface IdpMap {
 	id: number;
 	local_user_id: string; // uuid
@@ -82,6 +74,7 @@ export interface SharedUser {
 	updated_at: string;
 	mail: string;
 	organisation_id: string;
+	idpmaps: {idp: IdpType}[];
 }
 
 export interface Profile {
@@ -109,7 +102,7 @@ export interface Profile {
 	}[];
 }
 
-export type IdpType = 'HETARCHIEF' | 'VIAA' | 'SMARTSCHOOL' | 'KLASCEMENT';
+export type IdpType = 'HETARCHIEF' | 'VIAA' | 'SMARTSCHOOL' | 'KLASCEMENT'; // TODO switch to typings library
 
 export interface IdpMetaData {
 	'md:EntityDescriptor': {

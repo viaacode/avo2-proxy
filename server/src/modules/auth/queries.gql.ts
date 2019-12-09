@@ -40,6 +40,9 @@ query getUserInfoByMail($email: String!) {
     updated_at
     mail
     organisation_id
+    idpmaps {
+      idp
+    }
   }
 }
 `;
@@ -86,6 +89,9 @@ query getUserInfoByMail($userId: uuid!) {
     updated_at
     mail
     organisation_id
+    idpmaps {
+      idp
+    }
   }
 }
 `;
