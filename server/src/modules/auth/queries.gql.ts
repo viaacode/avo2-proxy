@@ -128,6 +128,17 @@ mutation insertIdp($idpMap: users_idp_map_insert_input!) {
 }
 `;
 
+/**
+ * Unlink a user from a specific idp
+ */
+export const DELETE_IDP_MAPS = `
+mutation deleteIdp($idpType: users_idps_enum!, $avoUserId: uuid!) {
+	delete_users_idp_map(where: {idp: {_eq: $idpType}, local_user_id: {_eq: $avoUserId}}) {
+    affected_rows
+  }
+}
+`;
+
 export const GET_USER_BY_IDP_ID = `
 query getUserByIdpId($idpType: users_idps_enum!, $idpId: uuid!) {
   shared_users(where: {_and: {idp: {_eq: $idpType}, local_user_id: {_eq: $idpId}}}) {

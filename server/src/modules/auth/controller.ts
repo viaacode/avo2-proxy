@@ -12,7 +12,7 @@ import { logger } from '../../shared/helpers/logger';
 import { IdpHelper } from './idp-helper';
 import { Avo } from '@viaa/avo2-types';
 import DataService from '../data/service';
-import { INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import { DELETE_IDP_MAPS, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { getHost } from '../../shared/helpers/url';
 import { LinkAccountInfo } from './route';
@@ -124,9 +124,10 @@ export default class AuthController {
 	public static async redirectToIdpLoginForLinkingAccounts(request: Request, returnToUrl: string, idpType: IdpType) {
 		const clientHost = getHost(returnToUrl);
 
+		const avoUserInfo: Avo.User.User = await IdpHelper.getUpdatedAvoUserInfoFromSession(request);
 
 		// Check if this idp type is already linked to the currently logged in account
-		if ((avoDbUser.idpmaps || []).map(obj => obj.idp).includes(idpType)) {
+		if (((avoUserInfo as any).idpmaps || []).map((obj: { idp: string }) => obj.idp).includes(idpType)) { // TODO remove "any" cast once typings are updated
 			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
 				message: `Je account is reeds gelinked met ${idpType.toLowerCase()}. Unlink je account eerst van je andere smartschool account`,
 				icon: 'link',
@@ -172,6 +173,19 @@ export default class AuthController {
 				message: 'Het linken van de account is mislukt (database error)',
 				icon: 'alert-triangle',
 			})}`);
+		}
+	}
+
+	public static async unlinkAccounts(request: Request, idpType: IdpType) {
+		let avoUserInfo: Avo.User.User;
+		try {
+			avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
+			await DataService.execute(DELETE_IDP_MAPS, {
+				idpType,
+				avoUserId: avoUserInfo.uid,
+			});
+		} catch (err) {
+			throw new InternalServerError('Failed to remove idp map from database', err, { idpType, avoUserInfo });
 		}
 	}
 }

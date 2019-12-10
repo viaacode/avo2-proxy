@@ -74,4 +74,23 @@ export default class AuthRoute {
 
 		return redirectResponse;
 	}
+
+	@Path('unlink-account')
+	@GET
+	@PreProcessor(isAuthenticated)
+	async unlinkAccount(
+		@QueryParam('returnToUrl') returnToUrl: string,
+		@QueryParam('idpType') idpType: IdpType,
+	): Promise<any> {
+		const clientHost = getHost(returnToUrl);
+		try {
+			await AuthController.unlinkAccounts(this.context.request, idpType);
+			return new Return.MovedTemporarily<void>(returnToUrl);
+		} catch (err) {
+			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
+				message: 'Het ontkoppelen van de account is mislukt',
+				icon: 'alert-triangle',
+			})}`);
+		}
+	}
 }
