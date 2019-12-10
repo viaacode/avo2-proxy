@@ -25,6 +25,8 @@ export default class HetArchiefController {
 		if (idpType !== 'HETARCHIEF') {
 			return false;
 		}
+
+		// Check if ldap user object is present on session
 		const idpUserInfo: LdapUser | null = IdpHelper.getIdpUserInfoFromSession(request);
 		if (!idpUserInfo) {
 			return false;
@@ -34,10 +36,13 @@ export default class HetArchiefController {
 		if (Date.now() > ldapExpireOn) {
 			return false;
 		}
+
+		// Check if ldap user has access to avo
 		if (!_.get(idpUserInfo, 'attributes.apps', []).includes('avo')) {
 			return false;
 		}
 
+		// Check if avo user is present on session
 		const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
 		return !!avoUserInfo;
 	}
@@ -72,8 +77,7 @@ export default class HetArchiefController {
 			// Create avo profile object
 			await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
 
-			// TODO add avo group to ldap once we get a service account (AVO2-153)
-			// await HetArchiefController.addAvoAppToLdap(idpUserInfo);
+			await HetArchiefController.addAvoAppToLdap(idpUserInfo);
 
 			const userInfo = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
@@ -119,15 +123,15 @@ export default class HetArchiefController {
 			const url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
 			const data = {
 				apps: ['avo'],
-				role_id: 'Docent',
 			};
-			const response: AxiosResponse<any> = await axios(url, {
+			await axios(url, {
 				data,
 				method: 'put',
-				// TODO get ldap credentials
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
 			});
-			logger.info('response from ldap api: ', response);
-
 			return;
 		} catch (err) {
 			throw new InternalServerError('Failed to add avo app to ldap user object', err, { ldapObject });
