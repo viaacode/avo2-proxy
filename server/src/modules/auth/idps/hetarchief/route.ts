@@ -121,16 +121,10 @@ export default class HetArchiefRoute {
 	@POST
 	async logoutCallback(response: SamlCallbackBody): Promise<any> {
 		try {
-			try {
-				const info: RelayState = JSON.parse(response.RelayState);
-
-				return new Return.MovedTemporarily(info.returnToUrl);
-			} catch (err) {
-				// Failed to login
-				logger.error(err); // TODO redirect to failed login page
-			}
+			const info: RelayState = JSON.parse(response.RelayState);
+			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during auth login route', err, { relayState: response.RelayState });
 			logger.error(error.toString());
 			throw error;
 		}
