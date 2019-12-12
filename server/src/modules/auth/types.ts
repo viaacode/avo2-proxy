@@ -74,7 +74,17 @@ export interface SharedUser {
 	updated_at: string;
 	mail: string;
 	organisation_id: string;
-	idpmaps: {idp: IdpType}[];
+	idpmaps: { idp: IdpType }[];
+	profile_classifications: {
+		key: string;
+	}[];
+	profile_contexts: {
+		key: string;
+	}[];
+	profile_organizations: {
+		unit_id: string | null;
+		organization_id: string;
+	}[];
 }
 
 export interface Profile {
@@ -137,11 +147,11 @@ export interface IdpMetaData {
 					Location: string;
 				};
 			};
-			'md:NameIDFormat':  {
+			'md:NameIDFormat': {
 				_text: string;
 			};
 			'md:SingleSignOnService': {
-				_attributes:  {
+				_attributes: {
 					Binding: string;
 					Location: string;
 				};
