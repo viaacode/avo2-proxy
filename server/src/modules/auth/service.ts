@@ -67,9 +67,9 @@ export class AuthService {
 		(user as any).permissions = Array.from(permissions);
 		(user as any).idpmaps = _.uniq((user.idpmaps || []).map(obj => obj.idp));
 		delete user.profiles;
-		(user as any).educationLevels = user.profile_contexts.map(context => context.key);
-		(user as any).subjects = user.profile_classifications.map(classification => classification.key);
-		(user as any).organizations = await promiseUtils.mapLimit(user.profile_organizations, 5, async (org) => {
+		(user as any).educationLevels = (_.get(user, 'profile.profile_contexts', []) as {key: string}[]).map(context => context.key);
+		(user as any).subjects = (_.get(user, 'profile.profile_classifications', []) as {key: string}[]).map(classification => classification.key);
+		(user as any).organizations = await promiseUtils.mapLimit(_.get(user, 'profile.profile_organizations', []), 5, async (org) => {
 			const ldapOrg = await EducationOrganizationsService.getOrganization(org.organization_id, org.unit_id);
 			return {
 				organizationName: ldapOrg.name,
