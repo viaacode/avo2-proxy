@@ -1,6 +1,6 @@
 export const GET_USER_INFO_BY_USER_EMAIL = `
 query getUserInfoByMail($email: String!) {
-  users: shared_users(limit: 1, where: {uid: {_eq: $userId}}) {
+  users: shared_users(limit: 1, where: {mail: {_eq: $email}}) {
     id
     first_name
     last_name
