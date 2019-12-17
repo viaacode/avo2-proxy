@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { IdpHelper } from '../../idp-helper';
 import { Request } from 'express';
-import { IdpType, LdapUser, SharedUser } from '../../types';
+import { IdpType, LdapUser } from '../../types';
 import { AuthService } from '../../service';
 import { Avo } from '@viaa/avo2-types';
 import AuthController from '../../controller';
@@ -47,7 +47,7 @@ export default class HetArchiefController {
 		return !!avoUserInfo;
 	}
 
-	public static async getAvoUserInfoFromDatabaseByEmail(ldapUserInfo: LdapUser): Promise<SharedUser> {
+	public static async getAvoUserInfoFromDatabaseByEmail(ldapUserInfo: LdapUser): Promise<Avo.User.User> {
 		const email = ldapUserInfo.name_id;
 		return await AuthService.getAvoUserInfoByEmail(email);
 	}
@@ -79,7 +79,7 @@ export default class HetArchiefController {
 
 			await HetArchiefController.addAvoAppToLdap(idpUserInfo);
 
-			const userInfo = await AuthService.getAvoUserInfoById(userUuid);
+			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
 			// Add permission groups
