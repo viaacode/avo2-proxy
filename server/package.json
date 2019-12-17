@@ -30,7 +30,6 @@
   "dependencies": {
     "@hapi/joi": "15.1.1",
     "@studiohyperdrive/logger": "1.1.1",
-    "@types/hapi__joi": "15.0.3",
     "@viaa/avo2-types": "^2.6.1",
     "apollo-boost": "^0.4.4",
     "async": "3.1.0",
@@ -48,6 +47,7 @@
     "helmet": "3.20.0",
     "lodash": "^4.17.15",
     "node-cron": "^2.0.3",
+    "node-zendesk": "^1.4.0",
     "passport-saml": "^1.1.0",
     "public-ip": "^3.2.0",
     "query-string": "^6.8.1",
@@ -80,6 +80,7 @@
     "@types/lodash": "^4.14.138",
     "@types/node": "12.7.2",
     "@types/node-cron": "^2.0.2",
+    "@types/node-zendesk": "^1.4.0",
     "@types/ramda": "0.26.20",
     "@types/saml2-js": "^1.6.7",
     "@types/simple-oauth2": "^2.2.1",
