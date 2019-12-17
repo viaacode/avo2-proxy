@@ -81,16 +81,16 @@ export default class EducationOrganizationsService {
 		try {
 			url = `${process.env.LDAP_API_ENDPOINT}/organizations?${querystring.stringify({
 				sideload: 'units',
-				organization_id: organizationId,
+				id: organizationId,
 			})}`;
-			const response: AxiosResponse<LdapEducationOrganization> = await axios(url, {
+			const response: AxiosResponse<LdapEducationOrganization[]> = await axios(url, {
 				method: 'get',
 				auth: {
 					username: process.env.LDAP_API_USERNAME,
 					password: process.env.LDAP_API_PASSWORD,
 				},
 			});
-			return response.data || null;
+			return (response.data || [])[0];
 		} catch (err) {
 			const error = new ExternalServerError(
 				'Failed to get an organization from the ldap api',

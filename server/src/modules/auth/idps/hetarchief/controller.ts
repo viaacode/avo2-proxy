@@ -5,8 +5,7 @@ import { IdpType, LdapUser } from '../../types';
 import { AuthService } from '../../service';
 import { Avo } from '@viaa/avo2-types';
 import AuthController from '../../controller';
-import axios, { AxiosResponse } from 'axios';
-import { logger } from '../../../../shared/helpers/logger';
+import axios from 'axios';
 import { InternalServerError } from '../../../../shared/helpers/error';
 
 const LDAP_ROLE_TO_USER_ROLE: { [ldapRole: string]: number } = {
