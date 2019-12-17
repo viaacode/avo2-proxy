@@ -9,6 +9,7 @@ import * as queryString from 'querystring';
 import { getHost } from '../../shared/helpers/url';
 import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
+import { IdpHelper } from './idp-helper';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
 export interface LinkAccountInfo {
@@ -37,7 +38,9 @@ export default class AuthRoute {
 	@Path('logout')
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		return AuthController.getIdpSpecificLogoutPage(this.context.request, returnToUrl);
+		const idpLogoutPage = AuthController.getIdpSpecificLogoutPage(this.context.request, returnToUrl);
+		IdpHelper.clearAllIdpUserInfosFromSession(this.context.request);
+		return idpLogoutPage;
 	}
 
 	@Path('link-account')

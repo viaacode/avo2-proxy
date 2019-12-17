@@ -1,10 +1,8 @@
-import { IdpType, SharedUser } from './types';
+import { IdpType } from './types';
 import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import { Request } from 'express';
 import { InternalServerError, ServerError } from '../../shared/helpers/error';
-import { Return } from 'typescript-rest';
-import * as queryString from 'querystring';
 import { AuthService } from './service';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
@@ -50,38 +48,18 @@ export class IdpHelper {
 			throw new ServerError('User object was not found on the session', null);
 		}
 		// Refresh avo user info from database
-		const avoDbUser = await AuthService.getAvoUserInfoById(avoUser.uid);
+		const avoDbUser: Avo.User.User = await AuthService.getAvoUserInfoById(avoUser.uid);
 		if (!avoDbUser) {
 			throw new ServerError('Failed to find avo user in the database', null, { userUid: avoUser.uid });
 		}
 
-		return this.simplifyUserObject(avoDbUser);
+		return avoDbUser;
 	}
 
-	private static simplifyUserObject(user: SharedUser | null): Avo.User.User {
-		if (!user) {
-			return null;
-		}
-		// Simplify user object structure
-		(user as any).profile = user.profiles[0];
-		const permissions = new Set<string>();
-		_.get(user, 'profiles[0].groups', []).forEach((group: any) => {
-			_.get(group, 'group.group_user_permission_groups', []).forEach((permissionGroup: any) => {
-				_.get(permissionGroup, 'permission_group.permission_group_user_permissions', []).forEach((permission: any) => {
-					permissions.add(permission.permission.label);
-				});
-			});
-		});
-		(user as any).permissions = Array.from(permissions);
-		(user as any).idpmaps = _.uniq((user.idpmaps || []).map(obj => obj.idp));
-		delete user.profiles;
-		return user as unknown as Avo.User.User;
-	}
-
-	public static setAvoUserInfoOnSession(request: Express.Request, user: SharedUser | null): void {
+	public static setAvoUserInfoOnSession(request: Express.Request, user: Avo.User.User | null): void {
 		try {
 			if (request.session) {
-				_.set(request, AVO_USER_INFO_PATH, this.simplifyUserObject(user));
+				_.set(request, AVO_USER_INFO_PATH, user);
 			} else {
 				throw new InternalServerError(
 					'Failed to store avo user info because no session was found on the request object',
