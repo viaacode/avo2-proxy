@@ -28,6 +28,7 @@ import EducationOrganizationsRoute from './modules/education-organizations/route
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
 import { ErrorMiddleware } from './modules/core/middleware/error';
+import ZendeskService from './modules/zendesk/service';
 
 export class App {
 	public app: Application = express();
@@ -41,6 +42,7 @@ export class App {
 		OrganizationService.initialize();
 		HetArchiefService.initialize();
 		SmartschoolService.initialize();
+		ZendeskService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();
