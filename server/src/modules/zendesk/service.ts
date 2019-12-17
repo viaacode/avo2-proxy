@@ -1,8 +1,9 @@
+import * as util from 'util';
+import zendesk, { Client, Tickets } from 'node-zendesk';
+
 import { ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
-import zendesk, { Client, Tickets } from 'node-zendesk';
-import * as util from 'util';
 
 export default class ZendeskService {
 	private static client: Client;

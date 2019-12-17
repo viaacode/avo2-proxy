@@ -1,7 +1,8 @@
+import _ from 'lodash';
 import axios, { AxiosResponse } from 'axios';
+
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import _ from 'lodash';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 interface ValidationResponse {

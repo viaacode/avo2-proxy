@@ -1,9 +1,11 @@
-import { Context, Path, ServiceContext, POST } from 'typescript-rest';
-import ZendeskController from './controller';
 import * as util from 'util';
+import { Context, Path, ServiceContext, POST } from 'typescript-rest';
+import { Tickets } from 'node-zendesk';
+
 import { logger } from '../../shared/helpers/logger';
 import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
-import { Tickets } from 'node-zendesk';
+
+import ZendeskController from './controller';
 
 @Path('/zendesk')
 export default class ZendeskRoute {
