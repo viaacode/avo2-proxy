@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { IdpHelper } from '../../idp-adapter';
+import { IdpHelper } from '../../idp-helper';
 import { Request } from 'express';
 import { IdpType, LdapUser, SharedUser } from '../../types';
 import { AuthService } from '../../service';

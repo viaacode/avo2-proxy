@@ -40,6 +40,9 @@ query getUserInfoByMail($email: String!) {
     updated_at
     mail
     organisation_id
+    idpmaps {
+      idp
+    }
   }
 }
 `;
@@ -86,6 +89,9 @@ query getUserInfoByMail($userId: uuid!) {
     updated_at
     mail
     organisation_id
+    idpmaps {
+      idp
+    }
   }
 }
 `;
@@ -119,6 +125,17 @@ mutation insertIdp($idpMap: users_idp_map_insert_input!) {
 	insert_users_idp_map(objects: [$idpMap]) {
 		affected_rows
 	}
+}
+`;
+
+/**
+ * Unlink a user from a specific idp
+ */
+export const DELETE_IDP_MAPS = `
+mutation deleteIdp($idpType: users_idps_enum!, $avoUserId: uuid!) {
+	delete_users_idp_map(where: {idp: {_eq: $idpType}, local_user_id: {_eq: $avoUserId}}) {
+    affected_rows
+  }
 }
 `;
 
