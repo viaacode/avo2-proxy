@@ -5,7 +5,6 @@ import zendesk, { Client, Tickets } from 'node-zendesk';
 import * as util from 'util';
 
 export default class ZendeskService {
-	private static createTicketPromised: (ticket: Tickets.CreatePayload) => Promise<Tickets.ResponsePayload>;
 	private static client: Client;
 
 	public static initialize() {
@@ -15,8 +14,6 @@ export default class ZendeskService {
 			token: process.env.ZENDESK_TOKEN,
 			remoteUri: process.env.ZENDESK_ENDPOINT,
 		});
-		ZendeskService.createTicketPromised =
-			util.promisify(ZendeskService.client.tickets.create) as (ticket: Tickets.CreatePayload) => Promise<Tickets.ResponsePayload>;
 	}
 
 	/**
@@ -24,13 +21,16 @@ export default class ZendeskService {
 	 * @param ticket
 	 */
 	public static async createTicket(ticket: Tickets.CreateModel): Promise<Tickets.ResponseModel> {
-		try {
-			const response = await this.createTicketPromised({ ticket });
-			return response.ticket;
-		} catch (err) {
-			const error = new ExternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
-			logger.error(util.inspect(error));
-			throw error;
-		}
+		return new Promise<Tickets.ResponseModel>((resolve, reject) => {
+			try {
+				ZendeskService.client.tickets.create({ ticket }, (error: Error | undefined, response: any, result: any) => {
+					resolve(result);
+				});
+			} catch (err) {
+				const error = new ExternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
+				logger.error(util.inspect(error));
+				reject(error);
+			}
+		});
 	}
 }

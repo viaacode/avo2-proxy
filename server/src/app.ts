@@ -29,6 +29,7 @@ import EducationOrganizationsRoute from './modules/education-organizations/route
 import FallbackRoute from './modules/fallback/route';
 import { ErrorMiddleware } from './modules/core/middleware/error';
 import ZendeskService from './modules/zendesk/service';
+import ZendeskRoute from './modules/zendesk/route';
 
 export class App {
 	public app: Application = express();
@@ -113,6 +114,7 @@ export class App {
 			VideoStillsRoute,
 			StamboekRoute,
 			EventLoggingRoute,
+			ZendeskRoute,
 
 			FallbackRoute,
 		);
