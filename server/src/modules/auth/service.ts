@@ -4,8 +4,9 @@ import DataService from '../data/service';
 import { GET_USER_INFO_BY_ID, GET_USER_INFO_BY_USER_EMAIL } from './queries.gql';
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SharedUser } from './types';
-import EducationOrganizationsService from '../education-organizations/service';
+import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
 import * as promiseUtils from 'blend-promise-utils';
+import { ClientEducationOrganization } from '../education-organizations/route';
 
 export class AuthService {
 	public static async getAvoUserInfoByEmail(email: string): Promise<Avo.User.User> {
@@ -69,15 +70,21 @@ export class AuthService {
 		delete user.profiles;
 
 		// Simplify linked objects
-		(user as any).profile.educationLevels = (_.get(user, 'profile.profile_contexts', []) as {key: string}[]).map(context => context.key);
-		(user as any).profile.subjects = (_.get(user, 'profile.profile_classifications', []) as {key: string}[]).map(classification => classification.key);
-		(user as any).profile.organizations = await promiseUtils.mapLimit(_.get(user, 'profile.profile_organizations', []), 5, async (org) => {
-			const ldapOrg = await EducationOrganizationsService.getOrganization(org.organization_id, org.unit_id);
-			return {
-				organizationName: ldapOrg.name,
-				unitAddress: _.get(ldapOrg.units.find(unit => unit.id === org.unit_id), 'address', null),
-			};
-		});
+		(user as any).profile.educationLevels = (_.get(user, 'profile.profile_contexts', []) as { key: string }[]).map(context => context.key);
+		(user as any).profile.subjects = (_.get(user, 'profile.profile_classifications', []) as { key: string }[]).map(classification => classification.key);
+		(user as any).profile.organizations = await promiseUtils.mapLimit(
+			_.get(user, 'profile.profile_organizations', []),
+			5,
+			async (org): Promise<ClientEducationOrganization> => {
+				const ldapOrg: LdapEducationOrganization = await EducationOrganizationsService.getOrganization(org.organization_id, org.unit_id);
+				const unitAddress = _.get((ldapOrg.units || []).find(unit => unit.id === org.unit_id), 'address', null);
+				return {
+					organizationId: org.organization_id,
+					unitId: org.unit_id,
+					label: ldapOrg.name + (unitAddress ? ` - ${unitAddress}` : ''),
+				};
+			}
+		);
 		delete (user as any).profile.profile_contexts;
 		delete (user as any).profile.profile_classifications;
 		delete (user as any).profile.profile_organizations;

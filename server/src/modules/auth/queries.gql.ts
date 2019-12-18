@@ -37,7 +37,7 @@ query getUserInfoByMail($email: String!) {
       }
       profile_organizations {
         unit_id
-        profile_id
+        organization_id
       }
     }
     created_at
@@ -98,7 +98,7 @@ query getUserInfoById($userId: uuid!) {
       }
       profile_organizations {
         unit_id
-        profile_id
+        organization_id
       }
     }
     created_at
