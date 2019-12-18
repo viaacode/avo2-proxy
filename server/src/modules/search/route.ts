@@ -1,12 +1,14 @@
+import * as util from 'util';
 import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
+import { EsIndex } from '@viaa/avo2-types/types/search/types';
 
-import SearchController from './controller';
 import { logger } from '../../shared/helpers/logger';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-import { EsIndex } from '@viaa/avo2-types/types/search/types';
+
+import SearchController from './controller';
 
 @Path('/search')
 export default class SearchRoute {
@@ -23,7 +25,7 @@ export default class SearchRoute {
 			return await SearchController.search(searchRequest);
 		} catch (err) {
 			const error = new InternalServerError('failed during search route', err, { ...searchRequest });
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -43,7 +45,7 @@ export default class SearchRoute {
 			return await SearchController.getRelatedItems(itemId, index as EsIndex, limit);
 		} catch (err) {
 			const error = new InternalServerError('failed during search/related route', err, { itemId });
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}

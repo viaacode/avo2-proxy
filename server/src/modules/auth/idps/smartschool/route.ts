@@ -1,12 +1,15 @@
+import * as querystring from 'querystring';
+import * as util from 'util';
+import _ from 'lodash';
 import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
+
 import { InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
+import { IdpHelper } from '../../idp-helper';
+import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
+
 import SmartschoolService from './service';
 import SmartschoolController, { LoginErrorResponse, LoginSuccessResponse, SmartschoolUserLoginResponse } from './controller';
-import { IdpHelper } from '../../idp-helper';
-import _ from 'lodash';
-import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
-import * as querystring from 'querystring';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 
@@ -24,7 +27,7 @@ export default class SmartschoolRoute {
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -65,7 +68,7 @@ export default class SmartschoolRoute {
 			return new Return.MovedTemporarily(redirectUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error; // TODO redirect to failed login page
 		}
 	}
