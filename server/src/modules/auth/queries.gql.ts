@@ -12,6 +12,8 @@ query getUserInfoByMail($email: String!) {
       created_at
       location
       stamboek
+      bio
+      function
       updated_at
       user_id
       profile_user_group {
@@ -27,6 +29,16 @@ query getUserInfoByMail($email: String!) {
           }
         }
       }
+      profile_classifications {
+        key
+      }
+      profile_contexts {
+        key
+      }
+      profile_organizations {
+        unit_id
+        organization_id
+      }
     }
     created_at
     expires_at
@@ -40,12 +52,15 @@ query getUserInfoByMail($email: String!) {
     updated_at
     mail
     organisation_id
+    idpmaps {
+      idp
+    }
   }
 }
 `;
 
 export const GET_USER_INFO_BY_ID = `
-query getUserInfoByMail($userId: uuid!) {
+query getUserInfoById($userId: uuid!) {
   users: shared_users(limit: 1, where: {uid: {_eq: $userId}}) {
     id
     first_name
@@ -58,6 +73,8 @@ query getUserInfoByMail($userId: uuid!) {
       created_at
       location
       stamboek
+      bio
+      function
       updated_at
       user_id
       profile_user_group {
@@ -73,6 +90,16 @@ query getUserInfoByMail($userId: uuid!) {
           }
         }
       }
+      profile_classifications {
+        key
+      }
+      profile_contexts {
+        key
+      }
+      profile_organizations {
+        unit_id
+        organization_id
+      }
     }
     created_at
     expires_at
@@ -86,6 +113,9 @@ query getUserInfoByMail($userId: uuid!) {
     updated_at
     mail
     organisation_id
+    idpmaps {
+      idp
+    }
   }
 }
 `;
@@ -119,6 +149,17 @@ mutation insertIdp($idpMap: users_idp_map_insert_input!) {
 	insert_users_idp_map(objects: [$idpMap]) {
 		affected_rows
 	}
+}
+`;
+
+/**
+ * Unlink a user from a specific idp
+ */
+export const DELETE_IDP_MAPS = `
+mutation deleteIdp($idpType: users_idps_enum!, $avoUserId: uuid!) {
+	delete_users_idp_map(where: {idp: {_eq: $idpType}, local_user_id: {_eq: $avoUserId}}) {
+    affected_rows
+  }
 }
 `;
 

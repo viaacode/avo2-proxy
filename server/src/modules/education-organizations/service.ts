@@ -1,7 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
-import { InternalServerError } from '../../shared/helpers/error';
+import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
+import * as querystring from 'query-string';
+import { Avo } from '@viaa/avo2-types';
+import EducationOrganization = Avo.EducationOrganization;
 
 export interface LdapEducationOrganization {
 	id: string;
@@ -67,6 +70,35 @@ export default class EducationOrganizationsService {
 				{
 					url,
 					zipCode,
+				});
+			logger.error(error);
+			throw error;
+		}
+	}
+
+	public static async getOrganization(organizationId: string, unitId: string): Promise<LdapEducationOrganization | null> {
+		let url: string;
+		try {
+			url = `${process.env.LDAP_API_ENDPOINT}/organizations?${querystring.stringify({
+				sideload: 'units',
+				id: organizationId,
+			})}`;
+			const response: AxiosResponse<LdapEducationOrganization[]> = await axios(url, {
+				method: 'get',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+			});
+			return (response.data || [])[0];
+		} catch (err) {
+			const error = new ExternalServerError(
+				'Failed to get an organization from the ldap api',
+				err,
+				{
+					url,
+					organizationId,
+					unitId,
 				});
 			logger.error(error);
 			throw error;

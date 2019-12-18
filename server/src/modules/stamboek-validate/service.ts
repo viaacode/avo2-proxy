@@ -1,7 +1,8 @@
+import _ from 'lodash';
 import axios, { AxiosResponse } from 'axios';
+
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import _ from 'lodash';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 interface ValidationResponse {
@@ -33,22 +34,7 @@ export default class StamboekService {
 	public static async validate(stamboekNumber: string): Promise<boolean> {
 		let url: string;
 		try {
-			if (!process.env.STAMBOEK_VERIFY_ENDPOINT) {
-				/* istanbul ignore next */
-				throw new InternalServerError(
-					'STAMBOEK_VERIFY_ENDPOINT env variable is not set',
-					null,
-					{ STAMBOEK_VERIFY_ENDPOINT: process.env.STAMBOEK_VERIFY_ENDPOINT }
-				);
-			}
-			if (!process.env.STAMBOEK_VERIFY_TOKEN) {
-				/* istanbul ignore next */
-				throw new InternalServerError(
-					'STAMBOEK_VERIFY_TOKEN env variable is not set',
-					null,
-					{ STAMBOEK_VERIFY_TOKEN: process.env.STAMBOEK_VERIFY_TOKEN }
-				);
-			}
+			checkRequiredEnvs(['STAMBOEK_VERIFY_ENDPOINT', 'STAMBOEK_VERIFY_TOKEN']);
 			url = `${process.env.STAMBOEK_VERIFY_ENDPOINT}/${stamboekNumber}?token=${process.env.STAMBOEK_VERIFY_TOKEN}`;
 			const response: AxiosResponse<ValidationResponse> = await axios(url, {
 				method: 'get',

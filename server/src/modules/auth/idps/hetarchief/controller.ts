@@ -1,12 +1,11 @@
 import _ from 'lodash';
-import { IdpHelper } from '../../idp-adapter';
+import { IdpHelper } from '../../idp-helper';
 import { Request } from 'express';
-import { IdpType, LdapUser, SharedUser } from '../../types';
+import { IdpType, LdapUser } from '../../types';
 import { AuthService } from '../../service';
 import { Avo } from '@viaa/avo2-types';
 import AuthController from '../../controller';
-import axios, { AxiosResponse } from 'axios';
-import { logger } from '../../../../shared/helpers/logger';
+import axios from 'axios';
 import { InternalServerError } from '../../../../shared/helpers/error';
 
 const LDAP_ROLE_TO_USER_ROLE: { [ldapRole: string]: number } = {
@@ -25,6 +24,8 @@ export default class HetArchiefController {
 		if (idpType !== 'HETARCHIEF') {
 			return false;
 		}
+
+		// Check if ldap user object is present on session
 		const idpUserInfo: LdapUser | null = IdpHelper.getIdpUserInfoFromSession(request);
 		if (!idpUserInfo) {
 			return false;
@@ -34,15 +35,18 @@ export default class HetArchiefController {
 		if (Date.now() > ldapExpireOn) {
 			return false;
 		}
+
+		// Check if ldap user has access to avo
 		if (!_.get(idpUserInfo, 'attributes.apps', []).includes('avo')) {
 			return false;
 		}
 
+		// Check if avo user is present on session
 		const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
 		return !!avoUserInfo;
 	}
 
-	public static async getAvoUserInfoFromDatabaseByEmail(ldapUserInfo: LdapUser): Promise<SharedUser> {
+	public static async getAvoUserInfoFromDatabaseByEmail(ldapUserInfo: LdapUser): Promise<Avo.User.User> {
 		const email = ldapUserInfo.name_id;
 		return await AuthService.getAvoUserInfoByEmail(email);
 	}
@@ -72,10 +76,9 @@ export default class HetArchiefController {
 			// Create avo profile object
 			await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
 
-			// TODO add avo group to ldap once we get a service account (AVO2-153)
-			// await HetArchiefController.addAvoAppToLdap(idpUserInfo);
+			await HetArchiefController.addAvoAppToLdap(idpUserInfo);
 
-			const userInfo = await AuthService.getAvoUserInfoById(userUuid);
+			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
 			// Add permission groups
@@ -119,15 +122,15 @@ export default class HetArchiefController {
 			const url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
 			const data = {
 				apps: ['avo'],
-				role_id: 'Docent',
 			};
-			const response: AxiosResponse<any> = await axios(url, {
+			await axios(url, {
 				data,
 				method: 'put',
-				// TODO get ldap credentials
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
 			});
-			logger.info('response from ldap api: ', response);
-
 			return;
 		} catch (err) {
 			throw new InternalServerError('Failed to add avo app to ldap user object', err, { ldapObject });
