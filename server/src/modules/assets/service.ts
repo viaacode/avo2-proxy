@@ -6,6 +6,10 @@ import { ExternalServerError, InternalServerError } from '../../shared/helpers/e
 import { logger } from '../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { AssetInfo, UploadAssetInfo } from './route';
+import { decode } from 'base64-arraybuffer';
+import { PutObjectRequest } from 'aws-sdk/clients/s3';
+import * as util from 'util';
+import * as fs from 'fs';
 
 interface AssetTokenResponse {
 	token: string;
@@ -22,6 +26,7 @@ const REQUIRED_ASSET_SERVER_VARIABLES = [
 	'ASSET_SERVER_TOKEN_SECRET',
 	'ASSET_SERVER_TOKEN_USERNAME',
 	'ASSET_SERVER_TOKEN_PASSWORD',
+	'ASSET_SERVER_BUCKET_NAME',
 ];
 
 checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
@@ -31,9 +36,9 @@ export default class AssetService {
 	private static s3: S3 | null;
 
 	/**
-	 * Returns a token either from cache if it has a valid token that hasn't expired yet, or it will request a fresh token
+	 * Returns an s3 client object which contains an up-to-date token to communicate with the s3 server
 	 *
-	 * This is the equivalent of this curl request:
+	 * A token is requested using this post request:
 	 * curl
 	 *   -X POST
 	 *   -H "X-User-Secret-Key-Meta: myLittleSecret"
@@ -68,6 +73,8 @@ export default class AssetService {
 				AssetService.s3 = new AWS.S3({
 					accessKeyId: AssetService.token.token,
 					secretAccessKey: AssetService.token.secret,
+					endpoint: 'https://assets-qas.hetarchief.be/avo2',
+					s3BucketEndpoint: true,
 				});
 			} catch (err) {
 				throw new ExternalServerError('Failed to get new s3 token for the asset service', err, {});
@@ -78,33 +85,50 @@ export default class AssetService {
 	}
 
 	/**
-	 * Upload file to the asset service
+	 * Upload file to the asset service and return the url
 	 */
-	public static async upload(assetInfo: UploadAssetInfo): Promise<AssetInfo> {
-		// let url: string;
-		try {
-			checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
+	public static async upload(key: string, base64String: string, mimeType: string): Promise<string> {
+		return new Promise<string>(async (resolve, reject) => {
+			try {
+				checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
 
-			const s3Client: S3 = await this.getS3Client();
-			s3Client.listBuckets((err: AWSError, data: S3.Types.ListBucketsOutput) => {
-				logger.info(err);
-				logger.info(data);
-			});
-			return {
-				url: '',
-				id: '',
-				type: 0,
-				objectId: '',
-			};
-		} catch (err) {
-			const error = new InternalServerError(
-				'Failed to upload asset to the asset service',
-				err,
-				{
-					// url,
+				// const buffer: ArrayBuffer = decode(base64String);
+				// const buffer: ArrayBuffer = new Buffer(base64String.split(';base64,').pop(), 'base64');
+				const s3Client: S3 = await this.getS3Client();
+				s3Client.putObject({
+					Key: key,
+					Body: fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/SHD - LMR (Bebat) My car BV t&m/logo.png'),
+					ContentEncoding: 'utf8',
+					ContentType: mimeType,
+					Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
+				}, (err: AWSError, data: S3.Types.PutObjectOutput) => {
+					if (err) {
+						const error = new ExternalServerError(
+							'Failed to upload asset to the s3 asset service',
+							err,
+							{
+								key,
+								base64String,
+								mimeType,
+							});
+						logger.error(error);
+						reject(error);
+					} else {
+						resolve(`${process.env.ASSET_SERVER_ENDPOINT}/${process.env.ASSET_SERVER_BUCKET_NAME}/${key}`);
+					}
 				});
-			logger.error(error);
-			throw error;
-		}
+			} catch (err) {
+				const error = new InternalServerError(
+					'Failed to upload asset to the asset service',
+					err,
+					{
+						key,
+						base64String,
+						mimeType,
+					});
+				logger.error(error);
+				reject(error);
+			}
+		});
 	}
 }

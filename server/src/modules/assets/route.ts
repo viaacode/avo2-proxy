@@ -7,16 +7,19 @@ import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import AssetController from './controller';
 
+export type AssetType = 'subtitle' | 'profilePic' | 'image';
+
 export interface UploadAssetInfo { // TODO use typings version
 	filename: string;
 	content: string;
 	mimeType: string;
+	type: AssetType; // Used to put the asset inside a folder structure inside the bucket
 }
 
 export interface AssetInfo { // TODO use typings version
 	url: string;
 	id: string;
-	type: number;
+	type: AssetType; // enum in the database
 	objectId: string | number;
 }
 
@@ -34,8 +37,8 @@ export default class AssetRoute {
 	async uploadAsset(
 		assetInfo: UploadAssetInfo
 	): Promise<AssetInfo> {
-		if (!assetInfo || !assetInfo.filename || !assetInfo.content || !assetInfo.mimeType) {
-			throw new BadRequestError('the body must contain the filename, content and mimeType');
+		if (!assetInfo || !assetInfo.filename || !assetInfo.content || !assetInfo.type) {
+			throw new BadRequestError('the body must contain the filename, content and type (\'subtitle\' | \'profilePic\' | \'image\')');
 		}
 
 		try {
