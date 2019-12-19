@@ -2,7 +2,7 @@ import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-re
 import * as util from 'util';
 
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
+import { InternalServerError, BadRequestError, CustomError, ClientError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import AssetController from './controller';
@@ -33,7 +33,7 @@ export default class AssetRoute {
 	 */
 	@Path('upload')
 	@POST
-	// @PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticated)
 	async uploadAsset(
 		assetInfo: UploadAssetInfo
 	): Promise<AssetInfo> {
@@ -44,9 +44,14 @@ export default class AssetRoute {
 		try {
 			return await AssetController.upload(assetInfo);
 		} catch (err) {
-			const error = new InternalServerError('Failed to upload file to asset server', err, { assetInfo });
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			if (err instanceof ClientError) {
+				// TODO make global error handler that omits stacktraces if client error
+				throw new ClientError('Failed to upload file', err, {});
+			} else {
+				const error = new InternalServerError('Failed to upload file to asset server', err, { assetInfo });
+				logger.error(util.inspect(error));
+				throw util.inspect(error);
+			}
 		}
 	}
 }

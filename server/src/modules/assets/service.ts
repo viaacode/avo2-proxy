@@ -1,15 +1,9 @@
-import _ from 'lodash';
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import AWS, { AWSError, S3 } from 'aws-sdk';
 
-import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { BadRequestError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
-import { AssetInfo, UploadAssetInfo } from './route';
-import { decode } from 'base64-arraybuffer';
-import { PutObjectRequest } from 'aws-sdk/clients/s3';
-import * as util from 'util';
-import * as fs from 'fs';
 
 interface AssetTokenResponse {
 	token: string;
@@ -92,16 +86,19 @@ export default class AssetService {
 			try {
 				checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
 
-				// const buffer: ArrayBuffer = decode(base64String);
-				// const buffer: ArrayBuffer = new Buffer(base64String.split(';base64,').pop(), 'base64');
+				const base64Code = (base64String.split(';base64,').pop() || '').trim();
+				if (!base64Code) {
+					throw new BadRequestError('Failed to upload file because the base64 code was invalid', null, { base64String });
+				}
+				const buffer = new Buffer(base64Code, 'base64');
 				const s3Client: S3 = await this.getS3Client();
 				s3Client.putObject({
 					Key: key,
-					Body: fs.readFileSync('C:/Users/bert/Documents/studiohyperdrive/projects/SHD - LMR (Bebat) My car BV t&m/logo.png'),
-					ContentEncoding: 'utf8',
+					Body: buffer,
+					ACL: 'public-read',
 					ContentType: mimeType,
 					Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
-				}, (err: AWSError, data: S3.Types.PutObjectOutput) => {
+				}, (err: AWSError) => {
 					if (err) {
 						const error = new ExternalServerError(
 							'Failed to upload asset to the s3 asset service',

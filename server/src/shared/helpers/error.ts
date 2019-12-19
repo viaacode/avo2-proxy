@@ -84,7 +84,10 @@ export class TypeError extends CustomError {
 	public statusCode: number = 500;
 }
 
-export class ClientError extends CustomError {}
+export class ClientError extends CustomError {
+	public name: string = 'ClientError';
+	public statusCode: number = 400;
+}
 
 export class UnauthorizedError extends ClientError {
 	// public message: string = 'Missing authorization';
