@@ -164,9 +164,9 @@ mutation deleteIdp($idpType: users_idps_enum!, $avoUserId: uuid!) {
 `;
 
 export const GET_USER_BY_IDP_ID = `
-query getUserByIdpId($idpType: users_idps_enum!, $idpId: uuid!) {
-  shared_users(where: {_and: {idp: {_eq: $idpType}, local_user_id: {_eq: $idpId}}}) {
-    local_user_id
+query getUserByIdpId($idpType: users_idps_enum!, $idpId: String!) {
+  shared_users(where: {idpmaps: {idp: {_eq: $idpType}, idp_user_id: {_eq: $idpId}}}) {
+    uid
   }
 }
 `;

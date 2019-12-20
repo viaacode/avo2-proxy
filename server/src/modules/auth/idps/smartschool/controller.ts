@@ -141,7 +141,7 @@ export default class SmartschoolController extends IdpHelper {
 			idpType,
 			idpId,
 		});
-		return _.get(response, 'data.users_idp_map[0].local_user_id', null);
+		return _.get(response, 'data.shared_users[0].uid', null);
 	}
 
 	private static async getProfileIdsByUserUid(userUid: string): Promise<string[]> {

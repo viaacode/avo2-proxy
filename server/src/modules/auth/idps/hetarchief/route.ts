@@ -1,9 +1,8 @@
+import * as util from 'util';
 import _ from 'lodash';
 import * as queryString from 'querystring';
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 
-import HetArchiefController from './controller';
-import HetArchiefService, { SamlCallbackBody } from './service';
 import { InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-helper';
@@ -12,6 +11,9 @@ import { LdapUser } from '../../types';
 import StamboekController from '../../../stamboek-validate/controller';
 import { getHost } from '../../../../shared/helpers/url';
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
+
+import HetArchiefService, { SamlCallbackBody } from './service';
+import HetArchiefController from './controller';
 
 interface RelayState {
 	returnToUrl: string;
@@ -44,7 +46,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -77,7 +79,7 @@ export default class HetArchiefRoute {
 			}
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -108,7 +110,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -125,7 +127,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, { relayState: response.RelayState });
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -149,7 +151,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(`${process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -173,7 +175,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
@@ -215,7 +217,7 @@ export default class HetArchiefRoute {
 			})}`);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
 				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
 					message: 'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
