@@ -9,27 +9,29 @@ import { logger, logIfNotTestEnv } from './shared/helpers/logger';
 import { presets as corePresets } from './modules/core/helpers/presets';
 import { Validator } from './shared/helpers/validation';
 import { Server } from 'typescript-rest';
+import { ErrorMiddleware } from './modules/core/middleware/error';
 import OrganizationService from './modules/organization/service';
 import HetArchiefService from './modules/auth/idps/hetarchief/service';
+import SmartschoolService from './modules/auth/idps/smartschool/service';
+import ZendeskService from './modules/zendesk/service';
 
+// Routes
+import AuthRoute from './modules/auth/route';
+import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
+import SmartschoolRoute from './modules/auth/idps/smartschool/route';
+import ZendeskRoute from './modules/zendesk/route';
+import AssetRoute from './modules/assets/route';
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import DataRoute from './modules/data/route';
-import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
-import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
 import EventLoggingRoute from './modules/event-logging/route';
-import SmartschoolService from './modules/auth/idps/smartschool/service';
-import AuthRoute from './modules/auth/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
-import { ErrorMiddleware } from './modules/core/middleware/error';
-import ZendeskService from './modules/zendesk/service';
-import ZendeskRoute from './modules/zendesk/route';
 
 export class App {
 	public app: Application = express();
@@ -115,6 +117,7 @@ export class App {
 			StamboekRoute,
 			EventLoggingRoute,
 			ZendeskRoute,
+			AssetRoute,
 
 			FallbackRoute,
 		);
