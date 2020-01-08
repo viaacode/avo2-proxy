@@ -11,7 +11,7 @@ import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { getHost } from '../../shared/helpers/url';
 
 import { IdpHelper } from './idp-helper';
-import AuthController, { CheckablePermission } from './controller';
+import AuthController from './controller';
 import { IdpType } from './types';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
@@ -109,20 +109,5 @@ export default class AuthRoute {
 				icon: 'alert-triangle',
 			})}`);
 		}
-	}
-
-	@Path('check-permission')
-	@GET
-	@PreProcessor(isAuthenticated)
-	async checkPermission(
-		@QueryParam('name') name: CheckablePermission,
-		@QueryParam('obj') obj: any,
-	): Promise<{ hasPermission: boolean }> {
-		if (!name || !obj) {
-			throw new CustomError('To check a permission, you need to pass the permission "name" and "obj" as query params');
-		}
-		return {
-			hasPermission: await AuthController.checkPermission(name, obj),
-		};
 	}
 }
