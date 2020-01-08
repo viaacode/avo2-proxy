@@ -16,10 +16,10 @@ export class IdpHelper {
 		return _.get(request, `${IDP_USER_INFO_PATH}.${idpType}`, null);
 	}
 
-	public static setIdpUserInfoOnSession(request: Express.Request, idpUserInfo: any, idpType: IdpType | null): void {
+	public static setIdpUserInfoOnSession(request: Express.Request, idpUserInfo: any | null, idpType: IdpType | null): void {
 		if (request.session) {
 			_.set(request, `${IDP_USER_INFO_PATH}.${idpType}`, idpUserInfo);
-			_.set(request, IDP_TYPE_PATH, idpType);
+			_.set(request, IDP_TYPE_PATH, idpUserInfo ? idpType : null); // clear the idpType if idpUserInfo is null
 		} else {
 			throw new InternalServerError(
 				'Failed to store idp user info / ipd type because no session was found on the request object',
@@ -86,7 +86,7 @@ export class IdpHelper {
 	}
 
 	public static logout(req: Request) {
-		IdpHelper.setIdpUserInfoOnSession(req, null, null);
+		IdpHelper.clearAllIdpUserInfosFromSession(req)
 		IdpHelper.setAvoUserInfoOnSession(req, null);
 	}
 }
