@@ -56,18 +56,17 @@ export class AuthService {
 			return null;
 		}
 		// Simplify user object structure
-		(user as any).profile = user.profiles[0] || {};
+		(user as any).profile = user.profiles[0] || {} as Avo.User.Profile;
 		const permissions = new Set<string>();
-		_.get(user, 'profiles[0].groups', []).forEach((group: any) => {
-			_.get(group, 'group.group_user_permission_groups', []).forEach((permissionGroup: any) => {
-				_.get(permissionGroup, 'permission_group.permission_group_user_permissions', []).forEach((permission: any) => {
-					permissions.add(permission.permission.label);
-				});
+		_.get(user, 'profiles[0].profile_user_group.groups.group_user_permission_groups', []).forEach((permissionGroup: any) => {
+			_.get(permissionGroup, 'permission_group.permission_group_user_permissions', []).forEach((permission: any) => {
+				permissions.add(permission.permission.label);
 			});
 		});
-		(user as any).permissions = Array.from(permissions);
+		(user as any).profile.permissions = Array.from(permissions);
 		(user as any).idpmaps = _.uniq((user.idpmaps || []).map(obj => obj.idp));
 		delete user.profiles;
+		delete (user as any).profile.profile_user_group;
 
 		// Simplify linked objects
 		(user as any).profile.educationLevels = (_.get(user, 'profile.profile_contexts', []) as { key: string }[]).map(context => context.key);

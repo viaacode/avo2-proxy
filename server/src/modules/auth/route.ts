@@ -1,17 +1,21 @@
+import * as queryString from 'querystring';
+import _ from 'lodash';
+import * as util from 'util';
 import { Context, Path, ServiceContext, GET, QueryParam, PreProcessor, Return } from 'typescript-rest';
 
-import AuthController from './controller';
-import { logger } from '../../shared/helpers/logger';
-import { InternalServerError } from '../../shared/helpers/error';
-import { IdpType } from './types';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-import * as queryString from 'querystring';
-import { getHost } from '../../shared/helpers/url';
-import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
+
+import { logger } from '../../shared/helpers/logger';
+import { CustomError, InternalServerError } from '../../shared/helpers/error';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { getHost } from '../../shared/helpers/url';
+
 import { IdpHelper } from './idp-helper';
+import AuthController from './controller';
+import { IdpType } from './types';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
+
 export interface LinkAccountInfo {
 	type: IdpType;
 	userObject: any;
@@ -30,17 +34,27 @@ export default class AuthRoute {
 		} catch (err) {
 			logger.info('check login: error', err);
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(error.toString());
+			logger.error(util.inspect(error));
 			throw error;
 		}
 	}
 
-	@Path('logout')
+	@Path('global-logout')
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		const idpLogoutPage = AuthController.getIdpSpecificLogoutPage(this.context.request, returnToUrl);
+		return AuthController.getIdpSpecificLogoutPage(
+			this.context.request,
+			`${process.env.HOST}/auth/global-logout-callback?${queryString.stringify({
+				returnToUrl,
+			})}`
+		);
+	}
+
+	@Path('global-logout-callback')
+	@GET
+	async logoutCallback(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		IdpHelper.clearAllIdpUserInfosFromSession(this.context.request);
-		return idpLogoutPage;
+		return new Return.MovedTemporarily<void>(returnToUrl);
 	}
 
 	@Path('link-account')
