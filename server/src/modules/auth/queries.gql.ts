@@ -17,7 +17,7 @@ query getUserInfoByMail($email: String!) {
       updated_at
       user_id
       profile_user_group {
-        group {
+        groups {
           group_user_permission_groups {
             permission_group {
               permission_group_user_permissions {
@@ -78,7 +78,7 @@ query getUserInfoById($userId: uuid!) {
       updated_at
       user_id
       profile_user_group {
-        group {
+        groups {
           group_user_permission_groups {
             permission_group {
               permission_group_user_permissions {
