@@ -6,15 +6,16 @@ import { Context, Path, ServiceContext, GET, QueryParam, PreProcessor, Return } 
 import { Avo } from '@viaa/avo2-types';
 
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError } from '../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { getHost } from '../../shared/helpers/url';
 
 import { IdpHelper } from './idp-helper';
-import AuthController from './controller';
+import AuthController, { CheckablePermission } from './controller';
 import { IdpType } from './types';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
+
 export interface LinkAccountInfo {
 	type: IdpType;
 	userObject: any;
@@ -41,9 +42,19 @@ export default class AuthRoute {
 	@Path('global-logout')
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		const idpLogoutPage = AuthController.getIdpSpecificLogoutPage(this.context.request, returnToUrl);
+		return AuthController.getIdpSpecificLogoutPage(
+			this.context.request,
+			`${process.env.HOST}/auth/global-logout-callback?${queryString.stringify({
+				returnToUrl,
+			})}`
+		);
+	}
+
+	@Path('global-logout-callback')
+	@GET
+	async logoutCallback(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		IdpHelper.clearAllIdpUserInfosFromSession(this.context.request);
-		return idpLogoutPage;
+		return new Return.MovedTemporarily<void>(returnToUrl);
 	}
 
 	@Path('link-account')
@@ -98,5 +109,20 @@ export default class AuthRoute {
 				icon: 'alert-triangle',
 			})}`);
 		}
+	}
+
+	@Path('check-permission')
+	@GET
+	@PreProcessor(isAuthenticated)
+	async checkPermission(
+		@QueryParam('name') name: CheckablePermission,
+		@QueryParam('obj') obj: any,
+	): Promise<{ hasPermission: boolean }> {
+		if (!name || !obj) {
+			throw new CustomError('To check a permission, you need to pass the permission "name" and "obj" as query params');
+		}
+		return {
+			hasPermission: await AuthController.checkPermission(name, obj),
+		};
 	}
 }
