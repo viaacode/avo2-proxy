@@ -17,7 +17,7 @@ pipeline {
     }
     options {
         // set a timeout of 20 minutes for this pipeline
-        timeout(time: 20, unit: 'MINUTES')
+        timeout(time: 120, unit: 'MINUTES')
     }
     stages {
         stage('preamble') {
@@ -52,17 +52,23 @@ pipeline {
                         } // script
             } // steps
         } // stage
-        stage('Tag qas and prd') {
+        stage('Tag QAS') {
+            steps {
+                script {sh'''#!/bin/bash
+                	  oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:qas
+			 '''
+              		  }//end script
+            } // steps
+        } // stage	    
+        stage('Tag prd') {
      steps {
-     // input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
+      input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
          script {
              openshift.withCluster() {
                  openshift.withProject("sc-avo2") {
                       echo "Tag "
                       sh '''#/bin/bash
-                      oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:qas
-                      oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:prd
-                      
+                      oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:prd   
                       '''
                  }
              }
