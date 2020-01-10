@@ -18,6 +18,7 @@ query getUserInfoByMail($email: String!) {
       user_id
       profile_user_group {
         groups {
+          id
           group_user_permission_groups {
             permission_group {
               permission_group_user_permissions {
@@ -79,6 +80,7 @@ query getUserInfoById($userId: uuid!) {
       user_id
       profile_user_group {
         groups {
+        	id
           group_user_permission_groups {
             permission_group {
               permission_group_user_permissions {
