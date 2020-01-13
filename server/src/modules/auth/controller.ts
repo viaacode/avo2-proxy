@@ -109,11 +109,11 @@ export default class AuthController {
 		return profileId;
 	}
 
-	public static getIdpSpecificLogoutPage(req: Request, returnToUrl: string) {
+	public static getIdpSpecificLogoutPage(req: Request, returnToUrl: string): Return.MovedTemporarily<void> {
 		const idpType = IdpHelper.getIdpTypeFromSession(req);
 		if (!idpType) {
 			// already logged out
-			new Return.MovedTemporarily(returnToUrl);
+			return new Return.MovedTemporarily(returnToUrl);
 		}
 		// Redirect to dp specific logout page
 		return new Return.MovedTemporarily(`${process.env.HOST}/${IDP_ADAPTERS[idpType].logoutPath}?${queryString.stringify({
