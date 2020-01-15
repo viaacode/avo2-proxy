@@ -74,7 +74,7 @@ export default class HetArchiefController {
 			const userUuid = await AuthController.createUser(user);
 
 			// Create avo profile object
-			await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
+			const profileId = await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
 
 			await HetArchiefController.addAvoAppToLdap(idpUserInfo);
 
@@ -82,8 +82,8 @@ export default class HetArchiefController {
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
 			// Add permission groups
-			// TODO Create permissions, permissionGroups and userGroups
-			// TODO Add this user to the correct userGroups based on smartschoolUserInfo.leerling and smartschoolUserInfo.basisrol
+			// Users with a stamboek number are by default a "lesgever" and should be linked to that user group
+			await AuthService.addUserGroupsToProfile(2, profileId);
 		} catch (err) {
 			throw new InternalServerError('Failed to create user and profile in the avo database', err, { stamboekNumber, idpUserInfo });
 		}

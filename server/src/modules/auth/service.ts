@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import DataService from '../data/service';
-import { GET_USER_INFO_BY_ID, GET_USER_INFO_BY_USER_EMAIL } from './queries.gql';
+import { GET_USER_INFO_BY_ID, GET_USER_INFO_BY_USER_EMAIL, LINK_USER_GROUP_TO_PROFILE, UNLINK_USER_GROUP_FROM_PROFILE } from './queries.gql';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SharedUser } from './types';
 import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
@@ -98,6 +98,22 @@ export class AuthService {
 			return user as unknown as Avo.User.User;
 		} catch (err) {
 			throw new CustomError('Failed to simplify user object', err, { user });
+		}
+	}
+
+	static async addUserGroupsToProfile(userGroupId: number, profileId: string) {
+		try {
+			await DataService.execute(LINK_USER_GROUP_TO_PROFILE, { userGroupId, profileId });
+		} catch (err) {
+			throw new CustomError('Failed to add usergroup to profile', err, { userGroupId, profileId });
+		}
+	}
+
+	static async removeUserGroupsFromProfile(userGroupId: number, profileId: string) {
+		try {
+			await DataService.execute(UNLINK_USER_GROUP_FROM_PROFILE, { userGroupId, profileId });
+		} catch (err) {
+			throw new CustomError('Failed to remove usergroup from profile', err, { userGroupId, profileId });
 		}
 	}
 }
