@@ -3,21 +3,22 @@ import { Request } from 'express';
 import * as queryString from 'querystring';
 import { Return } from 'typescript-rest';
 
+import { Avo } from '@viaa/avo2-types';
+
+import { logger } from '../../shared/helpers/logger';
+import DataService from '../data/service';
+import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
+
+import { DELETE_IDP_MAPS, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import KlascementController from './idps/klascement/controller';
 import HetArchiefController from './idps/hetarchief/controller';
 import SmartschoolController from './idps/smartschool/controller';
-import { IdpType, IdpMap } from './types';
-import KlascementController from './idps/klascement/controller';
 import ViaaController from './idps/viaa/controller';
-import { logger } from '../../shared/helpers/logger';
 import { IdpHelper } from './idp-helper';
-import { Avo } from '@viaa/avo2-types';
-import DataService from '../data/service';
-import { DELETE_IDP_MAPS, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from './queries.gql';
-import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
-import { getHost } from '../../shared/helpers/url';
 import { LinkAccountInfo } from './route';
 import { SmartschoolUserInfo } from './idps/smartschool/service';
-import { AuthService } from './service';
+import { IdpType, IdpMap } from './types';
 
 interface IdpInterface {
 	controller: { isLoggedIn: (req: Request) => boolean };
@@ -122,25 +123,23 @@ export default class AuthController {
 	}
 
 	public static async redirectToIdpLoginForLinkingAccounts(request: Request, returnToUrl: string, idpType: IdpType) {
-		const clientHost = getHost(returnToUrl);
-
 		const avoUserInfo: Avo.User.User = await IdpHelper.getUpdatedAvoUserInfoFromSession(request);
 
 		// Check if this idp type is already linked to the currently logged in account
-		if (((avoUserInfo as any).idpmaps || []).map((obj: { idp: string }) => obj.idp).includes(idpType)) { // TODO remove "any" cast once typings are updated
-			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-				message: `Je account is reeds gelinked met ${idpType.toLowerCase()}. Unlink je account eerst van je andere smartschool account`,
-				icon: 'link',
-			})}`);
+		if ((avoUserInfo.idpmaps || []).map((obj: { idp: string }) => obj.idp).includes(idpType)) {
+			return redirectToClientErrorPage(
+				`Je account is reeds gelinked met ${idpType.toLowerCase()}. Unlink je account eerst van je andere smartschool account`,
+				'link'
+			);
 		}
 
 		// Redirect the user to the idp login, to authenticate the idp account, so users can't link accounts that aren't theirs
 		const idpLoginPath: string | undefined = IDP_ADAPTERS[idpType].loginPath;
 		if (!idpLoginPath) {
-			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-				message: 'Dit platform kan nog niet gelinked worden aan uw account',
-				icon: 'link',
-			})}`);
+			return redirectToClientErrorPage(
+				'Dit platform kan nog niet gelinked worden aan uw account',
+				'link'
+			);
 		}
 
 		// Let the user login to smartschool, then redirect to this url
@@ -153,8 +152,6 @@ export default class AuthController {
 	}
 
 	public static async linkAccounts(request: Request, idpUserInfo: LinkAccountInfo, returnToUrl: string) {
-		// TODO Can the user unlink?
-		const clientHost = getHost(returnToUrl);
 		let avoUserInfo: Avo.User.User | undefined;
 		try {
 			avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
@@ -168,11 +165,13 @@ export default class AuthController {
 			await DataService.execute(INSERT_IDP_MAP, { idpMap });
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			logger.error(new ExternalServerError('Failed to insert the idp map to link an account', err, { avoUserInfo, idpUserInfo, returnToUrl }));
-			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-				message: 'Het linken van de account is mislukt (database error)',
-				icon: 'alert-triangle',
-			})}`);
+			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, { avoUserInfo, idpUserInfo, returnToUrl });
+			logger.error(error);
+			return redirectToClientErrorPage(
+				'Het linken van de account is mislukt (database error)',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
@@ -185,7 +184,13 @@ export default class AuthController {
 				avoUserId: avoUserInfo.uid,
 			});
 		} catch (err) {
-			throw new InternalServerError('Failed to remove idp map from database', err, { idpType, avoUserInfo });
+			const error = new ExternalServerError('Failed to remove idp map from database', err, { idpType, avoUserInfo });
+			logger.error(error);
+			return redirectToClientErrorPage(
+				`Er ging iets mis bij het unlinken van de ${idpType.toLowerCase()} account`,
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 }
