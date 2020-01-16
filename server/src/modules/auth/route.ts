@@ -8,11 +8,11 @@ import { Avo } from '@viaa/avo2-types';
 import { logger } from '../../shared/helpers/logger';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-import { getHost } from '../../shared/helpers/url';
 
 import { IdpHelper } from './idp-helper';
 import AuthController from './controller';
 import { IdpType } from './types';
+import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
 
@@ -32,7 +32,6 @@ export default class AuthRoute {
 		try {
 			return await AuthController.getLoginResponse(this.context.request);
 		} catch (err) {
-			logger.info('check login: error', err);
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			throw error;
@@ -53,8 +52,18 @@ export default class AuthRoute {
 	@Path('global-logout-callback')
 	@GET
 	async logoutCallback(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		IdpHelper.clearAllIdpUserInfosFromSession(this.context.request);
-		return new Return.MovedTemporarily<void>(returnToUrl);
+		try {
+			IdpHelper.clearAllIdpUserInfosFromSession(this.context.request);
+			return new Return.MovedTemporarily<void>(returnToUrl);
+		} catch (err) {
+			const error = new InternalServerError('Failed during auth login route', err, {});
+			logger.error(util.inspect(error));
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het uitloggen',
+				'alert-triangle',
+				error.identifier
+			);
+		}
 	}
 
 	@Path('link-account')
@@ -73,16 +82,21 @@ export default class AuthRoute {
 	async linkAccountCallback(
 		@QueryParam('returnToUrl') returnToUrl: string,
 	): Promise<any> {
-		const clientHost = getHost(returnToUrl);
-
 		// The link-account path already made the user login to the idp
 		// This flow has set the idp user object on the session, so we can access it here
 		const idpUserInfo: LinkAccountInfo = _.get(this.context, LINK_ACCOUNT_PATH);
 		if (!idpUserInfo || !idpUserInfo.type || !idpUserInfo.userObject) {
-			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-				message: 'Het koppelen van de account is mislukt',
-				icon: 'alert-triangle',
-			})}`);
+			const error = new CustomError(
+				'Failed to link account in link-account-callback route',
+				null,
+				{ idpUserInfo, session: _.get(this.context, 'request.session') }
+			);
+			logger.error(error);
+			return redirectToClientErrorPage(
+				'Het koppelen van de account is mislukt',
+				'alert-triangle',
+				error.identifier,
+			);
 		}
 		const redirectResponse = await AuthController.linkAccounts(this.context.request, idpUserInfo, returnToUrl);
 
@@ -99,15 +113,17 @@ export default class AuthRoute {
 		@QueryParam('returnToUrl') returnToUrl: string,
 		@QueryParam('idpType') idpType: IdpType,
 	): Promise<any> {
-		const clientHost = getHost(returnToUrl);
 		try {
 			await AuthController.unlinkAccounts(this.context.request, idpType);
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-				message: 'Het ontkoppelen van de account is mislukt',
-				icon: 'alert-triangle',
-			})}`);
+			const error = new CustomError('Failed to unlink idp from account', err, { returnToUrl, idpType });
+			logger.error(error);
+			return redirectToClientErrorPage(
+				'Het ontkoppelen van de account is mislukt',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 }

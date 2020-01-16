@@ -1,4 +1,3 @@
-import * as querystring from 'querystring';
 import * as util from 'util';
 import _ from 'lodash';
 import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
@@ -10,8 +9,14 @@ import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
 
 import SmartschoolService from './service';
 import SmartschoolController, { LoginErrorResponse, LoginSuccessResponse, SmartschoolUserLoginResponse } from './controller';
+import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
+const SMARTSCHOOL_ERROR_MESSAGES = {
+	FIRST_LINK_ACCOUNT: 'Je smartschool account is nog niet gelinked aan je archief account. ' +
+		'Log eerst in met je email adres en wachtwoord en link je smartschool account in je profiel instellingen',
+	NO_ACCESS: 'Enkel leerkrachten en leerlingen kunnen inloggen via smartschool op deze website',
+};
 
 @Path('/auth/smartschool')
 export default class SmartschoolRoute {
@@ -28,18 +33,25 @@ export default class SmartschoolRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het inloggen met smartschool',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
 	@Path('login-callback')
 	@GET
-	async loginCallback(@QueryParam('code') code: string): Promise<any> {
+	async loginCallback(@QueryParam('code') code: string): Promise<Return.MovedTemporarily<void>> {
 		try {
 			const userOrError: SmartschoolUserLoginResponse = await SmartschoolController.getUserFromSmartschoolLogin(code);
 			if ((userOrError as LoginErrorResponse).error) {
-				// TODO redirect to error login page
-				return new Return.MovedTemporarily(`http://localhost:8080/error?message=${(userOrError as LoginErrorResponse).error}`);
+				const errorMessage = SMARTSCHOOL_ERROR_MESSAGES[(userOrError as LoginErrorResponse).error];
+				return redirectToClientErrorPage(
+					errorMessage,
+					'alert-triangle'
+				);
 			}
 
 			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
@@ -56,10 +68,10 @@ export default class SmartschoolRoute {
 				// User is logging in to enter avo using their smartschool account
 				// Check if accounts are linked
 				if (!response.avoUser) {
-					return new Return.MovedTemporarily(`http://localhost:8080/error?${querystring.stringify({
-						message: 'Gelieve eerst in te loggen met je avo account en je smartschool te koppelen in je account instellingen',
-						icon: 'link',
-					})}`);
+					return redirectToClientErrorPage(
+						'Gelieve eerst in te loggen met je avo account en je smartschool te koppelen in je account instellingen',
+						'link'
+					);
 				}
 				IdpHelper.setIdpUserInfoOnSession(this.context.request, response.smartschoolUserInfo, 'SMARTSCHOOL');
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
@@ -69,14 +81,28 @@ export default class SmartschoolRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
-			throw error; // TODO redirect to failed login page
+			return redirectToClientErrorPage(
+				'Er ging iets mis na het inloggen met smartschool',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
 	@Path('logout')
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		IdpHelper.logout(this.context.request);
-		return new Return.MovedTemporarily(returnToUrl);
+		try {
+			IdpHelper.logout(this.context.request);
+			return new Return.MovedTemporarily(returnToUrl);
+		} catch (err) {
+			const error = new InternalServerError('Failed during smartschool/logout route', err, { returnToUrl });
+			logger.error(util.inspect(error));
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het uitloggen met smartschool',
+				'alert-triangle',
+				error.identifier
+			);
+		}
 	}
 }
