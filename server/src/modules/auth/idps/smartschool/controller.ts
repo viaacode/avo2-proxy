@@ -47,8 +47,7 @@ export default class SmartschoolController extends IdpHelper {
 				profileId = await this.createProfile(smartschoolUserInfo, userUid);
 
 				// Add permission groups
-				// TODO Create permissions, permissionGroups and userGroups
-				// TODO Add this user to the correct userGroups based on smartschoolUserInfo.leerling and smartschoolUserInfo.basisrol
+				await AuthService.addUserGroupsToProfile(4, profileId);
 			}
 
 			const avoUser: Avo.User.User = await AuthService.getAvoUserInfoById(userUid);
@@ -65,11 +64,11 @@ export default class SmartschoolController extends IdpHelper {
 				if (!avoUser) {
 					throw new InternalServerError('Failed to get user by id from the database after smartschool login', null, { userUid });
 				}
+			} else {
+				return { error: 'FIRST_LINK_ACCOUNT' };
 			}
 
 			return { avoUser, smartschoolUserInfo };
-			// }
-			// return { error: 'FIRST_LINK_ACCOUNT' };
 		}
 
 		// Other
@@ -128,7 +127,7 @@ export default class SmartschoolController extends IdpHelper {
 			local_user_id: localUserId,
 		};
 		const response = await DataService.execute(INSERT_IDP_MAP, { idpMap });
-		if (!response || response.errors && response.errors.length) {
+		if (!response) {
 			throw new InternalServerError(
 				'Failed to link avo user to an idp. Response from insert request was undefined',
 				null,

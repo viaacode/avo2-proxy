@@ -24,6 +24,7 @@ import AssetRoute from './modules/assets/route';
 import StatusRoute from './modules/status/route';
 import SearchRoute from './modules/search/route';
 import DataRoute from './modules/data/route';
+import ProfileRoute from './modules/profile/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
@@ -113,6 +114,7 @@ export class App {
 			EducationOrganizationsRoute,
 			SearchRoute,
 			DataRoute,
+			ProfileRoute,
 			NavigationItemsRoute,
 			PlayerTicketRoute,
 			VideoStillsRoute,

@@ -180,3 +180,23 @@ query getProfileIdsByUserUid($userUid: uuid!) {
   }
 }
 `;
+
+export const LINK_USER_GROUP_TO_PROFILE = `
+mutation linkUserGroupToProfile($userGroupId: Int!, $profileId: uuid!) {
+  insert_users_profile_user_groups(objects: {user_group_id: $userGroupId, user_profile_id: $profileId}) {
+    returning {
+      id
+    }
+  }
+}
+`;
+
+export const UNLINK_USER_GROUP_FROM_PROFILE = `
+mutation unlinkUserGroupFromProfile($userGroupId: Int!, $profileId: uuid!) {
+  delete_users_profile_user_groups(objects: {user_group_id: $userGroupId, user_profile_id: $profileId}) {
+    returning {
+      id
+    }
+  }
+}
+`;
