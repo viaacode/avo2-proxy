@@ -1,9 +1,10 @@
 import { Avo } from '@viaa/avo2-types';
-import DataController from '../data/controller';
-import { DELETE_PROFILE_OBJECTS, UPDATE_PROFILE_INFO } from './queries.gql';
+
 import DataService from '../data/service';
 import { CustomError } from '../../shared/helpers/error';
 import { AuthService } from '../auth/service';
+
+import { DELETE_PROFILE_OBJECTS, UPDATE_PROFILE_INFO } from './queries.gql';
 
 export interface UpdateProfileValues {
 	educationLevels: {
