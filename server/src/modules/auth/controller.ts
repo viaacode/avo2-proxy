@@ -126,7 +126,7 @@ export default class AuthController {
 		const avoUserInfo: Avo.User.User = await IdpHelper.getUpdatedAvoUserInfoFromSession(request);
 
 		// Check if this idp type is already linked to the currently logged in account
-		if ((avoUserInfo.idpmaps || []).map((obj: { idp: string }) => obj.idp).includes(idpType)) {
+		if ((avoUserInfo.idpmaps || []).includes(idpType)) {
 			return redirectToClientErrorPage(
 				`Je account is reeds gelinked met ${idpType.toLowerCase()}. Unlink je account eerst van je andere smartschool account`,
 				'link'

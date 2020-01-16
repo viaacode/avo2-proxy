@@ -86,7 +86,7 @@ export class IdpHelper {
 	}
 
 	public static logout(req: Request) {
-		IdpHelper.clearAllIdpUserInfosFromSession(req)
+		IdpHelper.clearAllIdpUserInfosFromSession(req);
 		IdpHelper.setAvoUserInfoOnSession(req, null);
 	}
 }
