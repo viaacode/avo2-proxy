@@ -16,7 +16,7 @@ query getUserInfoByMail($email: String!) {
       function
       updated_at
       user_id
-      profile_user_group {
+      profile_user_groups {
         groups {
           id
           group_user_permission_groups {
@@ -78,7 +78,7 @@ query getUserInfoById($userId: uuid!) {
       function
       updated_at
       user_id
-      profile_user_group {
+      profile_user_groups {
         groups {
         	id
           group_user_permission_groups {
