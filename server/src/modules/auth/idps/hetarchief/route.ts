@@ -3,14 +3,14 @@ import _ from 'lodash';
 import * as queryString from 'querystring';
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 
-import { InternalServerError } from '../../../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-helper';
 import AuthController from '../../controller';
 import { LdapUser } from '../../types';
 import StamboekController from '../../../stamboek-validate/controller';
-import { getHost } from '../../../../shared/helpers/url';
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
+import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 
 import HetArchiefService, { SamlCallbackBody } from './service';
 import HetArchiefController from './controller';
@@ -21,8 +21,8 @@ interface RelayState {
 
 const STAMBOEK_NUMBER_PATH = 'request.session.stamboekNumber';
 
-if (!process.env.SUMM_REGISTRATION_PAGE) {
-	throw new InternalServerError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
+if (!process.env.SUMM_REGISTRATION_PAGE && !process.env.SSUM_REGISTRATION_PAGE) {
+	throw new InternalServerError('The environment variable SSUM_REGISTRATION_PAGE should have a value.');
 }
 
 @Path('/auth/hetarchief')
@@ -47,7 +47,11 @@ export default class HetArchiefRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het inloggen',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
@@ -80,7 +84,11 @@ export default class HetArchiefRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis na het inloggen',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
@@ -111,7 +119,11 @@ export default class HetArchiefRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het uitloggen',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
@@ -128,13 +140,17 @@ export default class HetArchiefRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, { relayState: response.RelayState });
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis na het uitloggen',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
 	/**
-	 * Forward the client to the summ registration page
-	 * This way we can avoid needing to set the summ url in the client for every environment
+	 * Forward the client to the ssum registration page
+	 * This way we can avoid needing to set the ssum url in the client for every environment
 	 */
 	@Path('register')
 	@GET
@@ -148,16 +164,20 @@ export default class HetArchiefRoute {
 				returnToUrl,
 				stamboekNumber: encrypt(stamboekNumber),
 			})}`);
-			return new Return.MovedTemporarily<void>(`${process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
+			return new Return.MovedTemporarily<void>(`${process.env.SSUM_REGISTRATION_PAGE || process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het registreren, gelieve de helpdesk te contacteren',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
 	/**
-	 * This will be the return url that the summ verification email links to
+	 * This will be the return url that the ssum verification email links to
 	 * Here we'll forward the user to the login form, so we can identify the user
 	 */
 	@Path('verify-email-callback')
@@ -167,7 +187,7 @@ export default class HetArchiefRoute {
 			// TODO get saml login data straight from registration form callback => so we can skip this login form step
 			const serverRedirectUrl = `${process.env.HOST}/auth/hetarchief/register-callback?${queryString.stringify({
 				returnToUrl,
-				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once summ correctly adds "?announce_account_confirmation=true" query param
+				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
 			})}`;
 			const url = `${process.env.HOST}/auth/hetarchief/login?${queryString.stringify({
 				returnToUrl: serverRedirectUrl,
@@ -176,7 +196,11 @@ export default class HetArchiefRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
 			logger.error(util.inspect(error));
-			throw error;
+			return redirectToClientErrorPage(
+				'Er ging iets mis tijdens het verifiëren van je email adres',
+				'alert-triangle',
+				error.identifier
+			);
 		}
 	}
 
@@ -186,18 +210,23 @@ export default class HetArchiefRoute {
 	@Path('register-callback')
 	@GET
 	async registerCallback(@QueryParam('returnToUrl') returnToUrl: string, @QueryParam('stamboekNumber') encryptedStamboekNumber: string): Promise<any> {
-		const clientHost = getHost(returnToUrl);
 		try {
 			const stamboekNumber = decrypt(encryptedStamboekNumber);
 			if (!stamboekNumber) {
-				logger.error('Failed to register user since the register callback function was called without a stamboek number', {
-					returnToUrl,
-					encryptedStamboekNumber,
-				});
-				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-					message: 'Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren',
-					icon: 'slash',
-				})}`);
+				const error = new CustomError(
+					'Failed to register user since the register callback function was called without a stamboek number',
+					null,
+					{
+						returnToUrl,
+						encryptedStamboekNumber,
+					}
+				);
+				logger.error(error);
+				redirectToClientErrorPage(
+					'Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren',
+					'slash',
+					error.identifier,
+				);
 			}
 			const stamboekValidateStatus = await StamboekController.validate(stamboekNumber);
 			if (stamboekValidateStatus === 'VALID') {
@@ -205,26 +234,32 @@ export default class HetArchiefRoute {
 				return new Return.MovedTemporarily<void>(returnToUrl);
 			}
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
-				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-					message: 'Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.',
-					icon: 'users',
-				})}`);
+				redirectToClientErrorPage(
+					'Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.',
+					'users'
+				);
 			}
 			// INVALID
-			return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-				message: 'Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.',
-				icon: 'x-circle',
-			})}`);
+			redirectToClientErrorPage(
+				returnToUrl,
+				'Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.',
+				'x-circle'
+			);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(util.inspect(error));
 			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
-				return new Return.MovedTemporarily<void>(`${clientHost}/error?${queryString.stringify({
-					message: 'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
-					icon: 'users',
-				})}`);
+				return redirectToClientErrorPage(
+					'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
+					'users',
+					error.identifier,
+				);
 			}
-			throw error;
+			return redirectToClientErrorPage(
+				`Er ging iets mis tijdens het registratie proces, gelieve de helpdesk te contacteren (${new Date().toString()}).`,
+				'alert-triangle',
+				error.identifier,
+			);
 		}
 	}
 }
