@@ -21,8 +21,8 @@ interface RelayState {
 
 const STAMBOEK_NUMBER_PATH = 'request.session.stamboekNumber';
 
-if (!process.env.SUMM_REGISTRATION_PAGE) {
-	throw new InternalServerError('The environment variable SUMM_REGISTRATION_PAGE should have a value.');
+if (!process.env.SUMM_REGISTRATION_PAGE && !process.env.SSUM_REGISTRATION_PAGE) {
+	throw new InternalServerError('The environment variable SSUM_REGISTRATION_PAGE should have a value.');
 }
 
 @Path('/auth/hetarchief')
@@ -148,7 +148,7 @@ export default class HetArchiefRoute {
 				returnToUrl,
 				stamboekNumber: encrypt(stamboekNumber),
 			})}`);
-			return new Return.MovedTemporarily<void>(`${process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
+			return new Return.MovedTemporarily<void>(`${process.env.SSUM_REGISTRATION_PAGE || process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(util.inspect(error));
