@@ -26,8 +26,8 @@
     "clean:build": "rm -rf ./dist",
     "clean:coverage": "rm -rf ./test/coverage",
     "open:coverage": "open ./test/coverage/lcov-report/index.html",
-    "build-extract-queries-script": "tsc --sourceMap --esModuleInterop --resolveJsonModule scripts/extract-gql-queries.ts",
-    "extract-queries": "npm run build-extract-queries-script && node scripts/extract-gql-queries.js"
+    "build-whitelist-queries": "tsc --sourceMap --esModuleInterop --resolveJsonModule scripts/whitelist-gql-queries.ts",
+    "whitelist-queries": "npm run build-whitelist-queries && node scripts/whitelist-gql-queries.js"
   },
   "dependencies": {
     "@hapi/joi": "15.1.1",

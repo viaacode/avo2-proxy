@@ -38,7 +38,7 @@ async function fetchPost(body: any) {
 	return response.data;
 }
 
-function whitelistQueries(collectionName: string, gqlRegex: RegExp) {
+function whitelistQueries(collectionName: string, collectionDescription: string, gqlRegex: RegExp) {
 	const options = {
 		cwd: path.join(__dirname, '../src'),
 	};
@@ -115,7 +115,7 @@ function whitelistQueries(collectionName: string, gqlRegex: RegExp) {
 				type: 'create_query_collection',
 				args: {
 					name: collectionName,
-					comment: 'All queries the avo2 client is allowed to execute',
+					comment: collectionDescription,
 					definition: {
 						queries: _.map(queries, (query: string, name: string) => ({
 							name,
@@ -142,4 +142,8 @@ function whitelistQueries(collectionName: string, gqlRegex: RegExp) {
 	});
 }
 
-whitelistQueries('avo_server_queries', /const ([^\s]+) = `([^`]+?)`/gm);
+whitelistQueries(
+	'avo_server_queries',
+	'All queries the avo2 proxy server is allowed to execute',
+	/const ([^\s]+) = `([^`]+?)`/gm
+);
