@@ -127,3 +127,4 @@ server/logs
 .idea
 dist
 server/dist
+server/licenses.csv
