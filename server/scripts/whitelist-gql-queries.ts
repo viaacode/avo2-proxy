@@ -110,7 +110,7 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 					throw err;
 				}
 			}
-			logger.info('[QUERY WHITELISTING]: deleted collection');
+			logger.info('[QUERY WHITELISTING]: Deleted collection');
 
 			// Recreate the client whitelist collection in graphql
 			await fetchPost({
@@ -135,7 +135,7 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 					collection: collectionName,
 				},
 			});
-			logger.info('[QUERY WHITELISTING]: Readded collection to whitelist');
+			logger.info('[QUERY WHITELISTING]: Re-added collection to whitelist');
 
 			logger.info(`[QUERY WHITELISTING]: Whitelisted ${Object.keys(queries).length} queries in the graphql database`);
 		} catch (err) {
