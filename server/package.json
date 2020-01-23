@@ -25,7 +25,8 @@
     "posttest": "npm run lint",
     "clean:build": "rm -rf ./dist",
     "clean:coverage": "rm -rf ./test/coverage",
-    "open:coverage": "open ./test/coverage/lcov-report/index.html"
+    "open:coverage": "open ./test/coverage/lcov-report/index.html",
+    "licenses": "license-checker --csv --out licenses.csv"
   },
   "dependencies": {
     "@hapi/joi": "15.1.1",
@@ -96,6 +97,7 @@
     "dotenv": "8.1.0",
     "jest": "24.8.0",
     "jest-extended": "0.11.2",
+    "license-checker": "^25.0.1",
     "sinon": "7.4.1",
     "sinon-express-mock": "2.2.1",
     "supertest": "4.0.2",
