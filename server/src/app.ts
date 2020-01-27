@@ -34,6 +34,7 @@ import EducationOrganizationsRoute from './modules/education-organizations/route
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+import CampaignMonitorRoute from './modules/campaign-monitor/route';
 
 export class App {
 	public app: Application = express();
@@ -122,6 +123,7 @@ export class App {
 			EventLoggingRoute,
 			ZendeskRoute,
 			AssetRoute,
+			CampaignMonitorRoute,
 
 			FallbackRoute,
 		);
