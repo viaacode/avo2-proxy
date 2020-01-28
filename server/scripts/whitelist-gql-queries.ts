@@ -8,8 +8,6 @@ import _ from 'lodash';
 import * as path from 'path';
 import { logger } from '../src/shared/helpers/logger';
 
-require('dotenv').config({ path: path.resolve(__dirname, '../.env/.env') });
-
 if (!process.env.GRAPHQL_URL) {
 	logger.error(
 		'Failed to whitelist graphql queries because environment variable GRAPHQL_URL is not set'

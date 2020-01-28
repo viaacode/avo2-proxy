@@ -27,7 +27,7 @@
     "clean:coverage": "rm -rf ./test/coverage",
     "open:coverage": "open ./test/coverage/lcov-report/index.html",
     "build-whitelist-queries": "tsc --sourceMap --esModuleInterop --resolveJsonModule scripts/whitelist-gql-queries.ts",
-    "whitelist-queries": "npm run build-whitelist-queries && node scripts/whitelist-gql-queries.js"
+    "whitelist-queries": "npm run build-whitelist-queries && dotenv -e .env/.env node scripts/whitelist-gql-queries.js"
   },
   "dependencies": {
     "@hapi/joi": "15.1.1",
@@ -97,6 +97,7 @@
     "@types/swagger-ui-express": "3.0.1",
     "@types/uuid": "^3.4.5",
     "dotenv": "^8.1.0",
+    "dotenv-cli": "^3.1.0",
     "glob": "latest",
     "jest": "24.8.0",
     "jest-extended": "0.11.2",
