@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
+import { logger } from '../../shared/helpers/logger';
 
 checkRequiredEnvs([
 	'GRAPHQL_URL',
@@ -25,6 +26,7 @@ export default class DataService {
 				},
 			});
 			if (response.data.errors) {
+				logger.error('graphql error during data fetch route: ', response.data.errors);
 				throw new CustomError('GraphQL query failed', null, { ...data, errors: response.data.errors });
 			}
 			return response.data;
