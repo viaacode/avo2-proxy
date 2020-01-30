@@ -17,7 +17,10 @@ export const templateIds = {
 export interface EmailInfo { // TODO use typings version
 	template: keyof typeof templateIds;
 	to: string;
-	data: any;
+	data: {
+		username?: string;
+		mainLink: strin;
+	};
 }
 
 @Path('/campaign-monitor')
@@ -28,7 +31,7 @@ export default class CampaignMonitorRoute {
 	/**
 	 * Send an email using the campaign monitor api
 	 */
-	@Path('validate')
+	@Path('send')
 	@POST
 	@PreProcessor(isAuthenticated)
 	async send(
