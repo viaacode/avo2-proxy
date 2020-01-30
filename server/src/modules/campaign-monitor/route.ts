@@ -1,11 +1,12 @@
-import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
-import CampaignMonitorController from './controller';
 import * as util from 'util';
+import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
+
 import { logger } from '../../shared/helpers/logger';
 import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
-import { isAuthenticated } from 'src/shared/middleware/is-authenticated';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
-import { Avo } from '@viaa/avo2-types';
+
+import CampaignMonitorController from './controller';
 
 export const templateIds = {
 	item: '4293ab4f-40a9-47ae-bb17-32edb593c3ba',
