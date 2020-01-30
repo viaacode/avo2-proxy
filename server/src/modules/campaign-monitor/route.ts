@@ -1,8 +1,11 @@
-import { Context, Path, ServiceContext, POST } from 'typescript-rest';
+import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
 import CampaignMonitorController from './controller';
 import * as util from 'util';
 import { logger } from '../../shared/helpers/logger';
 import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
+import { isAuthenticated } from 'src/shared/middleware/is-authenticated';
+import { IdpHelper } from '../auth/idp-helper';
+import { Avo } from '@viaa/avo2-types';
 
 export const templateIds = {
 	item: '4293ab4f-40a9-47ae-bb17-32edb593c3ba',
@@ -26,6 +29,7 @@ export default class CampaignMonitorRoute {
 	 */
 	@Path('validate')
 	@POST
+	@PreProcessor(isAuthenticated)
 	async send(
 		info: EmailInfo
 	): Promise<void> {
@@ -37,9 +41,20 @@ export default class CampaignMonitorRoute {
 			throw new BadRequestError(`template must be one of: [${Object.keys(templateIds).join(', ')}]`);
 		}
 
+		const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+		if (!avoUser) {
+			throw new InternalServerError('To send emails you need to have an active session with the server', null, { avoUser });
+		}
+		const username = `${avoUser.first_name} ${avoUser.last_name}`;
+
 		// Execute controller
 		try {
-			await CampaignMonitorController.send(info);
+			await CampaignMonitorController.send({
+				...info, data: {
+					...info.data,
+					username,
+				},
+			});
 		} catch (err) {
 			const error = new InternalServerError('Failed during send in campaignMonitor route', err, { info });
 			logger.error(util.inspect(error));
@@ -47,20 +62,3 @@ export default class CampaignMonitorRoute {
 		}
 	}
 }
-
-const assetLink =
-	'https://archief-media.viaa.be/viaa/TESTBEELD/30db04e51c934cf497f439168796df807055864f1ded44e1829f7ab8ed374785/keyframes-thumb/keyframes_1_1/keyframe1.jpg';
-new CampaignMonitorRoute().send({
-	to: 'verhelstbert@gmail.com',
-	template: 'collection',
-	data: {
-		gebruikersnaam: 'Test user',
-		titel: 'Hongkong protest',
-		'x-apple-data-detectors': 'x-apple-data-detectorsTestValue',
-		href: 'http://localhost:8080/collecties/234567',
-		'style*="font-size:1px"': 'style*="font-size:1px"',
-		'link-asset': assetLink,
-	},
-})
-	.then(() => logger.log('success'))
-	.catch((err: any) => logger.error(`fail: ${err.toString()}`));
