@@ -97,7 +97,7 @@ export default class OrganizationService {
 		} catch (err) {
 			/* istanbul ignore next */
 			throw new InternalServerError(
-				'Failed to make request to elasticsearch',
+				'Failed to make update organization cache',
 				err,
 				{
 					url,
