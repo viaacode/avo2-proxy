@@ -16,13 +16,14 @@ interface GetNavElementsResponse {
 }
 
 export interface AppContentNavElement {
-	external_link: any;
+	content_path: any;
+	content_type: any;
 	link_target: string;
 	placement: string;
 	position: number;
 	id: number;
 	icon_name: string;
-	group_access: number[];
+	user_group_ids: number[];
 	label: string;
 	updated_at: string;
 	description: string;
@@ -35,7 +36,7 @@ export type NavItemMap = { [navBarName: string]: AppContentNavElement[] };
 export default class NavigationItemsController {
 	/**
 	 * Gets navigation items that the current user can see
-	 * AppContentNavElement.group_access can contain any userGroup ids and also -1, -2
+	 * AppContentNavElement.user_group_ids can contain any userGroup ids and also -1, -2
 	 *    -1 is a special group: logged out users
 	 *    -2 is a special group: logged in users
 	 *        since you can have a user that isn't a member of any userGroups
@@ -53,9 +54,9 @@ export default class NavigationItemsController {
 			const navItems: AppContentNavElement[] = _.get(response, 'data.app_content_nav_elements', []);
 			const visibleItems: AppContentNavElement[] = [];
 			navItems.forEach((navItem) => {
-				if (navItem.group_access && navItem.group_access.length) {
+				if (navItem.user_group_ids && navItem.user_group_ids.length) {
 					// If the page doesn't have any groups specified, it isn't visible for anyone
-					if (_.intersection(groups, navItem.group_access).length) {
+					if (_.intersection(groups, navItem.user_group_ids).length) {
 						// The logged in user has at least one user group that is required to view the nav item
 						visibleItems.push(navItem);
 					}
