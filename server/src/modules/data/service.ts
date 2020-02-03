@@ -26,8 +26,9 @@ export default class DataService {
 				},
 			});
 			if (response.data.errors) {
-				logger.error('graphql error during data fetch route: ', response.data.errors);
-				throw new CustomError('GraphQL query failed', null, { ...data, errors: response.data.errors });
+				const error = new CustomError('GraphQL query failed', null, { query, variables, errors: response.data.errors });
+				logger.error('graphql error during data fetch route: ', error);
+				throw error;
 			}
 			return response.data;
 		} catch (err) {

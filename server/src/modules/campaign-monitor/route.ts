@@ -18,8 +18,9 @@ export interface EmailInfo { // TODO use typings version
 	template: keyof typeof templateIds;
 	to: string;
 	data: {
-		username?: string;
-		mainLink: strin;
+		username?: string; // The server will fill this in, client doesn't need to provide this (security)
+		mainLink: string;
+		mainTitle: string;
 	};
 }
 

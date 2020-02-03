@@ -3,8 +3,6 @@ import { ExternalServerError, InternalServerError } from '../../shared/helpers/e
 import { logger } from '../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import * as querystring from 'query-string';
-import { Avo } from '@viaa/avo2-types';
-import EducationOrganization = Avo.EducationOrganization;
 
 export interface LdapEducationOrganization {
 	id: string;
