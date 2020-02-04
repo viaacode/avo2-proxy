@@ -50,6 +50,7 @@ export default class HetArchiefRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het inloggen',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -68,6 +69,8 @@ export default class HetArchiefRoute {
 				logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
 				const info: RelayState = JSON.parse(response.RelayState);
 
+				const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
+
 				IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
 				try {
 					IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser));
@@ -76,10 +79,26 @@ export default class HetArchiefRoute {
 					logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
 				}
 
+				// Check if user account has access to the avo platform
+				if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
+					return redirectToClientErrorPage(
+						'Je account heeft geen toegang tot AvO. Indien je denk dat dit een fout is, contacteer de helpdesk via de feedback knop rechts onderaan.',
+						'lock',
+						['home', 'helpdesk'],
+					);
+				}
+
 				return new Return.MovedTemporarily(info.returnToUrl);
 			} catch (err) {
 				// Failed to login
-				logger.error(err); // TODO redirect to failed login page
+				const error = new CustomError('Failed during auth/het-archief/login-callback', err, { response });
+				logger.error(error);
+				return redirectToClientErrorPage(
+					'Er ging iets mis na het inloggen',
+					'alert-triangle',
+					['home', 'helpdesk'],
+					error.identifier
+				);
 			}
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
@@ -87,6 +106,7 @@ export default class HetArchiefRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis na het inloggen',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -122,6 +142,7 @@ export default class HetArchiefRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het uitloggen',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -143,6 +164,7 @@ export default class HetArchiefRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis na het uitloggen',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -171,6 +193,7 @@ export default class HetArchiefRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het registreren, gelieve de helpdesk te contacteren',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -199,6 +222,7 @@ export default class HetArchiefRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het verifiëren van je email adres',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -225,6 +249,7 @@ export default class HetArchiefRoute {
 				redirectToClientErrorPage(
 					'Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren',
 					'slash',
+					['home', 'helpdesk'],
 					error.identifier,
 				);
 			}
@@ -236,14 +261,15 @@ export default class HetArchiefRoute {
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
 				redirectToClientErrorPage(
 					'Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.',
-					'users'
+					'users',
+					['home', 'helpdesk'],
 				);
 			}
 			// INVALID
 			redirectToClientErrorPage(
-				returnToUrl,
 				'Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.',
-				'x-circle'
+				'x-circle',
+				['home', 'helpdesk'],
 			);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
@@ -252,12 +278,14 @@ export default class HetArchiefRoute {
 				return redirectToClientErrorPage(
 					'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
 					'users',
+					['home', 'helpdesk'],
 					error.identifier,
 				);
 			}
 			return redirectToClientErrorPage(
 				`Er ging iets mis tijdens het registratie proces, gelieve de helpdesk te contacteren (${new Date().toString()}).`,
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier,
 			);
 		}
