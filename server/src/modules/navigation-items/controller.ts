@@ -16,8 +16,8 @@ interface GetNavElementsResponse {
 }
 
 export interface AppContentNavElement {
-	content_path: any;
-	content_type: any;
+	content_path: string;
+	content_type: 'CONTENT_PAGE' | 'COLLECTION' | 'ITEM' | 'DROPDOWN' | 'INTERNAL_LINK' | 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
 	link_target: string;
 	placement: string;
 	position: number;
