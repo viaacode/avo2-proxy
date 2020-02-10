@@ -81,7 +81,7 @@ export default class AssetService {
 	/**
 	 * Upload file to the asset service and return the url
 	 */
-	public static async upload(key: string, base64String: string, mimeType: string): Promise<string> {
+	public static upload(key: string, base64String: string, mimeType: string): Promise<string> {
 		return new Promise<string>(async (resolve, reject) => {
 			try {
 				checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
@@ -125,6 +125,33 @@ export default class AssetService {
 					});
 				logger.error(error);
 				reject(error);
+			}
+		});
+	}
+
+	public static delete(url: string) {
+		return new Promise<void>(async (resolve, reject) => {
+			try {
+				const s3Client: S3 = await this.getS3Client();
+				s3Client.deleteObject({
+					Key: url.split(`/${process.env.ASSET_SERVER_BUCKET_NAME}/`).pop(),
+					Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
+				}, (err: AWSError) => {
+					if (err) {
+						const error = new ExternalServerError(
+							'Failed to delete asset from the s3 asset service',
+							err,
+							{
+								url,
+							});
+						logger.error(error);
+						reject(error);
+					} else {
+						resolve();
+					}
+				});
+			} catch (err) {
+				reject(err);
 			}
 		});
 	}
