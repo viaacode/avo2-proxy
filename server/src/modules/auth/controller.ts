@@ -129,7 +129,8 @@ export default class AuthController {
 		if ((avoUserInfo.idpmaps || []).includes(idpType)) {
 			return redirectToClientErrorPage(
 				`Je account is reeds gelinked met ${idpType.toLowerCase()}. Unlink je account eerst van je andere smartschool account`,
-				'link'
+				'link',
+					['home', 'helpdesk'],
 			);
 		}
 
@@ -138,7 +139,8 @@ export default class AuthController {
 		if (!idpLoginPath) {
 			return redirectToClientErrorPage(
 				'Dit platform kan nog niet gelinked worden aan uw account',
-				'link'
+				'link',
+				['home', 'helpdesk'],
 			);
 		}
 
@@ -170,6 +172,7 @@ export default class AuthController {
 			return redirectToClientErrorPage(
 				'Het linken van de account is mislukt (database error)',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -189,6 +192,7 @@ export default class AuthController {
 			return redirectToClientErrorPage(
 				`Er ging iets mis bij het unlinken van de ${idpType.toLowerCase()} account`,
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}

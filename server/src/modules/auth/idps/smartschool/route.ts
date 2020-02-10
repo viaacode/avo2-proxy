@@ -36,6 +36,7 @@ export default class SmartschoolRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het inloggen met smartschool',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -50,7 +51,8 @@ export default class SmartschoolRoute {
 				const errorMessage = SMARTSCHOOL_ERROR_MESSAGES[(userOrError as LoginErrorResponse).error];
 				return redirectToClientErrorPage(
 					errorMessage,
-					'alert-triangle'
+					'alert-triangle',
+					['home', 'helpdesk'],
 				);
 			}
 
@@ -70,7 +72,8 @@ export default class SmartschoolRoute {
 				if (!response.avoUser) {
 					return redirectToClientErrorPage(
 						'Gelieve eerst in te loggen met je avo account en je smartschool te koppelen in je account instellingen',
-						'link'
+						'link',
+						['home', 'helpdesk'],
 					);
 				}
 				IdpHelper.setIdpUserInfoOnSession(this.context.request, response.smartschoolUserInfo, 'SMARTSCHOOL');
@@ -84,6 +87,7 @@ export default class SmartschoolRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis na het inloggen met smartschool',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -101,6 +105,7 @@ export default class SmartschoolRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het uitloggen met smartschool',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}

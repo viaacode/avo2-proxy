@@ -61,6 +61,7 @@ export default class AuthRoute {
 			return redirectToClientErrorPage(
 				'Er ging iets mis tijdens het uitloggen',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
@@ -95,6 +96,7 @@ export default class AuthRoute {
 			return redirectToClientErrorPage(
 				'Het koppelen van de account is mislukt',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier,
 			);
 		}
@@ -122,6 +124,7 @@ export default class AuthRoute {
 			return redirectToClientErrorPage(
 				'Het ontkoppelen van de account is mislukt',
 				'alert-triangle',
+				['home', 'helpdesk'],
 				error.identifier
 			);
 		}
