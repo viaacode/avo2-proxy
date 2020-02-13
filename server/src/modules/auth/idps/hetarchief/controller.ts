@@ -110,7 +110,8 @@ export default class HetArchiefController {
 
 	private static async addAvoAppToLdap(ldapObject: LdapUser): Promise<void> {
 		try {
-			const hasAvoApp = _.get(ldapObject, 'attributes.apps', []).includes('avo');
+			const ldapApps = _.get(ldapObject, 'attributes.apps', []);
+			const hasAvoApp = ldapApps.includes('avo');
 			if (hasAvoApp) {
 				return;
 			}
@@ -121,7 +122,7 @@ export default class HetArchiefController {
 			}
 			const url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
 			const data = {
-				apps: ['avo'],
+				apps: [...ldapApps, 'avo'],
 			};
 			await axios(url, {
 				data,
