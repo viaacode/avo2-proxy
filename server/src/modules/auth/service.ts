@@ -1,12 +1,33 @@
 import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import DataService from '../data/service';
-import { GET_USER_INFO_BY_ID, GET_USER_INFO_BY_USER_EMAIL, LINK_USER_GROUP_TO_PROFILE, UNLINK_USER_GROUP_FROM_PROFILE } from './queries.gql';
+import {
+	GET_USER_INFO_BY_ID,
+	GET_USER_INFO_BY_USER_EMAIL,
+	LINK_USER_GROUP_TO_PROFILE,
+	UNLINK_USER_GROUP_FROM_PROFILE
+} from './queries.gql';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SharedUser } from './types';
 import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
 import * as promiseUtils from 'blend-promise-utils';
 import { ClientEducationOrganization } from '../education-organizations/route';
+import axios from 'axios';
+
+// {
+// 	'id': '4eed4626-301c-1038-90ba-7fcc964c0712',
+// 	'name': 'avo',
+// 	'description': 'Gebruikers Het Archief voor Onderwijs',
+// 	'dn': 'cn=avo,ou=apps,dc=hetarchief,dc=be',
+// 	'objectclass': ['groupOfUniqueNames']
+// }
+interface LdapApp {
+	id: string;
+	name: string;
+	description?: string;
+	dn: string;
+	objectclass: string[];
+}
 
 export class AuthService {
 	public static async getAvoUserInfoByEmail(email: string): Promise<Avo.User.User> {
@@ -51,7 +72,7 @@ export class AuthService {
 		}
 	}
 
-	private static async simplifyUserObject(user: SharedUser | null): Promise<Avo.User.User> {
+	public static async simplifyUserObject(user: SharedUser | null): Promise<Avo.User.User> {
 		try {
 			if (!user) {
 				return null;
@@ -114,6 +135,28 @@ export class AuthService {
 			await DataService.execute(UNLINK_USER_GROUP_FROM_PROFILE, { userGroupId, profileId });
 		} catch (err) {
 			throw new CustomError('Failed to remove usergroup from profile', err, { userGroupId, profileId });
+		}
+	}
+
+	// curl -X GET "http://localhost:4000/apps"
+	// -H "accept: application/json"
+	// -H "authorization: Basic ..."
+	// -H "Content-Type: application/json"
+	public static async getLdapApps(): Promise<{ [name: string]: string }> {
+		let url: string | undefined = undefined;
+		try {
+			url = `${process.env.LDAP_API_ENDPOINT}/apps`;
+			const response = await axios(url, {
+				method: 'get',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+			});
+			const apps: LdapApp[] = response.data;
+			return _.fromPairs(apps.map(app => [app.name, app.id]));
+		} catch (err) {
+			throw new CustomError('Failed to get ldap apps from ldap api', err, { url });
 		}
 	}
 }
