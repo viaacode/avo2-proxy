@@ -186,7 +186,11 @@ export default class HetArchiefRoute {
 				returnToUrl,
 				stamboekNumber: encrypt(stamboekNumber),
 			})}`);
-			return new Return.MovedTemporarily<void>(`${process.env.SSUM_REGISTRATION_PAGE || process.env.SUMM_REGISTRATION_PAGE}?redirect_to=${serverRedirectUrl}`);
+			return new Return.MovedTemporarily<void>(`${process.env.SSUM_REGISTRATION_PAGE || process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
+				redirect_to: serverRedirectUrl,
+				app_name: process.env.SAML_SP_ENTITY_ID,
+				stamboek: stamboekNumber,
+			})}`);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(util.inspect(error));
