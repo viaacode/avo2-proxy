@@ -109,8 +109,8 @@ export default class HetArchiefController {
 	}
 
 	private static async addAvoAppToLdap(ldapObject: LdapUser): Promise<void> {
-		let url: string | undefined = undefined;
-		let data: any | undefined = undefined;
+		let url: string = undefined;
+		let data: any = undefined;
 		try {
 			// Request avo be added to ldap apps through ldap api
 			const ldapUuid = _.get(ldapObject, 'attributes.entryUUID[0]');
