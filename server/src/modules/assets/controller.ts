@@ -34,14 +34,15 @@ export default class AssetController {
 			throw new BadRequestError('Invalid file extension');
 		}
 		const url = await AssetService.upload(key, uploadAssetInfo.content, mimeType);
+		const asset = {
+			owner_id: uploadAssetInfo.ownerId,
+			content_asset_type_id: uploadAssetInfo.type,
+			label: url,
+			description: null as string | null,
+			path: url,
+		};
 		await DataService.execute(INSERT_CONTENT_ASSET, {
-			asset: {
-				owner_id: '517aec71-cf0e-4e08-99d1-8e7e042923f7', // TODO change this to object id that uses the asset once database has been changed
-				content_asset_type_id: 1, // TODO update this to uploadAssetInfo.type once database accepts text
-				label: null,
-				description: null,
-				path: url,
-			},
+			asset,
 		});
 		return url;
 	}
