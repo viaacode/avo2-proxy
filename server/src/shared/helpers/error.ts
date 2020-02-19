@@ -6,7 +6,7 @@ import { default as config } from '../../config';
 
 import { IInternalServerError, IInternalServerErrorDetail, IValidationError } from '../shared.types';
 
-export class CustomError implements IInternalServerError {
+export class CustomError {
 	public message: string;
 	public innerException: any | null;
 	public additionalInfo: any | null;
