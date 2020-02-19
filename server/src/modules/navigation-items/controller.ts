@@ -6,7 +6,7 @@ import { IdpHelper } from '../auth/idp-helper';
 import _ from 'lodash';
 import DataService from '../data/service';
 import { GET_CONTENT_PAGE_BY_PATH, GET_NAVIGATION_ITEMS } from './queries.gql';
-import { ExternalServerError, NotFoundError } from '../../shared/helpers/error';
+import { ExternalServerError } from '../../shared/helpers/error';
 
 interface GetNavElementsResponse {
 	errors?: any;
