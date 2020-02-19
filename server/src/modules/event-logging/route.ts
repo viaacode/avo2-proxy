@@ -5,7 +5,7 @@ import { Context, Path, ServiceContext, POST } from 'typescript-rest';
 import EventLoggingController from './controller';
 import { logger } from '../../shared/helpers/logger';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
-import { ClientEvent } from '@viaa/avo2-types/types/event-logging/types';
+import { ClientEvent } from '@viaa/avo2-types/types/event-logging';
 
 @Path('/event-logging')
 export default class EventLoggingRoute {
