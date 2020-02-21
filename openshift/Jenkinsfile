@@ -47,6 +47,9 @@ pipeline {
                  docker push docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` '''
                  sh'''#!/bin/bash
                  oc tag avo2-proxy:`git describe --tags` avo2-proxy:int
+		 login_oc.sh https://c100-e.eu-de.containers.cloud.ibm.com:31240 && \
+		 docker push docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` && 
+		 login_oc.sh https://do-prd-okp-m0.do.viaa.be:8443
                 '''
 
                         } // script
