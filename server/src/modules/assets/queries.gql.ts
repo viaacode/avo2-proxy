@@ -1,15 +1,15 @@
-export const GET_ITEMS_BY_IDS = `
-	query getItemById($ids: [bpchar!]) {
-		app_item_meta(where: { external_id: { _in: $ids } }) {
-			browse_path
+export const INSERT_CONTENT_ASSET = `
+	mutation insertContentAsset($asset: app_content_assets_insert_input!) {
+		insert_app_content_assets(objects: [$asset]) {
+			affected_rows
 		}
 	}
 `;
 
-export const GET_PROFILES_BY_STAMBOEK = `
-	query getProfilesByStamboek($stamboekNumber: String!) {
-		users_profiles(where: {stamboek: {_eq: $stamboekNumber}}, limit: 1) {
-			stamboek
+export const DELETE_CONTENT_ASSET = `
+	mutation deleteContentAsset($url: String!) {
+		delete_app_content_assets(where: {path: {_eq: $url}}) {
+			affected_rows
 		}
 	}
 `;

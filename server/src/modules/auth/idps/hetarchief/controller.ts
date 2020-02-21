@@ -109,19 +109,17 @@ export default class HetArchiefController {
 	}
 
 	private static async addAvoAppToLdap(ldapObject: LdapUser): Promise<void> {
+		let url: string = undefined;
+		let data: any = undefined;
 		try {
-			const hasAvoApp = _.get(ldapObject, 'attributes.apps', []).includes('avo');
-			if (hasAvoApp) {
-				return;
-			}
 			// Request avo be added to ldap apps through ldap api
 			const ldapUuid = _.get(ldapObject, 'attributes.entryUUID[0]');
 			if (!ldapUuid) {
 				throw new InternalServerError('Failed to get uuid from ldap object');
 			}
-			const url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
-			const data = {
-				apps: ['avo'],
+			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
+			data = {
+				apps: [(await AuthService.getLdapApps())['avo']],
 			};
 			await axios(url, {
 				data,
@@ -133,7 +131,11 @@ export default class HetArchiefController {
 			});
 			return;
 		} catch (err) {
-			throw new InternalServerError('Failed to add avo app to ldap user object', err, { ldapObject });
+			throw new InternalServerError(
+				'Failed to add avo app to ldap user object',
+				err,
+				{ ldapObject, url, data }
+				);
 		}
 	}
 }

@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import EventLoggingService from './service';
 import { InternalServerError } from '../../shared/helpers/error';
 import { LogEvent } from './types';
-import { ClientEvent } from '@viaa/avo2-types/types/event-logging/types';
+import { ClientEvent } from '@viaa/avo2-types/types/event-logging';
 
 export default class EventLoggingController {
 	public static async insertEvents(clientEvents: ClientEvent[], ip: string, requestId: string): Promise<void> {

@@ -45,16 +45,16 @@ export default class SearchController {
 		}
 	}
 
-	public static async getRelatedItems(itemId: string, index: EsIndex, limit: number = 5): Promise<Avo.Search.Search> {
+	public static async getRelatedItems(id: string, index: EsIndex, limit: number = 5): Promise<Avo.Search.Search> {
 		try {
 			// For private collections we need pass the title and description to elasticsearch since elasticsearch doesn't contain these collections
 			// So we need to get the collection from graphql first so we can see if the collection has: is_public === false
 			let privateCollection: Avo.Collection.Collection | undefined;
 			if (index === 'collections') {
-				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { collectionId: itemId });
+				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { collectionId: id });
 				const collection = _.get(response, 'data.app_collections[0]');
 				if (!collection) {
-					throw new BadRequestError('Failed to get collection by id', null, { itemId, index, limit });
+					throw new BadRequestError('Failed to get collection by id', null, { id, index, limit });
 				}
 				if (!collection.is_public) {
 					privateCollection = collection;
@@ -73,7 +73,7 @@ export default class SearchController {
 			} else {
 				likeFilter = {
 					_index: ES_INDEX_MAP[index],
-					_id: itemId,
+					_id: id,
 				};
 			}
 
@@ -97,12 +97,12 @@ export default class SearchController {
 				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
-					{ itemId, index, limit });
+					{ itemId: id, index, limit });
 			} else {
 				throw new InternalServerError(
 					'Failed to do search',
 					err,
-					{ itemId, index, limit });
+					{ itemId: id, index, limit });
 			}
 		}
 	}

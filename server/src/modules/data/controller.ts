@@ -9,8 +9,6 @@ export default class DataController {
 	public static async execute(query: string, variables: { [varName: string]: any }, allHeaders: IncomingHttpHeaders, user: Avo.User.User | null): Promise<any> {
 		// Copy trace id from nginx proxy to a header that hasura will understand
 		// TODO check if trace id header is correct
-		logger.info(`data route headers:
-${JSON.stringify(allHeaders, null, 2)}`);
 		const traceId = allHeaders['x-viaa-trace-id-header'] as string | undefined;
 		const headers: { [headerName: string]: string } = {};
 		if (traceId) {

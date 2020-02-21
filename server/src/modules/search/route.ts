@@ -2,9 +2,9 @@ import * as util from 'util';
 import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
-import { EsIndex } from '@viaa/avo2-types/types/search/types';
 
 import { logger } from '../../shared/helpers/logger';
+import { EsIndex } from '@viaa/avo2-types/types/search';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
