@@ -48,7 +48,7 @@ pipeline {
                  sh'''#!/bin/bash
                  oc tag avo2-proxy:`git describe --tags` avo2-proxy:int
 		 login_oc.sh https://c100-e.eu-de.containers.cloud.ibm.com:31240 && \
-		 docker build -t docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud:`git describe --tags` . &&
+		 docker tag docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud:`git describe --tags`  &&
 		 docker push docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud:`git describe --tags` && 
 		 login_oc.sh https://do-prd-okp-m0.do.viaa.be:8443
                 '''
