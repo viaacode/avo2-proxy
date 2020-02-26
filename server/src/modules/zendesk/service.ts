@@ -30,11 +30,7 @@ export default class ZendeskService {
 		return new Promise<Tickets.ResponseModel>((resolve, reject) => {
 			try {
 				ZendeskService.client.tickets.create({ ticket }, (error: Error | undefined, response: any, result: any) => {
-					if (error) {
-						reject(error);
-					} else {
-						resolve(result);
-					}
+					error ? reject(error) : resolve(result);
 				});
 			} catch (err) {
 				const error = new ExternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
