@@ -19,10 +19,10 @@ const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
 export default class QueryBuilder {
 	private static readonly orderMappings: { [prop: string]: any } = {
 		relevance: '_score',
-		views: 'view_count', // TODO replace key with actual key when available in elasticsearch
+		views: 'views_count',
 		broadcastDate: 'dcterms_issued',
-		createdDate: 'created_date', // TODO replace key with actual key when available in elasticsearch
-		lastEditDate: 'last_edit_date', // TODO replace key with actual key when available in elasticsearch
+		createdAt: 'created_at',
+		updatedAt: 'updated_at',
 	};
 
 	/**

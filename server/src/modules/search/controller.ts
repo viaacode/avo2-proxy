@@ -97,12 +97,12 @@ export default class SearchController {
 				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
-					{ itemId: id, index, limit });
+					{ index, limit, itemId: id });
 			} else {
 				throw new InternalServerError(
 					'Failed to do search',
 					err,
-					{ itemId: id, index, limit });
+					{ index, limit, itemId: id });
 			}
 		}
 	}
