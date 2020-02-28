@@ -31,10 +31,11 @@ import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
 import EventLoggingRoute from './modules/event-logging/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
+import KlaarRoute from './modules/klaar/route';
+import CampaignMonitorRoute from './modules/campaign-monitor/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
-import CampaignMonitorRoute from './modules/campaign-monitor/route';
 
 export class App {
 	public app: Application = express();
@@ -124,6 +125,7 @@ export class App {
 			ZendeskRoute,
 			AssetRoute,
 			CampaignMonitorRoute,
+			KlaarRoute,
 
 			FallbackRoute,
 		);
