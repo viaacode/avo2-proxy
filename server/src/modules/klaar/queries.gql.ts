@@ -8,7 +8,7 @@ export const GET_KLAAR_NEWSLETTER_CONTENT_PAGE = `
 			}
 			title
 			description
-      updated_at
+			updated_at
 		}
 	}
 `;
