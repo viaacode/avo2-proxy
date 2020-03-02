@@ -1,5 +1,7 @@
-import { IRequest, IResponse, INext, IInternalServerError } from '../../../shared/shared.types';
 import _ from 'lodash';
+
+import { IRequest, IResponse, INext, IInternalServerError } from '../../../shared/shared.types';
+import { logger } from '../../../shared/helpers/logger';
 
 export class ErrorMiddleware {
 	public static handleError(err: string | Error | IInternalServerError | null | undefined, req: IRequest, res: IResponse, next: INext): IResponse | void {
@@ -8,12 +10,7 @@ export class ErrorMiddleware {
 		}
 		res.set('Content-Type', 'application/json');
 		res.status(_.get(err, 'statusCode', 500));
-		res.json({
-			message: _.get(err, 'message', ''),
-			stack: _.get(err, 'stack', '').split('\n'),
-			statusCode: _.get(err, 'statusCode', 500),
-			name: _.get(err, 'name', ''),
-			additionalInfo: _.get(err, 'additionalInfo', null),
-		});
+		logger.error(JSON.stringify(err, null, 2));
+		res.send(JSON.stringify(err, null, 2));
 	}
 }

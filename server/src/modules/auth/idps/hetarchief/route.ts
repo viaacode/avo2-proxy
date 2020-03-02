@@ -182,10 +182,10 @@ export default class HetArchiefRoute {
 	): Promise<any> {
 		try {
 			_.set(this.context, STAMBOEK_NUMBER_PATH, stamboekNumber);
-			const serverRedirectUrl = encodeURIComponent(`${process.env.HOST}/auth/hetarchief/verify-email-callback?${queryString.stringify({
+			const serverRedirectUrl = `${process.env.HOST}/auth/hetarchief/verify-email-callback?${queryString.stringify({
 				returnToUrl,
 				stamboekNumber: encrypt(stamboekNumber),
-			})}`);
+			})}`;
 			return new Return.MovedTemporarily<void>(`${process.env.SSUM_REGISTRATION_PAGE || process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
 				redirect_to: serverRedirectUrl,
 				app_name: process.env.SAML_SP_ENTITY_ID,
