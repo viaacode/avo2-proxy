@@ -1,9 +1,11 @@
-import { IdpType } from './types';
+import { IdpMap, IdpType } from './types';
 import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import { Request } from 'express';
-import { InternalServerError, ServerError } from '../../shared/helpers/error';
+import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
 import { AuthService } from './service';
+import DataService from '../data/service';
+import { INSERT_IDP_MAP, INSERT_PROFILE } from './queries.gql';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
 const AVO_USER_INFO_PATH = 'session.avoUserInfo';
@@ -89,4 +91,29 @@ export class IdpHelper {
 		IdpHelper.clearAllIdpUserInfosFromSession(req);
 		IdpHelper.setAvoUserInfoOnSession(req, null);
 	}
+
+	public static async createIdpMap(idp: IdpType, idpUserId: string, localUserId: string) {
+		try {
+			const idpMap: Partial<IdpMap> = {
+				idp,
+				idp_user_id: idpUserId,
+				local_user_id: localUserId,
+			};
+			const response = await DataService.execute(INSERT_IDP_MAP, { idpMap });
+			if (!response) {
+				throw new InternalServerError(
+					'Failed to link avo user to an idp. Response from insert request was undefined',
+					null,
+					{ response }
+				);
+			}
+		} catch (err) {
+			throw new CustomError(
+				'Failed to link user to idp',
+				err,
+				{ idp, idpUserId, localUserId, query: INSERT_PROFILE }
+			);
+		}
+	}
+
 }
