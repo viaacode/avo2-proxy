@@ -130,8 +130,7 @@ export default class AuthController {
 		if ((avoUserInfo.idpmaps || []).includes(idpType)) {
 			const idpTypeLowerCase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				i18n.t(
-					'Je account is reeds gelinked met {{idpType}}. Unlink je account eerst van je andere smartschool account',
+				i18n.t('modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
 					{ idpType: idpTypeLowerCase }
 					),
 				'link',
@@ -143,7 +142,7 @@ export default class AuthController {
 		const idpLoginPath: string | undefined = IDP_ADAPTERS[idpType].loginPath;
 		if (!idpLoginPath) {
 			return redirectToClientErrorPage(
-				i18n.t('Dit platform kan nog niet gelinked worden aan uw account'),
+				i18n.t('modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'),
 				'link',
 				['home', 'helpdesk'],
 			);
@@ -175,7 +174,7 @@ export default class AuthController {
 			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, { avoUserInfo, idpUserInfo, returnToUrl });
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('Het linken van de account is mislukt (database error)'),
+				i18n.t('modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -196,7 +195,7 @@ export default class AuthController {
 			logger.error(error);
 			const idpTypeLowercase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis bij het unlinken van de {{idpType}} account', { idpType: idpTypeLowercase }),
+				i18n.t('modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account', { idpType: idpTypeLowercase }),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier

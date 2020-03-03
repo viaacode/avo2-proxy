@@ -49,7 +49,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis tijdens het inloggen'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -82,7 +82,7 @@ export default class HetArchiefRoute {
 			// Check if user account has access to the avo platform
 			if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
 				return redirectToClientErrorPage(
-					i18n.t('Je account heeft geen toegang tot AvO. Indien je denk dat dit een fout is, contacteer de helpdesk via de feedback knop rechts onderaan.'),
+					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
 					'lock',
 					['home', 'helpdesk'],
 				);
@@ -93,7 +93,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis na het inloggen'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-inloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -129,7 +129,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis tijdens het uitloggen'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -151,7 +151,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, { relayState: response.RelayState });
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis na het uitloggen'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -184,7 +184,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis tijdens het registreren, gelieve de helpdesk te contacteren'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -213,7 +213,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis tijdens het verifiëren van je email adres'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -240,7 +240,7 @@ export default class HetArchiefRoute {
 				);
 				logger.error(error);
 				redirectToClientErrorPage(
-					i18n.t('Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren'),
+					i18n.t('modules/auth/idps/hetarchief/route___uw-stamboek-nummer-zit-niet-bij-de-request-we-kunnen-uw-account-niet-registreren'),
 					'slash',
 					['home', 'helpdesk'],
 					error.identifier,
@@ -253,14 +253,14 @@ export default class HetArchiefRoute {
 			}
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
 				redirectToClientErrorPage(
-					i18n.t('Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.'),
+					i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-reeds-in-gebruik-gelieve-de-helpdesk-te-contacteren'),
 					'users',
 					['home', 'helpdesk'],
 				);
 			}
 			// INVALID
 			redirectToClientErrorPage(
-				i18n.t('Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.'),
+				i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-ongeldig-controleer-u-invoer-en-probeer-opnieuw-te-registeren'),
 				'x-circle',
 				['home', 'helpdesk'],
 			);
@@ -269,14 +269,14 @@ export default class HetArchiefRoute {
 			logger.error(util.inspect(error));
 			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
 				return redirectToClientErrorPage(
-					i18n.t('Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.'),
+					i18n.t('modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'),
 					'users',
 					['home', 'helpdesk'],
 					error.identifier,
 				);
 			}
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis tijdens het registratie proces, gelieve de helpdesk te contacteren'),
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registratie-proces-gelieve-de-helpdesk-te-contacteren'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier,

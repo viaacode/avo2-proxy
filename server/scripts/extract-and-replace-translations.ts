@@ -218,4 +218,6 @@ async function updateTranslations() {
 	);
 }
 
-updateTranslations().catch(err => logger.error(new CustomError('Update of translations failed: ', err)));
+updateTranslations().catch((err) => {
+	logger.error(new CustomError('Update of translations failed: ', err));
+});

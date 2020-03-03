@@ -5,7 +5,7 @@ import {
 	GET_USER_INFO_BY_ID,
 	GET_USER_INFO_BY_USER_EMAIL,
 	LINK_USER_GROUP_TO_PROFILE,
-	UNLINK_USER_GROUP_FROM_PROFILE
+	UNLINK_USER_GROUP_FROM_PROFILE,
 } from './queries.gql';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SharedUser } from './types';

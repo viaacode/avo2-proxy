@@ -60,7 +60,7 @@ export default class AuthRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				i18n.t('Er ging iets mis tijdens het uitloggen'),
+				i18n.t('modules/auth/route___er-ging-iets-mis-tijdens-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -95,7 +95,7 @@ export default class AuthRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('Het koppelen van de account is mislukt'),
+				i18n.t('modules/auth/route___het-koppelen-van-de-account-is-mislukt'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier,
@@ -123,7 +123,7 @@ export default class AuthRoute {
 			const error = new CustomError('Failed to unlink idp from account', err, { returnToUrl, idpType });
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('Het ontkoppelen van de account is mislukt'),
+				i18n.t('modules/auth/route___het-ontkoppelen-van-de-account-is-mislukt'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
