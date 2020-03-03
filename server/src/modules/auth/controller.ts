@@ -9,6 +9,7 @@ import { logger } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
+import i18n from '../../shared/translations/i18n';
 
 import { DELETE_IDP_MAPS, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import KlascementController from './idps/klascement/controller';
@@ -127,8 +128,12 @@ export default class AuthController {
 
 		// Check if this idp type is already linked to the currently logged in account
 		if ((avoUserInfo.idpmaps || []).includes(idpType)) {
+			const idpTypeLowerCase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				`Je account is reeds gelinked met ${idpType.toLowerCase()}. Unlink je account eerst van je andere smartschool account`,
+				i18n.t(
+					'Je account is reeds gelinked met {{idpType}}. Unlink je account eerst van je andere smartschool account',
+					{ idpType: idpTypeLowerCase }
+					),
 				'link',
 					['home', 'helpdesk'],
 			);
@@ -138,7 +143,7 @@ export default class AuthController {
 		const idpLoginPath: string | undefined = IDP_ADAPTERS[idpType].loginPath;
 		if (!idpLoginPath) {
 			return redirectToClientErrorPage(
-				'Dit platform kan nog niet gelinked worden aan uw account',
+				i18n.t('Dit platform kan nog niet gelinked worden aan uw account'),
 				'link',
 				['home', 'helpdesk'],
 			);
@@ -170,7 +175,7 @@ export default class AuthController {
 			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, { avoUserInfo, idpUserInfo, returnToUrl });
 			logger.error(error);
 			return redirectToClientErrorPage(
-				'Het linken van de account is mislukt (database error)',
+				i18n.t('Het linken van de account is mislukt (database error)'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -189,8 +194,9 @@ export default class AuthController {
 		} catch (err) {
 			const error = new ExternalServerError('Failed to remove idp map from database', err, { idpType, avoUserInfo });
 			logger.error(error);
+			const idpTypeLowercase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				`Er ging iets mis bij het unlinken van de ${idpType.toLowerCase()} account`,
+				i18n.t('Er ging iets mis bij het unlinken van de {{idpType}} account', { idpType: idpTypeLowercase }),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier

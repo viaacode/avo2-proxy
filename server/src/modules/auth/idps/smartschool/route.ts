@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 
 import { InternalServerError } from '../../../../shared/helpers/error';
+import i18n from '../../../../shared/translations/i18n';
 import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-helper';
 import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
@@ -13,9 +14,9 @@ import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redi
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const SMARTSCHOOL_ERROR_MESSAGES = {
-	FIRST_LINK_ACCOUNT: 'Je smartschool account is nog niet gelinked aan je archief account. ' +
-		'Log eerst in met je email adres en wachtwoord en link je smartschool account in je profiel instellingen',
-	NO_ACCESS: 'Enkel leerkrachten en leerlingen kunnen inloggen via smartschool op deze website',
+	// tslint:disable-next-line:max-line-length
+	FIRST_LINK_ACCOUNT: i18n.t('Je smartschool account is nog niet gelinked aan je archief account. Log eerst in met je email adres en wachtwoord en link je smartschool account in je profiel instellingen'),
+	NO_ACCESS: i18n.t('Enkel leerkrachten en leerlingen kunnen inloggen via smartschool op deze website'),
 };
 
 @Path('/auth/smartschool')
@@ -34,7 +35,7 @@ export default class SmartschoolRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het inloggen met smartschool',
+				i18n.t('Er ging iets mis tijdens het inloggen met smartschool'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -71,7 +72,7 @@ export default class SmartschoolRoute {
 				// Check if accounts are linked
 				if (!response.avoUser) {
 					return redirectToClientErrorPage(
-						'Gelieve eerst in te loggen met je avo account en je smartschool te koppelen in je account instellingen',
+						i18n.t('Gelieve eerst in te loggen met je avo account en je smartschool te koppelen in je account instellingen'),
 						'link',
 						['home', 'helpdesk'],
 					);
@@ -85,7 +86,7 @@ export default class SmartschoolRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis na het inloggen met smartschool',
+				i18n.t('Er ging iets mis na het inloggen met smartschool'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -103,7 +104,7 @@ export default class SmartschoolRoute {
 			const error = new InternalServerError('Failed during smartschool/logout route', err, { returnToUrl });
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het uitloggen met smartschool',
+				i18n.t('Er ging iets mis tijdens het uitloggen met smartschool'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
