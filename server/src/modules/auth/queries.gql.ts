@@ -122,6 +122,70 @@ query getUserInfoById($userId: uuid!) {
 }
 `;
 
+export const GET_USER_BY_LDAP_UUID = `
+query getUserByLdapUuid($ldapUuid: String!) {
+  users_idp_map(where: {idp: {_eq: HETARCHIEF}, idp_user_id: {_eq: $ldapUuid}}) {
+    local_user {
+      id
+      first_name
+      last_name
+      profiles {
+        id
+        alias
+        alternative_email
+        avatar
+        created_at
+        location
+        stamboek
+        bio
+        function
+        updated_at
+        user_id
+        profile_user_groups {
+          groups {
+            id
+            group_user_permission_groups {
+              permission_group {
+                permission_group_user_permissions {
+                  permission {
+                    label
+                  }
+                }
+              }
+            }
+          }
+        }
+        profile_classifications {
+          key
+        }
+        profile_contexts {
+          key
+        }
+        profile_organizations {
+          unit_id
+          organization_id
+        }
+      }
+      created_at
+      expires_at
+      external_uid
+      role {
+        label
+        name
+      }
+      type
+      uid
+      updated_at
+      mail
+      organisation_id
+      idpmaps {
+        idp
+      }
+    }
+  }
+}
+`;
+
 export const INSERT_USER = `
 mutation insertUser($user: shared_users_insert_input!) {
   insert_shared_users(objects: [$user]) {
