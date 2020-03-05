@@ -1,8 +1,11 @@
-import { IdpMap, IdpType } from './types';
 import _ from 'lodash';
-import { Avo } from '@viaa/avo2-types';
 import { Request } from 'express';
+
+import { Avo } from '@viaa/avo2-types';
+
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
+
+import { IdpMap, IdpType } from './types';
 import { AuthService } from './service';
 import DataService from '../data/service';
 import { INSERT_IDP_MAP, INSERT_PROFILE } from './queries.gql';

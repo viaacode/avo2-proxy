@@ -1,14 +1,17 @@
-import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
+import _ from 'lodash';
+import { Request } from 'express';
+
+import { Avo } from '@viaa/avo2-types';
+
 import DataService from '../../../data/service';
 import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID } from '../../queries.gql';
-import { Avo } from '@viaa/avo2-types';
-import _ from 'lodash';
-import { IdpType } from '../../types';
 import { IdpHelper } from '../../idp-helper';
-import { Request } from 'express';
+import { IdpType } from '../../types';
 import { AuthService } from '../../service';
 import AuthController from '../../controller';
 import { InternalServerError } from '../../../../shared/helpers/error';
+
+import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };

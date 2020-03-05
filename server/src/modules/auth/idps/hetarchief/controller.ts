@@ -1,11 +1,13 @@
-import _ from 'lodash';
-import { IdpHelper } from '../../idp-helper';
+import axios from 'axios';
 import { Request } from 'express';
+import _ from 'lodash';
+
+import { Avo } from '@viaa/avo2-types';
+
+import { IdpHelper } from '../../idp-helper';
 import { IdpType, LdapUser } from '../../types';
 import { AuthService } from '../../service';
-import { Avo } from '@viaa/avo2-types';
 import AuthController from '../../controller';
-import axios from 'axios';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import DataService from '../../../data/service';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
