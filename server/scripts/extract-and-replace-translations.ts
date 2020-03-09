@@ -28,9 +28,8 @@ import * as fs from 'fs';
 import glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
+
 import localTranslations from '../src/shared/translations/nl.json';
-import { logger } from '../src/shared/helpers/logger';
-import { CustomError } from '../src/shared/helpers/error';
 
 type keyMap = { [key: string]: string };
 
@@ -108,10 +107,11 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 						formattedKey = getFormattedKey(relativeFilePath, formattedTranslation);
 					}
 					if (translationParams.includes('(')) {
-						logger.warn(
+						// tslint:disable-next-line:no-console
+						console.warn(
 							'WARNING: Translation params should not contain any function calls, ' +
-								'since the regex replacement cannot deal with brackets inside the t() function. ' +
-								'Store the translation params in a variable before calling the t() function.',
+							'since the regex replacement cannot deal with brackets inside the t() function. ' +
+							'Store the translation params in a variable before calling the t() function.',
 							{
 								match,
 								prefix,
@@ -132,7 +132,8 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 
 			fs.writeFileSync(absoluteFilePath, content);
 		} catch (err) {
-			logger.error(new CustomError(`Failed to find translations in file: ${relativeFilePath}`, err));
+			// tslint:disable-next-line:no-console
+			console.error(`Failed to find translations in file: ${relativeFilePath}`, err);
 		}
 	});
 	return newTranslations;
@@ -188,7 +189,8 @@ async function updateTranslations() {
 	const existingTranslationKeys: string[] = _.intersection(newTranslationKeys, oldTranslationKeys);
 
 	// Console log translations that were found in the json file but not in the code
-	logger.warn(
+	// tslint:disable-next-line:no-console
+	console.warn(
 		`The following translation keys were removed:
 \t${removedTranslationKeys.join('\n\t')}`
 	);
@@ -211,7 +213,8 @@ async function updateTranslations() {
 	);
 
 	const totalTranslations = existingTranslationKeys.length + addedTranslationKeys.length;
-	logger.log(
+	// tslint:disable-next-line:no-console
+	console.log(
 		`Wrote ${totalTranslations} src/shared/translations/nl.json file
 \t${addedTranslationKeys.length} translations added
 \t${removedTranslationKeys.length} translations deleted`
@@ -219,5 +222,6 @@ async function updateTranslations() {
 }
 
 updateTranslations().catch((err) => {
-	logger.error(new CustomError('Update of translations failed: ', err));
+	// tslint:disable-next-line:no-console
+	console.error('Update of translations failed: ', err);
 });
