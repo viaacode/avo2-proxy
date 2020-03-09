@@ -71,9 +71,35 @@ export default class HetArchiefRoute {
 
 			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
 
-			IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
-			try {
-				IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser));
+				IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
+				try {
+					let avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
+
+					// TODO remove fix for missing idp map link for existing users
+					if (!avoUser) {
+						// link ldap user by email and then link ldap user to avo user through idp_map table
+						avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser);
+						if (avoUser) {
+							await IdpHelper.createIdpMap('HETARCHIEF', ldapUser.attributes.entryUUID[0], String(avoUser.uid));
+						}
+					}
+
+					IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
+				} catch (err) {
+					// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
+					logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
+				}
+
+				// Check if user account has access to the avo platform
+				if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
+					return redirectToClientErrorPage(
+						'Je account heeft geen toegang tot AvO. Indien je denk dat dit een fout is, contacteer de helpdesk via de feedback knop rechts onderaan.',
+						'lock',
+						['home', 'helpdesk'],
+					);
+				}
+
+				return new Return.MovedTemporarily(info.returnToUrl);
 			} catch (err) {
 				// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
 				logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });

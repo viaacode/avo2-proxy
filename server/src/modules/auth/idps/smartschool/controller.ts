@@ -1,14 +1,17 @@
-import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
-import DataService from '../../../data/service';
-import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from '../../queries.gql';
-import { Avo } from '@viaa/avo2-types';
 import _ from 'lodash';
-import { IdpMap, IdpType } from '../../types';
-import { IdpHelper } from '../../idp-helper';
 import { Request } from 'express';
+
+import { Avo } from '@viaa/avo2-types';
+
+import DataService from '../../../data/service';
+import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID } from '../../queries.gql';
+import { IdpHelper } from '../../idp-helper';
+import { IdpType } from '../../types';
 import { AuthService } from '../../service';
 import AuthController from '../../controller';
 import { InternalServerError } from '../../../../shared/helpers/error';
+
+import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
@@ -118,21 +121,6 @@ export default class SmartschoolController extends IdpHelper {
 			alias: userUid,
 		};
 		return AuthController.createProfile(profile);
-	}
-
-	private static async createIdpMap(idp: IdpType, idpUserId: string, localUserId: string) {
-		const idpMap: Partial<IdpMap> = {
-			idp,
-			idp_user_id: idpUserId,
-			local_user_id: localUserId,
-		};
-		const response = await DataService.execute(INSERT_IDP_MAP, { idpMap });
-		if (!response) {
-			throw new InternalServerError(
-				'Failed to link avo user to an idp. Response from insert request was undefined',
-				null,
-				{ response, query: INSERT_PROFILE });
-		}
 	}
 
 	private static async getUserByIdpId(idpType: IdpType, idpId: string): Promise<string | null> {

@@ -1,12 +1,16 @@
-import _ from 'lodash';
-import { IdpHelper } from '../../idp-helper';
+import axios from 'axios';
 import { Request } from 'express';
+import _ from 'lodash';
+
+import { Avo } from '@viaa/avo2-types';
+
+import { IdpHelper } from '../../idp-helper';
 import { IdpType, LdapUser } from '../../types';
 import { AuthService } from '../../service';
-import { Avo } from '@viaa/avo2-types';
 import AuthController from '../../controller';
-import axios from 'axios';
-import { InternalServerError } from '../../../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
+import DataService from '../../../data/service';
+import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
 
 const LDAP_ROLE_TO_USER_ROLE: { [ldapRole: string]: number } = {
 	Admin: 1,
@@ -52,15 +56,15 @@ export default class HetArchiefController {
 	}
 
 	public static async createUserAndProfile(req: Request, stamboekNumber: string) {
-		let idpUserInfo: LdapUser | null = null;
+		let ldapUserInfo: LdapUser | null = null;
 		try {
-			idpUserInfo = IdpHelper.getIdpUserInfoFromSession(req);
-			if (!idpUserInfo) {
+			ldapUserInfo = IdpHelper.getIdpUserInfoFromSession(req);
+			if (!ldapUserInfo) {
 				throw new InternalServerError('Failed to create user because ldap object is undefined', null);
 			}
 
 			// Create avo user object
-			const user: Partial<Avo.User.User> = this.parseLdapObject(idpUserInfo);
+			const user: Partial<Avo.User.User> = this.parseLdapObject(ldapUserInfo);
 			const existingUser = await AuthService.getAvoUserInfoByEmail(user.mail);
 			if (existingUser) {
 				throw new InternalServerError(
@@ -74,9 +78,10 @@ export default class HetArchiefController {
 			const userUuid = await AuthController.createUser(user);
 
 			// Create avo profile object
-			const profileId = await this.createProfile(idpUserInfo, userUuid, stamboekNumber);
+			const profileId = await this.createProfile(ldapUserInfo, userUuid, stamboekNumber);
 
-			await HetArchiefController.addAvoAppToLdap(idpUserInfo);
+			// Add the avo app to the list of allowed apps in ldap (this will be done by the ssum in the future)
+			await HetArchiefController.addAvoAppToLdap(ldapUserInfo);
 
 			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
@@ -84,9 +89,37 @@ export default class HetArchiefController {
 			// Add permission groups
 			// Users with a stamboek number are by default a "lesgever" and should be linked to that user group
 			await AuthService.addUserGroupsToProfile(2, profileId);
+
+			// Check if user is linked to hetarchief idp, if not create a link in the idp_map table
+			if (!(userInfo.idpmaps || []).includes('HETARCHIEF')) {
+				const ldapUuid = ldapUserInfo.attributes.entryUUID[0];
+				if (!ldapUuid) {
+					throw new CustomError(
+						'Failed to link user to hetarchief ldap because ldap user does not have uuid',
+						null,
+						{
+							ldapUserInfo,
+							userUuid,
+						}
+					);
+				}
+				await IdpHelper.createIdpMap('SMARTSCHOOL', ldapUserInfo.attributes.entryUUID[0], userUuid);
+			}
 		} catch (err) {
-			throw new InternalServerError('Failed to create user and profile in the avo database', err, { stamboekNumber, idpUserInfo });
+			throw new InternalServerError('Failed to create user and profile in the avo database', err, {
+				stamboekNumber,
+				ldapUserInfo,
+			});
 		}
+	}
+
+	public static async getAvoUserInfoFromDatabaseByLdapUuid(ldapUuid: string | undefined): Promise<Avo.User.User | null> {
+		const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
+		const avoUser = _.get(response, 'data.users_idp_map.local_user');
+		if (!avoUser) {
+			return null;
+		}
+		return AuthService.simplifyUserObject(avoUser);
 	}
 
 	private static async createProfile(ldapObject: LdapUser, userUid: string, stamboekNumber: string): Promise<string> {
@@ -135,7 +168,7 @@ export default class HetArchiefController {
 				'Failed to add avo app to ldap user object',
 				err,
 				{ ldapObject, url, data }
-				);
+			);
 		}
 	}
 }

@@ -11,7 +11,7 @@ import { ExternalServerError, InternalServerError } from '../../shared/helpers/e
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 import i18n from '../../shared/translations/i18n';
 
-import { DELETE_IDP_MAPS, INSERT_IDP_MAP, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import { DELETE_IDP_MAPS, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import KlascementController from './idps/klascement/controller';
 import HetArchiefController from './idps/hetarchief/controller';
 import SmartschoolController from './idps/smartschool/controller';
@@ -161,14 +161,13 @@ export default class AuthController {
 		let avoUserInfo: Avo.User.User | undefined;
 		try {
 			avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
-			const idpMap: Partial<IdpMap> = {
-				idp: idpUserInfo.type,
-				idp_user_id: String(IDP_ADAPTERS[idpUserInfo.type].getUserId(idpUserInfo.userObject)),
-				local_user_id: avoUserInfo.uid,
-			};
 
 			// Link idp accounts to each other
-			await DataService.execute(INSERT_IDP_MAP, { idpMap });
+			await IdpHelper.createIdpMap(
+				idpUserInfo.type,
+				String(IDP_ADAPTERS[idpUserInfo.type].getUserId(idpUserInfo.userObject)),
+				avoUserInfo.uid
+			);
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
 			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, { avoUserInfo, idpUserInfo, returnToUrl });
