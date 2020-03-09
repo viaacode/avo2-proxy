@@ -93,28 +93,13 @@ export default class HetArchiefRoute {
 				// Check if user account has access to the avo platform
 				if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
 					return redirectToClientErrorPage(
-						'Je account heeft geen toegang tot AvO. Indien je denk dat dit een fout is, contacteer de helpdesk via de feedback knop rechts onderaan.',
+						i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
 						'lock',
 						['home', 'helpdesk'],
 					);
 				}
 
 				return new Return.MovedTemporarily(info.returnToUrl);
-			} catch (err) {
-				// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
-				logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
-			}
-
-			// Check if user account has access to the avo platform
-			if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
-				return redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
-					'lock',
-					['home', 'helpdesk'],
-				);
-			}
-
-			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
