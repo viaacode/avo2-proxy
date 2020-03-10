@@ -1,8 +1,8 @@
 import { GET, Path } from 'typescript-rest';
 
-import { InternalServerError } from '../../shared/helpers/error';
+import { InternalServerError } from '../../../shared/helpers/error';
 
-import TranslationsController from './controller';
+import TranslationsController from '../controllers/translations.controller';
 
 @Path('/translations')
 export default class TranslationsRoute {

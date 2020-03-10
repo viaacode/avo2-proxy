@@ -1,9 +1,12 @@
 import { get } from 'lodash';
 
-import DataService from '../data/service';
-import { GET_TRANSLATIONS } from './queries.gql';
-import { ExternalServerError, NotFoundError } from '../../shared/helpers/error';
-import { SiteVariable } from './types';
+import DataService from '../../data/service';
+import { GET_SITE_VARIABLES_BY_NAME } from '../queries.gql';
+import {
+	ExternalServerError,
+	NotFoundError,
+} from '../../../shared/helpers/error';
+import { SiteVariable } from '../types';
 
 export default class TranslationsController {
 	public static async getTranslationsJSON(
@@ -12,7 +15,7 @@ export default class TranslationsController {
 		try {
 			const response: Promise<Partial<
 				SiteVariable
-			>[]> = await DataService.execute(GET_TRANSLATIONS, {
+			>[]> = await DataService.execute(GET_SITE_VARIABLES_BY_NAME, {
 				name: `translations-${context}`,
 			});
 
@@ -24,7 +27,7 @@ export default class TranslationsController {
 			if (!translations) {
 				throw new NotFoundError('Translations not found', null, {
 					context,
-					query: GET_TRANSLATIONS,
+					query: GET_SITE_VARIABLES_BY_NAME,
 				});
 			}
 
@@ -32,7 +35,7 @@ export default class TranslationsController {
 		} catch (err) {
 			throw new ExternalServerError('Failed to retrieve translations', err, {
 				context,
-				query: GET_TRANSLATIONS,
+				query: GET_SITE_VARIABLES_BY_NAME,
 			});
 		}
 	}
