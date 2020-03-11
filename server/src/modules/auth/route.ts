@@ -7,6 +7,7 @@ import { Avo } from '@viaa/avo2-types';
 
 import { logger } from '../../shared/helpers/logger';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
+import i18n from '../../shared/translations/i18n';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import { IdpHelper } from './idp-helper';
@@ -59,7 +60,7 @@ export default class AuthRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het uitloggen',
+				i18n.t('modules/auth/route___er-ging-iets-mis-tijdens-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -94,7 +95,7 @@ export default class AuthRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				'Het koppelen van de account is mislukt',
+				i18n.t('modules/auth/route___het-koppelen-van-de-account-is-mislukt'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier,
@@ -122,7 +123,7 @@ export default class AuthRoute {
 			const error = new CustomError('Failed to unlink idp from account', err, { returnToUrl, idpType });
 			logger.error(error);
 			return redirectToClientErrorPage(
-				'Het ontkoppelen van de account is mislukt',
+				i18n.t('modules/auth/route___het-ontkoppelen-van-de-account-is-mislukt'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
