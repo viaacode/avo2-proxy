@@ -6,7 +6,6 @@ import TranslationsController from '../controllers/translations.controller';
 
 @Path('/translations')
 export default class TranslationsRoute {
-	// retrieve NL translations file in json format
 	@Path('nl.json')
 	@GET
 	async getFrontendTranslationsJson(): Promise<any> {
