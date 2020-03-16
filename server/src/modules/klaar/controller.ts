@@ -27,7 +27,7 @@ interface KlaarNewsletter {
 	};
 }
 
-interface ButtonAction {
+export interface ButtonAction {
 	type: string;
 	value: string;
 }
