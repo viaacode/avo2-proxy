@@ -3,6 +3,7 @@ import _ from 'lodash';
 import * as queryString from 'querystring';
 import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 
+import i18n from '../../../../shared/translations/i18n';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import { IdpHelper } from '../../idp-helper';
@@ -48,7 +49,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het inloggen',
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -64,16 +65,26 @@ export default class HetArchiefRoute {
 	@POST
 	async loginCallback(response: SamlCallbackBody): Promise<any> {
 		try {
-			try {
-				const ldapUser: LdapUser = await HetArchiefService.assertSamlResponse(response);
-				logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
-				const info: RelayState = JSON.parse(response.RelayState);
+			const ldapUser: LdapUser = await HetArchiefService.assertSamlResponse(response);
+			logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
+			const info: RelayState = JSON.parse(response.RelayState);
 
-				const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
+			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
 
 				IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
 				try {
-					IdpHelper.setAvoUserInfoOnSession(this.context.request, await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser));
+					let avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
+
+					// TODO remove fix for missing idp map link for existing users
+					if (!avoUser) {
+						// link ldap user by email and then link ldap user to avo user through idp_map table
+						avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser);
+						if (avoUser) {
+							await IdpHelper.createIdpMap('HETARCHIEF', ldapUser.attributes.entryUUID[0], String(avoUser.uid));
+						}
+					}
+
+					IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
 				} catch (err) {
 					// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
 					logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
@@ -82,29 +93,18 @@ export default class HetArchiefRoute {
 				// Check if user account has access to the avo platform
 				if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
 					return redirectToClientErrorPage(
-						'Je account heeft geen toegang tot AvO. Indien je denk dat dit een fout is, contacteer de helpdesk via de feedback knop rechts onderaan.',
+						i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
 						'lock',
 						['home', 'helpdesk'],
 					);
 				}
 
 				return new Return.MovedTemporarily(info.returnToUrl);
-			} catch (err) {
-				// Failed to login
-				const error = new CustomError('Failed during auth/het-archief/login-callback', err, { response });
-				logger.error(error);
-				return redirectToClientErrorPage(
-					'Er ging iets mis na het inloggen',
-					'alert-triangle',
-					['home', 'helpdesk'],
-					error.identifier
-				);
-			}
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis na het inloggen',
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-inloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -140,7 +140,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het uitloggen',
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -162,7 +162,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth login route', err, { relayState: response.RelayState });
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis na het uitloggen',
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -195,7 +195,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het registreren, gelieve de helpdesk te contacteren',
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -224,7 +224,7 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
 			logger.error(util.inspect(error));
 			return redirectToClientErrorPage(
-				'Er ging iets mis tijdens het verifiëren van je email adres',
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -251,7 +251,7 @@ export default class HetArchiefRoute {
 				);
 				logger.error(error);
 				redirectToClientErrorPage(
-					'Uw stamboek nummer zit niet bij de request, we kunnen uw account niet registreren',
+					i18n.t('modules/auth/idps/hetarchief/route___uw-stamboek-nummer-zit-niet-bij-de-request-we-kunnen-uw-account-niet-registreren'),
 					'slash',
 					['home', 'helpdesk'],
 					error.identifier,
@@ -264,14 +264,14 @@ export default class HetArchiefRoute {
 			}
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
 				redirectToClientErrorPage(
-					'Dit stamboek nummer is reeds in gebruik, gelieve de helpdesk te contacteren.',
+					i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-reeds-in-gebruik-gelieve-de-helpdesk-te-contacteren'),
 					'users',
 					['home', 'helpdesk'],
 				);
 			}
 			// INVALID
 			redirectToClientErrorPage(
-				'Dit stamboek nummer is ongeldig. Controleer u invoer en probeer opnieuw te registeren.',
+				i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-ongeldig-controleer-u-invoer-en-probeer-opnieuw-te-registeren'),
 				'x-circle',
 				['home', 'helpdesk'],
 			);
@@ -280,14 +280,14 @@ export default class HetArchiefRoute {
 			logger.error(util.inspect(error));
 			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
 				return redirectToClientErrorPage(
-					'Er bestaat reeds een avo gebruiker met dit email adres. Gelieve de helpdesk te contacteren.',
+					i18n.t('modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'),
 					'users',
 					['home', 'helpdesk'],
 					error.identifier,
 				);
 			}
 			return redirectToClientErrorPage(
-				`Er ging iets mis tijdens het registratie proces, gelieve de helpdesk te contacteren (${new Date().toString()}).`,
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registratie-proces-gelieve-de-helpdesk-te-contacteren'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier,
