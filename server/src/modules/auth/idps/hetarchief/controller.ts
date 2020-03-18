@@ -114,12 +114,20 @@ export default class HetArchiefController {
 	}
 
 	public static async getAvoUserInfoFromDatabaseByLdapUuid(ldapUuid: string | undefined): Promise<Avo.User.User | null> {
-		const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
-		const avoUser = _.get(response, 'data.users_idp_map.local_user');
-		if (!avoUser) {
-			return null;
+		try {
+			const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
+			const avoUser = _.get(response, 'data.users_idp_map.local_user');
+			if (!avoUser) {
+				return null;
+			}
+			return AuthService.simplifyUserObject(avoUser);
+		} catch (err) {
+			throw new CustomError(
+				'Failed to getAvoUserInfoFromDatabaseByLdapUuid',
+				err,
+				{ ldapUuid }
+			);
 		}
-		return AuthService.simplifyUserObject(avoUser);
 	}
 
 	private static async createProfile(ldapObject: LdapUser, userUid: string, stamboekNumber: string): Promise<string> {
