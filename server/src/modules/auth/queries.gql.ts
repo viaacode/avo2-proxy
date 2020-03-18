@@ -124,7 +124,7 @@ query getUserInfoById($userId: uuid!) {
 
 export const GET_USER_BY_LDAP_UUID = `
 query getUserByLdapUuid($ldapUuid: String!) {
-  users_idp_map(where: {idp: {_eq: HETARCHIEF}, idp_user_id: {_eq: $ldapUuid}}) {
+  users_idp_map(where: {idp: {_eq: HETARCHIEF}, idp_user_id: {_eq: $ldapUuid}}, limit: 1) {
     local_user {
       id
       first_name

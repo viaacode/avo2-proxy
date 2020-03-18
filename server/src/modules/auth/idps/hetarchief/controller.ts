@@ -128,7 +128,7 @@ export default class HetArchiefController {
 
 	public static async getAvoUserInfoFromDatabaseByLdapUuid(ldapUuid: string | undefined): Promise<Avo.User.User | null> {
 		const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
-		const avoUser = _.get(response, 'data.users_idp_map.local_user');
+		const avoUser = _.get(response, 'data.users_idp_map[0].local_user');
 		if (!avoUser) {
 			return null;
 		}
