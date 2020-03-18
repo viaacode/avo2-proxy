@@ -7,13 +7,13 @@ import { Avo } from '@viaa/avo2-types';
 
 import { logger } from '../../shared/helpers/logger';
 import DataService from '../data/service';
-import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 import i18n from '../../shared/translations/i18n';
 
-import { DELETE_IDP_MAPS, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import { DELETE_IDP_MAPS, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import KlascementController from './idps/klascement/controller';
-import HetArchiefController from './idps/hetarchief/controller';
+import HetArchiefController, { BasicIdpUserInfo } from './idps/hetarchief/controller';
 import SmartschoolController from './idps/smartschool/controller';
 import ViaaController from './idps/viaa/controller';
 import { IdpHelper } from './idp-helper';
@@ -26,6 +26,11 @@ interface IdpInterface {
 	logoutPath: string;
 	loginPath?: string;
 	getUserId?: (userInfo: any) => string | number;
+}
+
+interface UserRole {
+	id: number;
+	name: string;
 }
 
 const IDP_ADAPTERS: { [idpType in IdpType]: IdpInterface } = {
@@ -68,23 +73,46 @@ export default class AuthController {
 		return { message: 'LOGGED_OUT' };
 	}
 
-	public static async createUser(user: Partial<Avo.User.User>): Promise<string> {
-		const response = await DataService.execute(INSERT_USER, { user });
-		if (!response) {
-			throw new InternalServerError(
-				'Failed to create avo user. Response from insert request was undefined',
-				null,
-				{ insertUserResponse: response, query: INSERT_USER });
+	private static async getRoleId(roleName: string): Promise<number> {
+		try {
+			const response = await DataService.execute(GET_USER_ROLE_BY_NAME, { roleName });
+			const roleId: number | undefined = _.get(response, 'data.shared_user_roles[0].id');
+			if (_.isNil(roleId)) {
+				throw new CustomError('Role with specified name was not found');
+			}
+			return roleId;
+		} catch (err) {
+			throw new CustomError('Failed to get role id by role name from the database', err, { roleName, query: 'GET_USER_ROLE_BY_NAME' });
 		}
+	}
 
-		const userUid = _.get(response, 'data.insert_shared_users.returning[0].uid');
-		if (_.isNil(userUid)) {
+	public static async createUser(ldapUser: BasicIdpUserInfo): Promise<string> {
+		try {
+			const { roles, ...user } = ldapUser;
+			const avoUser: Partial<Avo.User.User> = user;
+			avoUser.role_id = await this.getRoleId(ldapUser.roles[0]);
+			const response = await DataService.execute(INSERT_USER, { user });
+			if (!response) {
+				throw new InternalServerError(
+					'Response from insert request was undefined',
+					null,
+					{ insertUserResponse: response });
+			}
+
+			const userUid = _.get(response, 'data.insert_shared_users.returning[0].uid');
+			if (_.isNil(userUid)) {
+				throw new InternalServerError(
+					'Response from insert request didn\'t contain a uid',
+					null,
+					{ response });
+			}
+			return userUid;
+		} catch (err) {
 			throw new InternalServerError(
-				'Failed to create avo user. Response from insert request didn\'t contain a uid',
+				'Failed to create avo user',
 				null,
-				{ response, query: INSERT_USER });
+				{ insertUserResponse:ldapUser, query: INSERT_USER });
 		}
-		return userUid;
 	}
 
 	public static async createProfile(profile: Partial<Avo.User.Profile>): Promise<string> {
@@ -132,9 +160,9 @@ export default class AuthController {
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
 					{ idpType: idpTypeLowerCase }
-					),
+				),
 				'link',
-					['home', 'helpdesk'],
+				['home', 'helpdesk'],
 			);
 		}
 
@@ -170,7 +198,11 @@ export default class AuthController {
 			);
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, { avoUserInfo, idpUserInfo, returnToUrl });
+			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, {
+				avoUserInfo,
+				idpUserInfo,
+				returnToUrl
+			});
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'),
