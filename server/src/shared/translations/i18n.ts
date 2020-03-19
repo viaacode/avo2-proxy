@@ -1,4 +1,5 @@
 import i18n from 'i18next';
+import { get } from 'lodash';
 
 import { logger } from '../helpers/logger';
 
@@ -8,7 +9,7 @@ const retrieveBackendTranslations = async () => {
 	try {
 		// retrieve back-end translations from graphql interface
 		const backendTranslations = await TranslationsController.getTranslationsJSON(
-			'back-end'
+			'backend'
 		);
 
 		return backendTranslations;
@@ -32,7 +33,7 @@ i18n.init({
 
 // apply translations
 retrieveBackendTranslations().then((translations) => {
-	i18n.addResources('nl', 'translation', translations.value);
+	i18n.addResources('nl', 'translation', get(translations, 'value'));
 });
 
 export default i18n;
