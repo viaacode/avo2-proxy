@@ -5,15 +5,11 @@ import { logger } from '../helpers/logger';
 import TranslationsController from '../../modules/site-variables/controllers/translations.controller';
 
 const retrieveBackendTranslations = async () => {
-	logger.info('retrieving back-esnd translations...');
-
 	try {
 		// retrieve back-end translations from graphql interface
 		const backendTranslations = await TranslationsController.getTranslationsJSON(
 			'back-end'
 		);
-
-		logger.info('retrieving back-end translations... done');
 
 		return backendTranslations;
 	} catch (err) {
