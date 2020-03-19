@@ -13,31 +13,34 @@ export default class TranslationsController {
 	public static async getTranslationsJSON(
 		context: 'frontend' | 'backend'
 	): Promise<any> {
+		const errorMetaData = {
+			context,
+			query: GET_SITE_VARIABLES_BY_NAME,
+		};
+
 		try {
+			// retrieve translations variable according to given context
 			const response: Promise<Partial<
 				SiteVariable
 			>[]> = await DataService.execute(GET_SITE_VARIABLES_BY_NAME, {
 				name: `translations-${context}`,
 			});
 
+			// retrieve translations from response
 			const translations: Partial<SiteVariable> | null = get(
 				response,
 				'data.app_site_variables[0]'
 			);
 
+			// handle missing translations
 			if (!translations) {
-				throw new NotFoundError('Translations not found', null, {
-					context,
-					query: GET_SITE_VARIABLES_BY_NAME,
-				});
+				throw new NotFoundError('Translations not found', null, errorMetaData);
 			}
 
 			return translations;
 		} catch (err) {
-			throw new ExternalServerError('Failed to retrieve translations', err, {
-				context,
-				query: GET_SITE_VARIABLES_BY_NAME,
-			});
+			// handle error
+			throw new ExternalServerError('Failed to retrieve translations', err, errorMetaData);
 		}
 	}
 }
