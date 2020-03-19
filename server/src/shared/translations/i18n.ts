@@ -1,11 +1,11 @@
 import i18n from 'i18next';
 
-import { logger } from '../../shared/helpers/logger';
+import { logger } from '../helpers/logger';
 
 import TranslationsController from '../../modules/site-variables/controllers/translations.controller';
 
 const retrieveBackendTranslations = async () => {
-	logger.info('retrieving back-end translations...');
+	logger.info('retrieving back-esnd translations...');
 
 	try {
 		// retrieve back-end translations from graphql interface
@@ -22,14 +22,9 @@ const retrieveBackendTranslations = async () => {
 	}
 };
 
-// initialize translations
+// initialize translation module
 i18n.init({
 	debug: process.env.NODE_ENV === 'local',
-	resources: {
-		nl: {
-			translation: retrieveBackendTranslations(),
-		},
-	},
 	keySeparator: '^',
 	nsSeparator: '^',
 	lng: 'nl',
@@ -37,6 +32,11 @@ i18n.init({
 	interpolation: {
 		escapeValue: false,
 	},
+});
+
+// apply translations
+retrieveBackendTranslations().then((translations) => {
+	i18n.addResources('nl', 'translation', translations.value);
 });
 
 export default i18n;
