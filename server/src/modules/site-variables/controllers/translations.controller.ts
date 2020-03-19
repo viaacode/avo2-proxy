@@ -11,7 +11,7 @@ import { SiteVariable } from '../types';
 
 export default class TranslationsController {
 	public static async getTranslationsJSON(
-		context: 'front-end' | 'back-end'
+		context: 'frontend' | 'backend'
 	): Promise<any> {
 		const errorMetaData = {
 			context,

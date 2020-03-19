@@ -1,4 +1,5 @@
 import { GET, Path } from 'typescript-rest';
+import memoize from 'memoizee';
 
 import { InternalServerError } from '../../../shared/helpers/error';
 
@@ -10,7 +11,7 @@ export default class TranslationsRoute {
 	@GET
 	async getFrontendTranslationsJson(): Promise<any> {
 		try {
-			return await TranslationsController.getTranslationsJSON('front-end');
+			return memoize(async () => await TranslationsController.getTranslationsJSON('frontend'), { maxAge: 3600000 }); // 3600000ms is 1h
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to generate front-end translations json',
