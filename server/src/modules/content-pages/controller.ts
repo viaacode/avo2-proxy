@@ -3,12 +3,13 @@ import _ from 'lodash';
 import * as promiseUtils from 'blend-promise-utils';
 
 import { Avo } from '@viaa/avo2-types';
+import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
+import { logger } from '../../shared/helpers/logger';
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { IdpHelper } from '../auth/idp-helper';
+
 import ContentPageService from './service';
-import { logger } from '../../shared/helpers/logger';
-import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 export enum SpecialPermissionGroups {
 	loggedOutUsers = -1,
@@ -156,7 +157,7 @@ export default class ContentPageController {
 			series: searchResult.dc_titles_serie,
 			type: {
 				label: searchResult.administrative_type,
-			} as any,
+			} as any, // TODO update to Avo.Core.MediaType after update to typings v2.14.0
 			collection_fragments_aggregate: {
 				aggregate: {
 					count: 0, // TODO get value into elasticsearch
