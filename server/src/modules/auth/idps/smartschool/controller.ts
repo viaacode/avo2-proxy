@@ -12,6 +12,7 @@ import AuthController from '../../controller';
 import { InternalServerError } from '../../../../shared/helpers/error';
 
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
+import { BasicIdpUserInfo } from '../hetarchief/controller';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
@@ -50,7 +51,7 @@ export default class SmartschoolController extends IdpHelper {
 				profileId = await this.createProfile(smartschoolUserInfo, userUid);
 
 				// Add permission groups
-				await AuthService.addUserGroupsToProfile(4, profileId);
+				await AuthService.addUserGroupsToProfile([4], profileId);
 			}
 
 			const avoUser: Avo.User.User = await AuthService.getAvoUserInfoById(userUid);
@@ -95,12 +96,12 @@ export default class SmartschoolController extends IdpHelper {
 
 	private static async createUser(smartschoolUserInfo: SmartschoolUserInfo): Promise<string> {
 		try {
-			const user: Partial<Avo.User.User> = {
+			const user: BasicIdpUserInfo = {
 				first_name: smartschoolUserInfo.voornaam,
 				last_name: smartschoolUserInfo.naam,
 				mail: smartschoolUserInfo.email,
 				organisation_id: smartschoolUserInfo.instellingsnummer ? String(smartschoolUserInfo.instellingsnummer) : null,
-				role_id: 4, // TODO switch this to a lookup in the database for role with name 'student'
+				roles: ['leerling'],
 			};
 			const userUid = await AuthController.createUser(user);
 

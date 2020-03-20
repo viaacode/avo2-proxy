@@ -35,7 +35,6 @@ export default class CampaignMonitorService {
 					ConsentToTrack: 'unchanged',
 				},
 			});
-			logger.info(response);
 		} catch (err) {
 			throw new CustomError('Failed to send email using the campaign monitor api', err, { info, url });
 		}

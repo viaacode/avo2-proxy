@@ -133,7 +133,7 @@ export default class SearchService {
 					results: _.map(_.get(esResponse, 'data.hits.hits'), (result): Avo.Search.ResultItem => {
 						return {
 							...result._source,
-							id: result._id,
+							id: result._source.external_id,
 						} as Avo.Search.ResultItem;
 					}),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),

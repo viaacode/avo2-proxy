@@ -1,5 +1,11 @@
 import { AddressInfo } from 'net';
-import { default as express, Application, Request, Response, NextFunction } from 'express';
+import {
+	default as express,
+	Application,
+	Request,
+	Response,
+	NextFunction,
+} from 'express';
 import * as http from 'http';
 
 import { default as config } from './config';
@@ -33,6 +39,7 @@ import EventLoggingRoute from './modules/event-logging/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
 import KlaarRoute from './modules/klaar/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/route';
+import TranslationsRoute from './modules/site-variables/route/translations.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -43,7 +50,11 @@ export class App {
 	public server: http.Server;
 
 	constructor(start: boolean = true) {
-		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
+		Validator.validate(
+			process.env,
+			corePresets.env,
+			'Invalid environment variables'
+		);
 
 		// One time initialization of objects needed for operation of the api
 		OrganizationService.initialize();
@@ -67,7 +78,11 @@ export class App {
 				return process.exit(1);
 			}
 
-			logIfNotTestEnv(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
+			logIfNotTestEnv(
+				`Server running on ${this.config.state.env} environment at port ${
+					(this.server.address() as AddressInfo).port
+				}`
+			);
 		});
 	}
 
@@ -90,10 +105,22 @@ export class App {
 		 * Temp route rewrite to change /auth to /auth/hetarchief, so we can keep all the idp providers uniform
 		 */
 		this.app.use((req: Request, res: Response, next: NextFunction) => {
-			req.url = req.url.replace(/^\/auth\/login($|\?)/, '/auth/hetarchief/login$1');
-			req.url = req.url.replace(/^\/auth\/login-callback($|\?)/, '/auth/hetarchief/login-callback$1');
-			req.url = req.url.replace(/^\/auth\/logout($|\?)/, '/auth/hetarchief/logout$1');
-			req.url = req.url.replace(/^\/auth\/logout-callback($|\?)/, '/auth/hetarchief/logout-callback$1');
+			req.url = req.url.replace(
+				/^\/auth\/login($|\?)/,
+				'/auth/hetarchief/login$1'
+			);
+			req.url = req.url.replace(
+				/^\/auth\/login-callback($|\?)/,
+				'/auth/hetarchief/login-callback$1'
+			);
+			req.url = req.url.replace(
+				/^\/auth\/logout($|\?)/,
+				'/auth/hetarchief/logout$1'
+			);
+			req.url = req.url.replace(
+				/^\/auth\/logout-callback($|\?)/,
+				'/auth/hetarchief/logout-callback$1'
+			);
 			next();
 		});
 		// if (this.config.state.docs) {
@@ -126,8 +153,9 @@ export class App {
 			AssetRoute,
 			CampaignMonitorRoute,
 			KlaarRoute,
+			TranslationsRoute,
 
-			FallbackRoute,
+			FallbackRoute
 		);
 	}
 

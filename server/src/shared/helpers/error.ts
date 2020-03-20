@@ -4,7 +4,7 @@ import { ValidationErrorItem } from '@hapi/joi';
 
 import { default as config } from '../../config';
 
-import { IInternalServerError, IInternalServerErrorDetail, IValidationError } from '../shared.types';
+import { IInternalServerErrorDetail, IValidationError } from '../shared.types';
 
 export class CustomError {
 	public message: string;

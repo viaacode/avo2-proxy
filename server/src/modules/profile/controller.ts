@@ -66,7 +66,7 @@ export default class ProfileController {
 				!((profile as any).userGroupIds || []).includes(3)
 			) {
 				// Add "lesgever secundair" to this profile's usergroups
-				await AuthService.addUserGroupsToProfile(3, profile.id);
+				await AuthService.addUserGroupsToProfile([3], profile.id);
 			}
 			if (
 				!completeVars.educationLevels.find(edLevel => edLevel.key === 'Secundair onderwijs') &&
