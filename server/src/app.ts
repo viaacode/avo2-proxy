@@ -32,6 +32,7 @@ import SearchRoute from './modules/search/route';
 import DataRoute from './modules/data/route';
 import ProfileRoute from './modules/profile/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
+import ContentPagesRoute from './modules/content-pages/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
@@ -145,6 +146,7 @@ export class App {
 			DataRoute,
 			ProfileRoute,
 			NavigationItemsRoute,
+			ContentPagesRoute,
 			PlayerTicketRoute,
 			VideoStillsRoute,
 			StamboekRoute,
