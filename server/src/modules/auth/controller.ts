@@ -201,7 +201,7 @@ export default class AuthController {
 			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, {
 				avoUserInfo,
 				idpUserInfo,
-				returnToUrl
+				returnToUrl,
 			});
 			logger.error(error);
 			return redirectToClientErrorPage(

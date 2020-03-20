@@ -71,42 +71,50 @@ export default class HetArchiefRoute {
 
 			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
 
-				IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
-				try {
-					let avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
+			IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
+			try {
+				let avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
 
-					// TODO remove fix for missing idp map link for existing users
-					if (!avoUser) {
-						// link ldap user by email and then link ldap user to avo user through idp_map table
-						avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser);
-						if (avoUser) {
-							await IdpHelper.createIdpMap('HETARCHIEF', ldapUser.attributes.entryUUID[0], String(avoUser.uid));
-						}	else if (!isPartOfRegistrationProcess) {
-							// No avo user exists yet and this call isn't part of a registration flow
-							// Check if ldap user has the avo group
-							if (ldapUser.attributes.apps.includes('avo')) {
-								// Create the avo user for this ldap account
-								avoUser = await HetArchiefController.createUserAndProfile(this.context.request, null);
-							}
+				// TODO remove fix for missing idp map link for existing users
+				if (!avoUser) {
+					// link ldap user by email and then link ldap user to avo user through idp_map table
+					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser);
+					if (avoUser) {
+						await IdpHelper.createIdpMap('HETARCHIEF', ldapUser.attributes.entryUUID[0], String(avoUser.uid));
+					} else if (!isPartOfRegistrationProcess) {
+						// No avo user exists yet and this call isn't part of a registration flow
+						// Check if ldap user has the avo group
+						if (ldapUser.attributes.apps.includes('avo')) {
+							// Create the avo user for this ldap account
+							avoUser = await HetArchiefController.createUserAndProfile(this.context.request, null);
 						}
 					}
-
-					IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
-				} catch (err) {
-					// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
-					logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
 				}
 
-				// Check if user account has access to the avo platform
-				if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
+				IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
+			} catch (err) {
+				if (JSON.stringify(err).includes('ENOTFOUND')) {
+					// Failed to connect to the database
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
-						'lock',
+						i18n.t('De server kan je gebruikers informatie niet ophalen uit de database'),
+						'alert-triangle',
 						['home', 'helpdesk'],
 					);
 				}
+				// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
+				logger.info('login callback without avo user object found (this is correct for the registration flow)', err, { ldapUser });
+			}
 
-				return new Return.MovedTemporarily(info.returnToUrl);
+			// Check if user account has access to the avo platform
+			if (!isPartOfRegistrationProcess && !_.get(ldapUser, 'attributes.apps', []).includes('avo')) {
+				return redirectToClientErrorPage(
+					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
+					'lock',
+					['home', 'helpdesk'],
+				);
+			}
+
+			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(util.inspect(error));
