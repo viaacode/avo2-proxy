@@ -2,9 +2,10 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import DataService from '../data/service';
 import {
+	GET_USER_GROUPS_BY_LDAP_ROLE_NAMES,
 	GET_USER_INFO_BY_ID,
 	GET_USER_INFO_BY_USER_EMAIL,
-	LINK_USER_GROUP_TO_PROFILE,
+	LINK_USER_GROUPS_TO_PROFILE,
 	UNLINK_USER_GROUP_FROM_PROFILE,
 } from './queries.gql';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
@@ -122,11 +123,23 @@ export class AuthService {
 		}
 	}
 
-	static async addUserGroupsToProfile(userGroupId: number, profileId: string) {
+	static async addUserGroupsToProfile(userGroupIds: number[], profileId: string) {
 		try {
-			await DataService.execute(LINK_USER_GROUP_TO_PROFILE, { userGroupId, profileId });
+			const response = await DataService.execute(LINK_USER_GROUPS_TO_PROFILE, {
+				objects: userGroupIds.map(userGroupId => ({
+					user_group_id: userGroupId,
+					user_profile_id: profileId,
+				})),
+			});
+			if (response.errors) {
+				throw new CustomError('Response contains graphql errors', null, { response });
+			}
 		} catch (err) {
-			throw new CustomError('Failed to add usergroup to profile', err, { userGroupId, profileId });
+			throw new CustomError('Failed to add usergroups to profile', err, {
+				userGroupIds,
+				profileId,
+				query: 'LINK_USER_GROUPS_TO_PROFILE',
+			});
 		}
 	}
 
@@ -157,6 +170,24 @@ export class AuthService {
 			return _.fromPairs(apps.map(app => [app.name, app.id]));
 		} catch (err) {
 			throw new CustomError('Failed to get ldap apps from ldap api', err, { url });
+		}
+	}
+
+	// TODO switch label for idp_role column when added to the database: https://meemoo.atlassian.net/browse/DEV-708
+	public static async getUserGroupsByLdapRoleNames(roleNames: string[]): Promise<{ id: number, label: string }[]> {
+		try {
+			const response = await DataService.execute(GET_USER_GROUPS_BY_LDAP_ROLE_NAMES, { roleNames });
+
+			if (response.errors) {
+				throw new CustomError('Response contains errors', null, { response });
+			}
+
+			return _.get(response, 'data.users_groups', []);
+		} catch (err) {
+			throw new CustomError('Failed to get user groups by ldap role names', err, {
+				roleNames,
+				query: 'GET_USER_GROUPS_BY_LDAP_ROLE_NAMES',
+			});
 		}
 	}
 }

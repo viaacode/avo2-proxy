@@ -12,12 +12,13 @@ import { CustomError, InternalServerError } from '../../../../shared/helpers/err
 import DataService from '../../../data/service';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
 
-const LDAP_ROLE_TO_USER_ROLE: { [ldapRole: string]: number } = {
-	Admin: 1,
-	User: 2,
-	Docent: 3,
-	// Pupils do net have an ldap object
-};
+export interface BasicIdpUserInfo {
+	first_name: string;
+	last_name: string;
+	mail: string;
+	organisation_id: string;
+	roles: string[];
+}
 
 export default class HetArchiefController {
 	public static isLoggedIn(request: Request): boolean {
@@ -55,7 +56,7 @@ export default class HetArchiefController {
 		return await AuthService.getAvoUserInfoByEmail(email);
 	}
 
-	public static async createUserAndProfile(req: Request, stamboekNumber: string) {
+	public static async createUserAndProfile(req: Request, stamboekNumber: string | null): Promise<Avo.User.User> {
 		let ldapUserInfo: LdapUser | null = null;
 		try {
 			ldapUserInfo = IdpHelper.getIdpUserInfoFromSession(req);
@@ -64,18 +65,18 @@ export default class HetArchiefController {
 			}
 
 			// Create avo user object
-			const user: Partial<Avo.User.User> = this.parseLdapObject(ldapUserInfo);
-			const existingUser = await AuthService.getAvoUserInfoByEmail(user.mail);
+			const ldapUser: BasicIdpUserInfo = this.parseLdapObject(ldapUserInfo);
+			const existingUser = await AuthService.getAvoUserInfoByEmail(ldapUser.mail);
 			if (existingUser) {
 				throw new InternalServerError(
 					'Failed to create user because an avo user with this email address already exists',
 					null,
 					{
 						existingUser,
-						newUser: user,
+						newUser: ldapUser,
 					});
 			}
-			const userUuid = await AuthController.createUser(user);
+			const userUuid = await AuthController.createUser(ldapUser);
 
 			// Create avo profile object
 			const profileId = await this.createProfile(ldapUserInfo, userUuid, stamboekNumber);
@@ -87,8 +88,18 @@ export default class HetArchiefController {
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
 			// Add permission groups
-			// Users with a stamboek number are by default a "lesgever" and should be linked to that user group
-			await AuthService.addUserGroupsToProfile(2, profileId);
+			const userGroupIds = [];
+			if (stamboekNumber) {
+				userGroupIds.push(2);
+			}
+			if (ldapUser.roles && ldapUser.roles.length) {
+				// Link ldap user to groups
+				const userGroups: { id: number, label: string }[] = await AuthService.getUserGroupsByLdapRoleNames(ldapUser.roles);
+				userGroupIds.push(...userGroups.map(ug => ug.id));
+			}
+			if (userGroupIds.length) {
+				await AuthService.addUserGroupsToProfile(_.uniq(userGroupIds), profileId);
+			}
 
 			// Check if user is linked to hetarchief idp, if not create a link in the idp_map table
 			if (!(userInfo.idpmaps || []).includes('HETARCHIEF')) {
@@ -103,8 +114,10 @@ export default class HetArchiefController {
 						}
 					);
 				}
-				await IdpHelper.createIdpMap('SMARTSCHOOL', ldapUserInfo.attributes.entryUUID[0], userUuid);
+				await IdpHelper.createIdpMap('HETARCHIEF', ldapUserInfo.attributes.entryUUID[0], userUuid);
 			}
+
+			return AuthService.getAvoUserInfoById(userUuid);
 		} catch (err) {
 			throw new InternalServerError('Failed to create user and profile in the avo database', err, {
 				stamboekNumber,
@@ -114,12 +127,20 @@ export default class HetArchiefController {
 	}
 
 	public static async getAvoUserInfoFromDatabaseByLdapUuid(ldapUuid: string | undefined): Promise<Avo.User.User | null> {
-		const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
-		const avoUser = _.get(response, 'data.users_idp_map.local_user');
-		if (!avoUser) {
-			return null;
+		try {
+			const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
+			const avoUser = _.get(response, 'data.users_idp_map[0].local_user');
+			if (!avoUser) {
+				return null;
+			}
+			return AuthService.simplifyUserObject(avoUser);
+		} catch (err) {
+			throw new CustomError(
+				'Failed to getAvoUserInfoFromDatabaseByLdapUuid',
+				err,
+				{ ldapUuid }
+			);
 		}
-		return AuthService.simplifyUserObject(avoUser);
 	}
 
 	private static async createProfile(ldapObject: LdapUser, userUid: string, stamboekNumber: string): Promise<string> {
@@ -131,13 +152,13 @@ export default class HetArchiefController {
 		return AuthController.createProfile(profile);
 	}
 
-	private static parseLdapObject(ldapObject: LdapUser): Partial<Avo.User.User> {
+	private static parseLdapObject(ldapObject: LdapUser): BasicIdpUserInfo {
 		return {
 			first_name: _.get(ldapObject, 'attributes.givenName[0]', ''),
 			last_name: _.get(ldapObject, 'attributes.sn[0]', ''),
 			mail: _.get(ldapObject, 'attributes.mail[0]', ''),
 			organisation_id: _.get(ldapObject, 'attributes.o[0]', ''),
-			role_id: LDAP_ROLE_TO_USER_ROLE[_.get(ldapObject, 'attributes.organizationalStatus')] || LDAP_ROLE_TO_USER_ROLE.User,
+			roles: _.get(ldapObject, 'attributes.organizationalStatus'),
 		};
 	}
 

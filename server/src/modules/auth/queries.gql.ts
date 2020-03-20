@@ -124,7 +124,7 @@ query getUserInfoById($userId: uuid!) {
 
 export const GET_USER_BY_LDAP_UUID = `
 query getUserByLdapUuid($ldapUuid: String!) {
-  users_idp_map(where: {idp: {_eq: HETARCHIEF}, idp_user_id: {_eq: $ldapUuid}}) {
+  users_idp_map(where: {idp: {_eq: HETARCHIEF}, idp_user_id: {_eq: $ldapUuid}}, limit: 1) {
     local_user {
       id
       first_name
@@ -245,9 +245,9 @@ query getProfileIdsByUserUid($userUid: uuid!) {
 }
 `;
 
-export const LINK_USER_GROUP_TO_PROFILE = `
-mutation linkUserGroupToProfile($userGroupId: Int!, $profileId: uuid!) {
-  insert_users_profile_user_groups(objects: {user_group_id: $userGroupId, user_profile_id: $profileId}) {
+export const LINK_USER_GROUPS_TO_PROFILE = `
+mutation linkUserGroupToProfile($objects: [users_profile_user_groups_insert_input!]!) {
+  insert_users_profile_user_groups(objects: $objects) {
     returning {
       id
     }
@@ -263,4 +263,21 @@ mutation unlinkUserGroupFromProfile($userGroupId: Int!, $profileId: uuid!) {
     }
   }
 }
+`;
+
+export const GET_USER_ROLE_BY_NAME = `
+	query getUserRoles($roleName: String!) {
+		shared_user_roles(where: {name: {_eq: $roleName}}) {
+			id
+		}
+	}
+`;
+
+export const GET_USER_GROUPS_BY_LDAP_ROLE_NAMES = `
+	query getUserGroupsByLdapRoleNames($roleNames: [String!]!) {
+		users_groups(where: {label: {_in: $roleNames}}) {
+			label
+			id
+		}
+	}
 `;
