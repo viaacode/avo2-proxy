@@ -11,7 +11,7 @@ import { CustomError, ExternalServerError, InternalServerError } from '../../sha
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 import i18n from '../../shared/translations/i18n';
 
-import { DELETE_IDP_MAPS, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import { DELETE_IDP_MAPS, GET_NOTIFICATION, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import KlascementController from './idps/klascement/controller';
 import HetArchiefController, { BasicIdpUserInfo } from './idps/hetarchief/controller';
 import SmartschoolController from './idps/smartschool/controller';
@@ -28,10 +28,8 @@ interface IdpInterface {
 	getUserId?: (userInfo: any) => string | number;
 }
 
-interface UserRole {
-	id: number;
-	name: string;
-}
+export const ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS =
+	'ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS';
 
 const IDP_ADAPTERS: { [idpType in IdpType]: IdpInterface } = {
 	HETARCHIEF: {
@@ -63,14 +61,42 @@ export default class AuthController {
 		if (AuthController.isAuthenticated(req)) {
 			logger.info('check login: user is authenticated');
 			const userInfo = await IdpHelper.getUpdatedAvoUserInfoFromSession(req);
+			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo);
 
 			return {
 				userInfo,
+				acceptedConditions,
 				message: 'LOGGED_IN',
-			};
+			} as any; // TODO remove cast once update to typings 2.14.0
 		}
 		logger.info('check login: user is not authenticated');
 		return { message: 'LOGGED_OUT' };
+	}
+
+	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo: Avo.User.User): Promise<boolean> {
+		const profileId = _.get(userInfo, 'profile.id');
+		if (!profileId) {
+			return false;
+		}
+		const response = await DataService.execute(GET_NOTIFICATION, {
+			profileId,
+			key: ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS,
+		});
+		if (response.errors) {
+			logger.error(new CustomError(
+				'Failed to get notification from database',
+				null,
+				{
+					response,
+					query: GET_NOTIFICATION,
+					variables: {
+						profileId,
+						key: ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS,
+					},
+				}));
+			return false;
+		}
+		return _.get(response, 'data.users_notifications[0].through_platform', false);
 	}
 
 	private static async getRoleId(roleName: string): Promise<number> {
@@ -82,7 +108,10 @@ export default class AuthController {
 			}
 			return roleId;
 		} catch (err) {
-			throw new CustomError('Failed to get role id by role name from the database', err, { roleName, query: 'GET_USER_ROLE_BY_NAME' });
+			throw new CustomError('Failed to get role id by role name from the database', err, {
+				roleName,
+				query: 'GET_USER_ROLE_BY_NAME',
+			});
 		}
 	}
 
@@ -111,7 +140,7 @@ export default class AuthController {
 			throw new InternalServerError(
 				'Failed to create avo user',
 				null,
-				{ insertUserResponse:ldapUser, query: INSERT_USER });
+				{ insertUserResponse: ldapUser, query: INSERT_USER });
 		}
 	}
 

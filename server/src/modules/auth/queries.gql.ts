@@ -281,3 +281,12 @@ export const GET_USER_GROUPS_BY_LDAP_ROLE_NAMES = `
 		}
 	}
 `;
+
+export const GET_NOTIFICATION = `
+	query getNotification($key: String!, $profileId: uuid!) {
+		users_notifications(where: { profile_id: { _eq: $profileId }, key: { _eq: $key } }) {
+			through_email
+			through_platform
+		}
+	}
+`;
