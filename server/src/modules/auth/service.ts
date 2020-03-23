@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 import DataService from '../data/service';
 import {
+	GET_USER_GROUPS,
 	GET_USER_GROUPS_BY_LDAP_ROLE_NAMES,
 	GET_USER_INFO_BY_ID,
 	GET_USER_INFO_BY_USER_EMAIL,
@@ -9,7 +10,7 @@ import {
 	UNLINK_USER_GROUP_FROM_PROFILE,
 } from './queries.gql';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
-import { SharedUser } from './types';
+import { SharedUser, UserGroup } from './types';
 import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
 import * as promiseUtils from 'blend-promise-utils';
 import { ClientEducationOrganization } from '../education-organizations/route';
@@ -143,11 +144,22 @@ export class AuthService {
 		}
 	}
 
-	static async removeUserGroupsFromProfile(userGroupId: number, profileId: string) {
+	static async removeUserGroupsFromProfile(userGroupIds: number[], profileId: string) {
 		try {
-			await DataService.execute(UNLINK_USER_GROUP_FROM_PROFILE, { userGroupId, profileId });
+			const response = await DataService.execute(UNLINK_USER_GROUP_FROM_PROFILE, { userGroupIds, profileId });
+			if (response.errors) {
+				throw new CustomError(
+					'response contains errors',
+					null,
+					{ response }
+				);
+			}
 		} catch (err) {
-			throw new CustomError('Failed to remove usergroup from profile', err, { userGroupId, profileId });
+			throw new CustomError(
+				'Failed to remove usergroup from profile',
+				err,
+				{ userGroupIds, profileId }
+			);
 		}
 	}
 
@@ -187,6 +199,22 @@ export class AuthService {
 			throw new CustomError('Failed to get user groups by ldap role names', err, {
 				roleNames,
 				query: 'GET_USER_GROUPS_BY_LDAP_ROLE_NAMES',
+			});
+		}
+	}
+
+	static async getAllUserGroups(): Promise<UserGroup[]> {
+		try {
+			const response = await DataService.execute(GET_USER_GROUPS);
+
+			if (response.errors) {
+				throw new CustomError('Response contains errors', null, { response });
+			}
+
+			return _.get(response, 'data.users_groups', []);
+		} catch (err) {
+			throw new CustomError('Failed to get user groups from the database', err, {
+				query: GET_USER_GROUPS,
 			});
 		}
 	}

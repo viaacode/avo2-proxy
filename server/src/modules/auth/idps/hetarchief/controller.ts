@@ -5,12 +5,14 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { IdpHelper } from '../../idp-helper';
-import { IdpType, LdapUser } from '../../types';
+import { IdpType, LdapUser, UserGroup } from '../../types';
 import { AuthService } from '../../service';
 import AuthController from '../../controller';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import DataService from '../../../data/service';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
+import { logger } from '../../../../shared/helpers/logger';
+import { profile } from 'winston';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
@@ -79,27 +81,13 @@ export default class HetArchiefController {
 			const userUuid = await AuthController.createUser(ldapUser);
 
 			// Create avo profile object
-			const profileId = await this.createProfile(ldapUserInfo, userUuid, stamboekNumber);
+			await this.createProfile(ldapUserInfo, userUuid, stamboekNumber);
 
 			// Add the avo app to the list of allowed apps in ldap (this will be done by the ssum in the future)
 			await HetArchiefController.addAvoAppToLdap(ldapUserInfo);
 
 			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
-
-			// Add permission groups
-			const userGroupIds = [];
-			if (stamboekNumber) {
-				userGroupIds.push(2);
-			}
-			if (ldapUser.roles && ldapUser.roles.length) {
-				// Link ldap user to groups
-				const userGroups: { id: number, label: string }[] = await AuthService.getUserGroupsByLdapRoleNames(ldapUser.roles);
-				userGroupIds.push(...userGroups.map(ug => ug.id));
-			}
-			if (userGroupIds.length) {
-				await AuthService.addUserGroupsToProfile(_.uniq(userGroupIds), profileId);
-			}
 
 			// Check if user is linked to hetarchief idp, if not create a link in the idp_map table
 			if (!(userInfo.idpmaps || []).includes('HETARCHIEF')) {
@@ -152,7 +140,7 @@ export default class HetArchiefController {
 		return AuthController.createProfile(profile);
 	}
 
-	private static parseLdapObject(ldapObject: LdapUser): BasicIdpUserInfo {
+	public static parseLdapObject(ldapObject: LdapUser): BasicIdpUserInfo {
 		return {
 			first_name: _.get(ldapObject, 'attributes.givenName[0]', ''),
 			last_name: _.get(ldapObject, 'attributes.sn[0]', ''),
@@ -191,5 +179,80 @@ export default class HetArchiefController {
 				{ ldapObject, url, data }
 			);
 		}
+	}
+
+	/**
+	 * Ldap has organizational statuses
+	 * Avo has user groups
+	 * Every organizational status in ldap has a corresponding user group in avo
+	 * In avo you can create more user groups, that do not exist in ldap (because they are avo specific)
+	 * 		currently you cannot link users to these user groups
+	 * User groups are updated on every login of the user, so they stay in sync with ldap
+	 * 		user groups have a column: idp_role, this column specifies if the usergroup has a counterpart in ldap
+	 * 		When syncing organizational statuses with ldap,
+	 * 		we do not touch the user groups that are already present on the avo userprofile that have their ipd role set to null
+	 * @param ldapUser
+	 * @param avoUser
+	 * @return boolean returns true if the user groups had to be modified, returns false if they were already in sync with ldap
+	 */
+	public static async updateUserGroups(ldapUser: LdapUser, avoUser: Avo.User.User): Promise<boolean> {
+		const parsedLdapUser: BasicIdpUserInfo = HetArchiefController.parseLdapObject(ldapUser);
+		const allUserGroups = await AuthService.getAllUserGroups();
+
+		const ldapUserGroupsRaw: (UserGroup | undefined)[] = (parsedLdapUser.roles || []).map(role =>
+			allUserGroups.find(ug => ug.ldap_role === role)
+		);
+		const ldapUserGroups: UserGroup[] = _.compact(ldapUserGroupsRaw);
+
+		if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
+			logger.error(new CustomError('Failed to map all ldap roles to user groups', null, {
+				ldapUser,
+				allUserGroups,
+				ldapUserGroupsRaw,
+				ldapUserGroups,
+			}));
+		}
+
+		const avoUserGroupRaw: (UserGroup | undefined)[] = avoUser.profile.userGroupIds.map(avoUserGroupId =>
+			allUserGroups.find(ug => ug.id === avoUserGroupId)
+		);
+		const avoUserGroups: UserGroup[] = _.compact(avoUserGroupRaw);
+
+		if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
+			logger.error(new CustomError('Failed to map all avo user group ids to user groups', null, {
+				avoUser,
+				allUserGroups,
+				avoUserGroupRaw,
+				avoUserGroups,
+			}));
+		}
+
+		// Remove the user groups that are managed by avo without a corresponding role in ldap
+		// eg: lesgever secundair, student lesgever secundair
+		const avoUserGroupsFiltered = avoUserGroups.filter(ug => ug.ldap_role !== null);
+
+		// Update user groups:
+		const ldapUserGroupIds = _.uniq(ldapUserGroups.map(ug => ug.id));
+		const avoUserGroupIds = _.uniq(avoUserGroupsFiltered.map(ug => ug.id));
+
+		const addedUserGroupIds = _.without(ldapUserGroupIds, ...avoUserGroupIds);
+		const deletedUserGroupIds = _.without(avoUserGroupIds, ...ldapUserGroupIds);
+
+		const profileId = _.get(avoUser, 'profile.id');
+		if (!profileId) {
+			throw new CustomError(
+				'Failed to update user groups because the profile does not have an id',
+				null,
+				{ avoUser }
+			);
+		}
+		if (addedUserGroupIds.length || deletedUserGroupIds.length) {
+			await Promise.all([
+				AuthService.addUserGroupsToProfile(addedUserGroupIds, profileId),
+				AuthService.removeUserGroupsFromProfile(deletedUserGroupIds, profileId),
+			]);
+		}
+
+		return !!addedUserGroupIds.length || !!deletedUserGroupIds.length;
 	}
 }
