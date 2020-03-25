@@ -91,6 +91,14 @@ export default class HetArchiefRoute {
 					}
 				}
 
+				// Add permission groups
+				const isUpdated = await HetArchiefController.updateUserGroups(ldapUser, avoUser);
+
+				if (isUpdated) {
+					// Get avo user from the database again after having updated its user groups
+					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
+				}
+
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
 			} catch (err) {
 				if (JSON.stringify(err).includes('ENOTFOUND')) {
