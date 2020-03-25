@@ -11,7 +11,6 @@ import {
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
 
 const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
@@ -128,7 +127,7 @@ export default class QueryBuilder {
 		if (stringQuery) {
 			// Replace {{query}} in the template with the escaped search terms
 			const textQueryObjectArray = _.cloneDeep(textQueryObjectTemplate);
-			const escapedQueryString = escapeElastic(stringQuery); // Avoid elasticsearch injection attacks
+			const escapedQueryString = stringQuery;
 			_.forEach(textQueryObjectArray, (matchObj) => {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});

@@ -84,11 +84,19 @@ export default class HetArchiefRoute {
 					} else if (!isPartOfRegistrationProcess) {
 						// No avo user exists yet and this call isn't part of a registration flow
 						// Check if ldap user has the avo group
-						if (ldapUser.attributes.apps.includes('avo')) {
+						if ((ldapUser.attributes.apps || []).includes('avo')) {
 							// Create the avo user for this ldap account
 							avoUser = await HetArchiefController.createUserAndProfile(this.context.request, null);
 						}
 					}
+				}
+
+				// Add permission groups
+				const isUpdated = await HetArchiefController.updateUserGroups(ldapUser, avoUser);
+
+				if (isUpdated) {
+					// Get avo user from the database again after having updated its user groups
+					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
 				}
 
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);

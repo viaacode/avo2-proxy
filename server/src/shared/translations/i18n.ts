@@ -21,7 +21,7 @@ const retrieveBackendTranslations = async () => {
 
 // initialize translation module
 i18n.init({
-	debug: process.env.NODE_ENV === 'local',
+	debug: false, // process.env.NODE_ENV === 'local',
 	keySeparator: '^',
 	nsSeparator: '^',
 	lng: 'nl',
