@@ -12,7 +12,6 @@ import { CustomError, InternalServerError } from '../../../../shared/helpers/err
 import DataService from '../../../data/service';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
 import { logger } from '../../../../shared/helpers/logger';
-import { profile } from 'winston';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
