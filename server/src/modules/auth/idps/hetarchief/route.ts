@@ -84,7 +84,7 @@ export default class HetArchiefRoute {
 					} else if (!isPartOfRegistrationProcess) {
 						// No avo user exists yet and this call isn't part of a registration flow
 						// Check if ldap user has the avo group
-						if (ldapUser.attributes.apps.includes('avo')) {
+						if ((ldapUser.attributes.apps || []).includes('avo')) {
 							// Create the avo user for this ldap account
 							avoUser = await HetArchiefController.createUserAndProfile(this.context.request, null);
 						}

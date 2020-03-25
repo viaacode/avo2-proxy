@@ -4,11 +4,10 @@ import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
 import { Avo } from '@viaa/avo2-types';
 
 import { logger } from '../../shared/helpers/logger';
-import { EsIndex } from '@viaa/avo2-types/types/search';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
-import SearchController from './controller';
+import SearchController, { EsIndex } from './controller';
 
 @Path('/search')
 export default class SearchRoute {
@@ -35,16 +34,16 @@ export default class SearchRoute {
 	@PreProcessor(isAuthenticated)
 	async related(
 		@QueryParam('id') itemId: string,
-		@QueryParam('index') index: string,
+		@QueryParam('type') type: EsIndex,
 		@QueryParam('limit') limit: number): Promise<Avo.Search.Search> {
 		try {
-			if (!['both', 'items', 'collections'].includes(index)) {
-				throw new BadRequestError('parameter "index" has to be one of ["both", "items", "collections"]', null, { itemId, index, limit });
+			if (!['items', 'collections', 'bundles'].includes(type)) {
+				throw new BadRequestError(`parameter "type" has to be one of ["items", "collections", "bundles"], received: ${type}`);
 			}
 
-			return await SearchController.getRelatedItems(itemId, index as EsIndex, limit);
+			return await SearchController.getRelatedItems(itemId, type as any, limit); // TODO remove cast after update to typings v2.14.0
 		} catch (err) {
-			const error = new InternalServerError('failed during search/related route', err, { itemId });
+			const error = new InternalServerError('failed during search/related route', err, { itemId, type, limit });
 			logger.error(util.inspect(error));
 			throw error;
 		}

@@ -291,3 +291,12 @@ export const GET_USER_GROUPS = `
 		}
 	}
 `;
+
+export const GET_NOTIFICATION = `
+	query getNotification($key: String!, $profileId: uuid!) {
+		users_notifications(where: { profile_id: { _eq: $profileId }, key: { _eq: $key } }) {
+			through_email
+			through_platform
+		}
+	}
+`;
