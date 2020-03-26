@@ -1,10 +1,12 @@
-import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
+import { Context, GET, Path, POST, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { InternalServerError, NotFoundError } from '../../shared/helpers/error';
+import { InternalServerError, NotFoundError, UnauthorizedError } from '../../shared/helpers/error';
 
 import ContentPageController from './controller';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { IdpHelper } from '../auth/idp-helper';
 
 @Path('/content-pages')
 export default class ContentPagesRoute {
@@ -13,7 +15,7 @@ export default class ContentPagesRoute {
 
 	@Path('')
 	@GET
-	async getContentPage(@QueryParam('path') path: string): Promise<Avo.Content.Content> {
+	async getContentPageByPath(@QueryParam('path') path: string): Promise<Avo.Content.Content> {
 		let content: Avo.Content.Content = null;
 		try {
 			content = await ContentPageController.getContentBlockByPath(path, this.context.request);
@@ -27,6 +29,37 @@ export default class ContentPagesRoute {
 			'The content page was not found or you do not have rights to see it',
 			null,
 			{ path }
+		);
+	}
+
+	/**
+	 * Resolves the objects (items, collections, bundles, search queries) that are references inside the media grid blocks to their actual objects
+	 * @param body
+	 * @Return Promise<any[]>: the media grid blocks with their content stored under the results property
+	 */
+	@Path('')
+	@POST
+	@PreProcessor(isAuthenticated)
+	async resolveMediaGridBlocks(body: {
+		searchQuery: string | undefined;
+		searchQueryLimit: number | undefined;
+		mediaItems: {mediaItem: {
+				type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
+				value: string
+			}}[] | undefined;
+	}): Promise<any[]> {
+		try {
+			const user = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			if (!user.profile.permissions.includes('SEARCH')) {
+				throw new UnauthorizedError('You do not have the required permission for this route');
+			}
+			return await ContentPageController.resolveMediaTileItems(body.searchQuery, body.searchQueryLimit, body.mediaItems);
+		} catch (err) {
+			throw new NotFoundError(
+				'Something went wrong while resolving the media grid blocks',
+				null,
+				{ body }
 			);
+		}
 	}
 }

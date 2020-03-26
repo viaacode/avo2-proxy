@@ -53,7 +53,6 @@ export default class ContentPageService {
 				index: 'all' as EsIndex, // TODO remove cast after update typings v2.14.0
 			});
 		} catch (err) {
-
 			throw new CustomError('Failed to fetch search results for content page', err, { limit, filters });
 		}
 	}

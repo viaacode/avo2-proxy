@@ -31,7 +31,8 @@ export default class SearchController {
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
 			// Perform search
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index as EsIndex]); // TODO remove any when typings build is fixed
+			// TODO remove cast when typings version is updated to 2.14.0
+			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index as EsIndex] || process.env.ELASTICSEARCH_INDEX);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new InternalServerError(
