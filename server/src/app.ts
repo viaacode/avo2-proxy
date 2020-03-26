@@ -19,12 +19,14 @@ import { ErrorMiddleware } from './modules/core/middleware/error';
 import OrganizationService from './modules/organization/service';
 import HetArchiefService from './modules/auth/idps/hetarchief/service';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
+import KlascementService from './modules/auth/idps/klascement/service';
 import ZendeskService from './modules/zendesk/service';
 
 // Routes
 import AuthRoute from './modules/auth/route';
 import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
 import SmartschoolRoute from './modules/auth/idps/smartschool/route';
+import KlascementRoute from './modules/auth/idps/klascement/route';
 import ZendeskRoute from './modules/zendesk/route';
 import AssetRoute from './modules/assets/route';
 import StatusRoute from './modules/status/route';
@@ -61,6 +63,7 @@ export class App {
 		OrganizationService.initialize();
 		HetArchiefService.initialize();
 		SmartschoolService.initialize();
+		KlascementService.initialize();
 		ZendeskService.initialize();
 
 		this.loadMiddleware();
@@ -140,6 +143,7 @@ export class App {
 			AuthRoute,
 			HetArchiefRoute,
 			SmartschoolRoute,
+			KlascementRoute,
 
 			EducationOrganizationsRoute,
 			SearchRoute,

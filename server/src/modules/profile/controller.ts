@@ -73,7 +73,7 @@ export default class ProfileController {
 				((profile as any).userGroupIds || []).includes(3)
 			) {
 				// Remove "lesgever secundair" from this profile's usergroups
-				await AuthService.removeUserGroupsFromProfile(3, profile.id);
+				await AuthService.removeUserGroupsFromProfile([3], profile.id);
 			}
 		} catch (err) {
 			throw new CustomError('Failed to update profile info', err, { profile, variables });

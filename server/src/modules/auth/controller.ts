@@ -20,6 +20,7 @@ import { IdpHelper } from './idp-helper';
 import { LinkAccountInfo } from './route';
 import { SmartschoolUserInfo } from './idps/smartschool/service';
 import { IdpType, IdpMap } from './types';
+import { KlascementUserInfo } from './idps/klascement/service';
 
 interface IdpInterface {
 	controller: { isLoggedIn: (req: Request) => boolean };
@@ -45,6 +46,8 @@ const IDP_ADAPTERS: { [idpType in IdpType]: IdpInterface } = {
 	KLASCEMENT: {
 		controller: KlascementController,
 		logoutPath: 'auth/klascement/logout',
+		loginPath: 'auth/klascement/login', // Used for linking accounts
+		getUserId: (idpUserInfo: KlascementUserInfo): string => idpUserInfo.id,
 	},
 	VIAA: {
 		controller: ViaaController,
@@ -187,6 +190,7 @@ export default class AuthController {
 		if ((avoUserInfo.idpmaps || []).includes(idpType)) {
 			const idpTypeLowerCase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
+				// TODO rename this key so it doesn't include "smartschool"
 				i18n.t('modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
 					{ idpType: idpTypeLowerCase }
 				),
