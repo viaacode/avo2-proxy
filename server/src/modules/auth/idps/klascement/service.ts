@@ -1,9 +1,10 @@
-import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
-import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
-import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 import _ from 'lodash';
+import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
+
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
+import { logIfNotTestEnv } from '../../../../shared/helpers/logger';
+import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 
 export interface KlascementToken {
 	access_token: string;
