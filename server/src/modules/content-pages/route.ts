@@ -3,10 +3,10 @@ import { Context, GET, Path, POST, PreProcessor, QueryParam, ServiceContext } fr
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError, NotFoundError, UnauthorizedError } from '../../shared/helpers/error';
-
-import ContentPageController from './controller';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
+
+import ContentPageController from './controller';
 
 @Path('/content-pages')
 export default class ContentPagesRoute {
@@ -42,7 +42,7 @@ export default class ContentPagesRoute {
 	@PreProcessor(isAuthenticated)
 	async resolveMediaGridBlocks(body: {
 		searchQuery: string | undefined;
-		searchQueryLimit: number | undefined;
+		searchQueryLimit: string | undefined;
 		mediaItems: {mediaItem: {
 				type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
 				value: string
