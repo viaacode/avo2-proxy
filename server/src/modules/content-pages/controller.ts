@@ -43,7 +43,7 @@ export default class ContentPageController {
 			}
 
 			// Check if content page contains any search query content bocks (eg: media grids)
-			await this.resolveMediaTileItems(contentPage);
+			await this.resolveMediaTileItemsInPage(contentPage);
 
 			return contentPage;
 		} catch (err) {
@@ -51,40 +51,17 @@ export default class ContentPageController {
 		}
 	}
 
-	private static async resolveMediaTileItems(contentPage: Avo.Content.Content) {
+	private static async resolveMediaTileItemsInPage(contentPage: Avo.Content.Content) {
 		const mediaGridBlocks = contentPage.contentBlockssBycontentId.filter(contentBlock =>
 			contentBlock.content_block_type === 'MEDIA_GRID');
-
 		if (mediaGridBlocks.length) {
 			await promiseUtils.mapLimit(mediaGridBlocks, 2, async (mediaGridBlock: any) => {
 				try {
-					let results: any[] = [];
-					// Check for search queries
 					const searchQuery = _.get(mediaGridBlock, 'variables.blockState.searchQuery.value');
 					const searchQueryLimit = _.get(mediaGridBlock, 'variables.blockState.searchQueryLimit');
-					if (searchQuery) {
-						// resolve search query to a list of results
-						const parsedSearchQuery = JSON.parse(searchQuery);
-						const searchResponse = await ContentPageService.fetchSearchQuery(
-							searchQueryLimit,
-							parsedSearchQuery.filters || {},
-							parsedSearchQuery.orderProperty || 'relevance',
-							parsedSearchQuery.orderDirection || 'desc');
-						results = (searchResponse.results || []).map(ContentPageController.mapSearchResultToItemOrCollection);
-					}
-
-					// Check for items/collections
 					const mediaItems = _.get(mediaGridBlock, 'variables.componentState');
-					if (mediaItems.length && !_.isEmpty(mediaItems[0])) {
-						results = await promiseUtils.mapLimit(mediaItems, 10, async (item: {
-							mediaItem: {
-								type: 'ITEM' | 'COLLECTION',
-								value: string
-							}
-						}) => {
-							return await ContentPageService.fetchCollectionOrItem(item.mediaItem.type, item.mediaItem.value);
-						});
-					}
+
+					const results: any[] = await this.resolveMediaTileItems(searchQuery, searchQueryLimit, mediaItems);
 
 					_.unset(mediaGridBlock, 'variables.componentState');
 					_.unset(mediaGridBlock, 'variables.blockState.searchQuery.value');
@@ -94,10 +71,58 @@ export default class ContentPageController {
 					logger.error(new CustomError(
 						'Failed to resolve media grid content',
 						err,
-						{ contentPage, mediaGridBlock }
+						{ mediaGridBlocks, mediaGridBlock }
 					));
 				}
 			});
+		}
+	}
+
+	public static async resolveMediaTileItems(searchQuery: string | undefined, searchQueryLimit: string | undefined, mediaItems: {mediaItem: {
+		type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
+		value: string
+	}}[] | undefined): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {
+		try {
+			let results: any[] = [];
+			// Check for search queries
+			if (searchQuery) {
+				// resolve search query to a list of results
+				const parsedSearchQuery = JSON.parse(searchQuery);
+				let searchQueryLimitNum: number = parseInt(searchQueryLimit, 10);
+				if (_.isNaN(searchQueryLimitNum)) {
+					searchQueryLimitNum = 8;
+				}
+				const searchResponse = await ContentPageService.fetchSearchQuery(
+					searchQueryLimitNum,
+					parsedSearchQuery.filters || {},
+					parsedSearchQuery.orderProperty || 'relevance',
+					parsedSearchQuery.orderDirection || 'desc');
+				results = (searchResponse.results || []).map(ContentPageController.mapSearchResultToItemOrCollection);
+			}
+
+			// Check for items/collections
+			const nonEmptyMediaItems = mediaItems.filter(mediaItem => !_.isEmpty(mediaItem));
+			if (nonEmptyMediaItems.length) {
+				results = await promiseUtils.mapLimit(nonEmptyMediaItems, 10, async (item: {
+					mediaItem: {
+						type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
+						value: string
+					}
+				}) => {
+					return await ContentPageService.fetchCollectionOrItem(
+						item.mediaItem.type === 'BUNDLE' ? 'COLLECTION' : item.mediaItem.type,
+						item.mediaItem.value
+					);
+				});
+			}
+
+			return results;
+		} catch (err) {
+			logger.error(new CustomError(
+				'Failed to resolve media grid content',
+				err,
+				{ searchQuery, searchQueryLimit, mediaItems }
+			));
 		}
 	}
 
