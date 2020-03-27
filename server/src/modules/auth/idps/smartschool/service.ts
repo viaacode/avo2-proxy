@@ -1,5 +1,5 @@
 import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
-import { InternalServerError } from '../../../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
 import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
@@ -69,22 +69,21 @@ export default class SmartschoolService {
 			redirect_uri: `${process.env.HOST}/auth/smartschool/login-callback`,
 			scope: 'userinfoviaa',
 		});
-		// SmartschoolService.smartschoolAuth.code.getUri({
-		// 	query: {
-		// 		response_type: 'code',
-		// 	},
-		// });
 	}
 
 	public static async getToken(code: string): Promise<SmartschoolToken> {
-		const result = await this.oauth2.authorizationCode.getToken({
-			code,
-			redirect_uri: `${process.env.HOST}/auth/smartschool/login-callback`,
-			scope: 'userinfoviaa',
-			response_type: 'code',
-		} as any); // TODO remove cast to any once PR is accepted: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/39940
-		const response: AccessToken = this.oauth2.accessToken.create(result);
-		return response.token as SmartschoolToken;
+		try {
+			const result = await this.oauth2.authorizationCode.getToken({
+				code,
+				redirect_uri: `${process.env.HOST}/auth/smartschool/login-callback`,
+				scope: 'userinfoviaa',
+				response_type: 'code',
+			} as any); // TODO remove cast to any once PR is accepted: https://github.com/DefinitelyTyped/DefinitelyTyped/pull/39940
+			const response: AccessToken = this.oauth2.accessToken.create(result);
+			return response.token as SmartschoolToken;
+		} catch (err) {
+			throw new CustomError('Failed to get smartschool oauth token', err, { code });
+		}
 	}
 
 	public static async getUserInfo(accessToken: string): Promise<any> {
