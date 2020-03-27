@@ -99,15 +99,13 @@ export default class QueryBuilder {
 				};
 			}
 			sortArray.push(sortItem);
+		} else {
+			// Always order by relevance if 2 search items have identical primary sort values
+			sortArray.push('_score');
+			// TODO re-enable after https://meemoo.atlassian.net/browse/DEV-735
+			// If score is equal, sort them by broadcast date
+			sortArray.push({ dcterms_issued: { order: orderDirection, unmapped_type: 'date', missing: '_last' } });
 		}
-		// Always order by relevance if 2 search items have identical primary sort values
-		sortArray.push('_score');
-		// If score is equal, sort them by broadcast date
-		sortArray.push({
-			dcterms_issued: {
-				order: 'desc',
-			},
-		});
 		return sortArray;
 	}
 
