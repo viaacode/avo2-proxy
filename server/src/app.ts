@@ -43,6 +43,7 @@ import EducationOrganizationsRoute from './modules/education-organizations/route
 import KlaarRoute from './modules/klaar/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/route';
 import TranslationsRoute from './modules/site-variables/route/translations.route';
+import InteractiveTourRoute from './modules/interactive-tours/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -160,6 +161,7 @@ export class App {
 			CampaignMonitorRoute,
 			KlaarRoute,
 			TranslationsRoute,
+			InteractiveTourRoute,
 
 			FallbackRoute
 		);
