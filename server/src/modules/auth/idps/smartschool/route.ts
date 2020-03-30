@@ -13,11 +13,11 @@ import SmartschoolController, { LoginErrorResponse, LoginSuccessResponse, Smarts
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
-const SMARTSCHOOL_ERROR_MESSAGES = {
+const GET_SMARTSCHOOL_ERROR_MESSAGES = () => ({
 	// tslint:disable-next-line:max-line-length
 	FIRST_LINK_ACCOUNT: i18n.t('modules/auth/idps/smartschool/route___link-eerst-je-accounts'),
 	NO_ACCESS: i18n.t('modules/auth/idps/smartschool/route___enkel-leerkrachten-en-leerlingen-kunnen-inloggen-via-smartschool-op-deze-website'),
-};
+});
 
 @Path('/auth/smartschool')
 export default class SmartschoolRoute {
@@ -47,17 +47,7 @@ export default class SmartschoolRoute {
 	@GET
 	async loginCallback(@QueryParam('code') code: string): Promise<Return.MovedTemporarily<void>> {
 		try {
-			const userOrError: SmartschoolUserLoginResponse = await SmartschoolController.getUserFromSmartschoolLogin(code);
-			if ((userOrError as LoginErrorResponse).error) {
-				const errorMessage = SMARTSCHOOL_ERROR_MESSAGES[(userOrError as LoginErrorResponse).error];
-				return redirectToClientErrorPage(
-					errorMessage,
-					'alert-triangle',
-					['home', 'helpdesk'],
-				);
-			}
-
-			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
+			const response: LoginSuccessResponse = await SmartschoolController.getUserFromSmartschoolLogin(code);
 
 			const redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
 			if (redirectUrl.includes(process.env.HOST)) {

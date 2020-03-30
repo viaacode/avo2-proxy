@@ -9,9 +9,10 @@ import { IdpHelper } from '../../idp-helper';
 import { IdpType } from '../../types';
 import { AuthService } from '../../service';
 import AuthController from '../../controller';
-import { InternalServerError } from '../../../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
+import { BasicIdpUserInfo } from '../hetarchief/controller';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
@@ -29,56 +30,61 @@ export default class SmartschoolController extends IdpHelper {
 	}
 
 	public static async getUserFromSmartschoolLogin(code: string): Promise<SmartschoolUserLoginResponse> {
+		try {
 
-		// Get user info
-		const smartschoolUserInfo: SmartschoolUserInfo = await this.getSmartschoolUserInfo(code);
+			// Get user info
+			const smartschoolUserInfo: SmartschoolUserInfo = await this.getSmartschoolUserInfo(code);
 
-		// Pupil
-		if (smartschoolUserInfo.leerling) { // if leerling is true (not false or undefined)
-			// logged in user is a student
-			let userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
+			// Pupil
+			if (smartschoolUserInfo.leerling) { // if leerling is true (not false or undefined)
+				// logged in user is a student
+				let userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
 
-			if (!userUid) {
-				// Create avo user through graphql
-				userUid = await this.createUser(smartschoolUserInfo);
-			}
-
-			let profileId: string | null = _.first(await this.getProfileIdsByUserUid(userUid));
-
-			if (!profileId) {
-				// Create avo profile through graphql
-				profileId = await this.createProfile(smartschoolUserInfo, userUid);
-
-				// Add permission groups
-				await AuthService.addUserGroupsToProfile(4, profileId);
-			}
-
-			const avoUser: Avo.User.User = await AuthService.getAvoUserInfoById(userUid);
-
-			return { avoUser, smartschoolUserInfo };
-		}
-
-		// Teacher
-		if (smartschoolUserInfo.basisrol === 'leerkracht') {
-			const userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
-			let avoUser: Avo.User.User | null;
-			if (userUid) {
-				avoUser = await AuthService.getAvoUserInfoById(userUid);
-				if (!avoUser) {
-					throw new InternalServerError('Failed to get user by id from the database after smartschool login', null, { userUid });
+				if (!userUid) {
+					// Create avo user through graphql
+					userUid = await this.createUser(smartschoolUserInfo);
 				}
-			} else {
-				return { error: 'FIRST_LINK_ACCOUNT' };
+
+				let profileId: string | null = _.first(await this.getProfileIdsByUserUid(userUid));
+
+				if (!profileId) {
+					// Create avo profile through graphql
+					profileId = await this.createProfile(smartschoolUserInfo, userUid);
+
+					// Add permission groups
+					await AuthService.addUserGroupsToProfile([4], profileId);
+				}
+
+				const avoUser: Avo.User.User = await AuthService.getAvoUserInfoById(userUid);
+
+				return { avoUser, smartschoolUserInfo };
 			}
 
-			return { avoUser, smartschoolUserInfo };
-		}
+			// Teacher
+			if (smartschoolUserInfo.basisrol === 'leerkracht') {
+				const userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
+				let avoUser: Avo.User.User | null;
+				if (userUid) {
+					avoUser = await AuthService.getAvoUserInfoById(userUid);
+					if (!avoUser) {
+						throw new InternalServerError('Failed to get user by id from the database after smartschool login', null, { userUid });
+					}
+				} else {
+					return { error: 'FIRST_LINK_ACCOUNT' };
+				}
 
-		// Other
-		return { error: 'NO_ACCESS' };
+				return { avoUser, smartschoolUserInfo };
+			}
+
+			// Other
+			return { error: 'NO_ACCESS' };
+		} catch (err) {
+			throw new CustomError('Failed to get user from smartschool login', err, { code });
+		}
 	}
 
 	private static async getSmartschoolUserInfo(code: string): Promise<SmartschoolUserInfo> {
+		try {
 		// Get api token
 		const token: SmartschoolToken = await SmartschoolService.getToken(code);
 		if (!token || !token.access_token) {
@@ -91,16 +97,19 @@ export default class SmartschoolController extends IdpHelper {
 			throw new InternalServerError('Failed to get userinfo from smartschool api', null, { userInfo });
 		}
 		return userInfo;
+		} catch (err) {
+			throw new CustomError('Failed to get smartschool user info', err, { code });
+		}
 	}
 
 	private static async createUser(smartschoolUserInfo: SmartschoolUserInfo): Promise<string> {
 		try {
-			const user: Partial<Avo.User.User> = {
+			const user: BasicIdpUserInfo = {
 				first_name: smartschoolUserInfo.voornaam,
 				last_name: smartschoolUserInfo.naam,
 				mail: smartschoolUserInfo.email,
 				organisation_id: smartschoolUserInfo.instellingsnummer ? String(smartschoolUserInfo.instellingsnummer) : null,
-				role_id: 4, // TODO switch this to a lookup in the database for role with name 'student'
+				roles: ['leerling'],
 			};
 			const userUid = await AuthController.createUser(user);
 

@@ -1,5 +1,4 @@
 import axios, { AxiosResponse } from 'axios';
-import { find } from 'lodash';
 import cron from 'node-cron';
 
 import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
@@ -75,6 +74,9 @@ export default class OrganizationService {
 			const orgResponse: AxiosResponse<OrganizationResponse> = await axios({
 				url,
 				method: 'get',
+				headers: {
+					authorization: `bearer ${process.env.ORGANIZATIONS_API_TOKEN}`,
+				},
 			});
 
 			// Handle response

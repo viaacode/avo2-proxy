@@ -7,7 +7,8 @@ import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
 import _ from 'lodash';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
-export type EsIndex = 'both' | 'items' | 'collections'; // TODO replace with @viaa/avo2-types/types/search/types when build is fixed
+export type EsIndexType = 'items' | 'collections' | 'bundles'; // TODO replace with typings type after update to 2.14.0
+export type EsIndex = 'all' | EsIndexType;
 
 checkRequiredEnvs([
 	'ELASTICSEARCH_INDEX',
@@ -16,9 +17,10 @@ checkRequiredEnvs([
 ]);
 
 const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
-	both: process.env.ELASTICSEARCH_INDEX,
+	all: process.env.ELASTICSEARCH_INDEX,
 	items: process.env.ELASTICSEARCH_INDEX_ITEMS,
 	collections: process.env.ELASTICSEARCH_INDEX_COLLECTIONS,
+	bundles: process.env.ELASTICSEARCH_INDEX_BUNDLES,
 };
 
 export default class SearchController {
@@ -29,7 +31,8 @@ export default class SearchController {
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
 			// Perform search
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index || 'both']); // TODO remove any when typings build is fixed
+			// TODO remove cast when typings version is updated to 2.14.0
+			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index as EsIndex] || process.env.ELASTICSEARCH_INDEX);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new InternalServerError(
@@ -45,16 +48,20 @@ export default class SearchController {
 		}
 	}
 
-	public static async getRelatedItems(id: string, index: EsIndex, limit: number = 5): Promise<Avo.Search.Search> {
+	public static async getRelatedItems(id: string, type: EsIndexType, limit: number = 5): Promise<Avo.Search.Search> {
 		try {
 			// For private collections we need pass the title and description to elasticsearch since elasticsearch doesn't contain these collections
 			// So we need to get the collection from graphql first so we can see if the collection has: is_public === false
 			let privateCollection: Avo.Collection.Collection | undefined;
-			if (index === 'collections') {
-				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { collectionId: id });
+			if (type === 'collections' || type === 'bundles') {
+				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { id });
 				const collection = _.get(response, 'data.app_collections[0]');
 				if (!collection) {
-					throw new BadRequestError('Failed to get collection by id', null, { id, index, limit });
+					throw new BadRequestError(
+						'Response does not contain any collections',
+						null,
+						{ response }
+					);
 				}
 				if (!collection.is_public) {
 					privateCollection = collection;
@@ -64,7 +71,7 @@ export default class SearchController {
 			let likeFilter: any;
 			if (privateCollection) {
 				likeFilter = {
-					_index: ES_INDEX_MAP[index],
+					_index: ES_INDEX_MAP[type],
 					doc: {
 						dc_title: privateCollection.title,
 						dcterms_abstract: privateCollection.description,
@@ -72,7 +79,7 @@ export default class SearchController {
 				};
 			} else {
 				likeFilter = {
-					_index: ES_INDEX_MAP[index],
+					_index: ES_INDEX_MAP[type],
 					_id: id,
 				};
 			}
@@ -91,18 +98,18 @@ export default class SearchController {
 			};
 
 			// Perform search
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[index || 'items']);
+			return await SearchService.search(esQueryObject, process.env.ELASTICSEARCH_INDEX);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
-					{ index, limit, itemId: id });
+					{ type, limit, itemId: id });
 			} else {
 				throw new InternalServerError(
 					'Failed to do search',
 					err,
-					{ index, limit, itemId: id });
+					{ type, limit, itemId: id });
 			}
 		}
 	}

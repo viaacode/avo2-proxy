@@ -104,16 +104,14 @@ export default class SearchService {
 
 	}
 
-	public static async search(searchQueryObject: any, index?: string): Promise<Avo.Search.Search> {
+	public static async search(searchQueryObject: any, index: string): Promise<Avo.Search.Search> {
 		let url;
 		if (!process.env.ELASTICSEARCH_URL) {
 			throw new InternalServerError('Environment variable ELASTICSEARCH_URL is undefined');
 		}
 		try {
 			url = process.env.ELASTICSEARCH_URL;
-			url = index ?
-				url.replace('/avo-search/', `/avo-search/${index}/`) :
-				url;
+			url = url.replace('/avo-search/', `/avo-search/${index}/`);
 			const token: string = await SearchService.getAuthToken();
 			logger.info(`---------- query:\n${url}\n${JSON.stringify(searchQueryObject)}`);
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
@@ -133,7 +131,7 @@ export default class SearchService {
 					results: _.map(_.get(esResponse, 'data.hits.hits'), (result): Avo.Search.ResultItem => {
 						return {
 							...result._source,
-							id: result._id,
+							id: result._source.external_id,
 						} as Avo.Search.ResultItem;
 					}),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),

@@ -11,7 +11,6 @@ import {
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-const escapeElastic = require('elasticsearch-sanitize');
 const removeAccents = require('remove-accents');
 
 const textQueryObjectTemplate = _.values(textQueryObjectTemplateImport);
@@ -100,15 +99,13 @@ export default class QueryBuilder {
 				};
 			}
 			sortArray.push(sortItem);
+		} else {
+			// Always order by relevance if 2 search items have identical primary sort values
+			sortArray.push('_score');
+			// TODO re-enable after https://meemoo.atlassian.net/browse/DEV-735
+			// If score is equal, sort them by broadcast date
+			sortArray.push({ dcterms_issued: { order: orderDirection, unmapped_type: 'date', missing: '_last' } });
 		}
-		// Always order by relevance if 2 search items have identical primary sort values
-		sortArray.push('_score');
-		// If score is equal, sort them by broadcast date
-		sortArray.push({
-			dcterms_issued: {
-				order: 'desc',
-			},
-		});
 		return sortArray;
 	}
 
@@ -128,7 +125,7 @@ export default class QueryBuilder {
 		if (stringQuery) {
 			// Replace {{query}} in the template with the escaped search terms
 			const textQueryObjectArray = _.cloneDeep(textQueryObjectTemplate);
-			const escapedQueryString = escapeElastic(stringQuery); // Avoid elasticsearch injection attacks
+			const escapedQueryString = stringQuery;
 			_.forEach(textQueryObjectArray, (matchObj) => {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});

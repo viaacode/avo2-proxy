@@ -1,5 +1,11 @@
 import { AddressInfo } from 'net';
-import { default as express, Application, Request, Response, NextFunction } from 'express';
+import {
+	default as express,
+	Application,
+	Request,
+	Response,
+	NextFunction,
+} from 'express';
 import * as http from 'http';
 
 import { default as config } from './config';
@@ -13,12 +19,14 @@ import { ErrorMiddleware } from './modules/core/middleware/error';
 import OrganizationService from './modules/organization/service';
 import HetArchiefService from './modules/auth/idps/hetarchief/service';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
+import KlascementService from './modules/auth/idps/klascement/service';
 import ZendeskService from './modules/zendesk/service';
 
 // Routes
 import AuthRoute from './modules/auth/route';
 import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
 import SmartschoolRoute from './modules/auth/idps/smartschool/route';
+import KlascementRoute from './modules/auth/idps/klascement/route';
 import ZendeskRoute from './modules/zendesk/route';
 import AssetRoute from './modules/assets/route';
 import StatusRoute from './modules/status/route';
@@ -26,6 +34,7 @@ import SearchRoute from './modules/search/route';
 import DataRoute from './modules/data/route';
 import ProfileRoute from './modules/profile/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
+import ContentPagesRoute from './modules/content-pages/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import VideoStillsRoute from './modules/video-stills/route';
@@ -33,6 +42,8 @@ import EventLoggingRoute from './modules/event-logging/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
 import KlaarRoute from './modules/klaar/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/route';
+import TranslationsRoute from './modules/site-variables/route/translations.route';
+import InteractiveTourRoute from './modules/interactive-tours/route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -43,12 +54,17 @@ export class App {
 	public server: http.Server;
 
 	constructor(start: boolean = true) {
-		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
+		Validator.validate(
+			process.env,
+			corePresets.env,
+			'Invalid environment variables'
+		);
 
 		// One time initialization of objects needed for operation of the api
 		OrganizationService.initialize();
 		HetArchiefService.initialize();
 		SmartschoolService.initialize();
+		KlascementService.initialize();
 		ZendeskService.initialize();
 
 		this.loadMiddleware();
@@ -67,7 +83,11 @@ export class App {
 				return process.exit(1);
 			}
 
-			logIfNotTestEnv(`Server running on ${this.config.state.env} environment at port ${(this.server.address() as AddressInfo).port}`);
+			logIfNotTestEnv(
+				`Server running on ${this.config.state.env} environment at port ${
+					(this.server.address() as AddressInfo).port
+				}`
+			);
 		});
 	}
 
@@ -90,10 +110,22 @@ export class App {
 		 * Temp route rewrite to change /auth to /auth/hetarchief, so we can keep all the idp providers uniform
 		 */
 		this.app.use((req: Request, res: Response, next: NextFunction) => {
-			req.url = req.url.replace(/^\/auth\/login($|\?)/, '/auth/hetarchief/login$1');
-			req.url = req.url.replace(/^\/auth\/login-callback($|\?)/, '/auth/hetarchief/login-callback$1');
-			req.url = req.url.replace(/^\/auth\/logout($|\?)/, '/auth/hetarchief/logout$1');
-			req.url = req.url.replace(/^\/auth\/logout-callback($|\?)/, '/auth/hetarchief/logout-callback$1');
+			req.url = req.url.replace(
+				/^\/auth\/login($|\?)/,
+				'/auth/hetarchief/login$1'
+			);
+			req.url = req.url.replace(
+				/^\/auth\/login-callback($|\?)/,
+				'/auth/hetarchief/login-callback$1'
+			);
+			req.url = req.url.replace(
+				/^\/auth\/logout($|\?)/,
+				'/auth/hetarchief/logout$1'
+			);
+			req.url = req.url.replace(
+				/^\/auth\/logout-callback($|\?)/,
+				'/auth/hetarchief/logout-callback$1'
+			);
 			next();
 		});
 		// if (this.config.state.docs) {
@@ -112,12 +144,14 @@ export class App {
 			AuthRoute,
 			HetArchiefRoute,
 			SmartschoolRoute,
+			KlascementRoute,
 
 			EducationOrganizationsRoute,
 			SearchRoute,
 			DataRoute,
 			ProfileRoute,
 			NavigationItemsRoute,
+			ContentPagesRoute,
 			PlayerTicketRoute,
 			VideoStillsRoute,
 			StamboekRoute,
@@ -126,8 +160,10 @@ export class App {
 			AssetRoute,
 			CampaignMonitorRoute,
 			KlaarRoute,
+			TranslationsRoute,
+			InteractiveTourRoute,
 
-			FallbackRoute,
+			FallbackRoute
 		);
 	}
 

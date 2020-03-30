@@ -173,3 +173,9 @@ export interface IdpMetaData {
 		};
 	};
 }
+
+export interface UserGroup {
+	label: string;
+	id: number;
+	ldap_role: string | null;
+}

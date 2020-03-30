@@ -66,14 +66,14 @@ export default class ProfileController {
 				!((profile as any).userGroupIds || []).includes(3)
 			) {
 				// Add "lesgever secundair" to this profile's usergroups
-				await AuthService.addUserGroupsToProfile(3, profile.id);
+				await AuthService.addUserGroupsToProfile([3], profile.id);
 			}
 			if (
 				!completeVars.educationLevels.find(edLevel => edLevel.key === 'Secundair onderwijs') &&
 				((profile as any).userGroupIds || []).includes(3)
 			) {
 				// Remove "lesgever secundair" from this profile's usergroups
-				await AuthService.removeUserGroupsFromProfile(3, profile.id);
+				await AuthService.removeUserGroupsFromProfile([3], profile.id);
 			}
 		} catch (err) {
 			throw new CustomError('Failed to update profile info', err, { profile, variables });

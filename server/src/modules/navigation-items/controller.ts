@@ -5,7 +5,7 @@ import { Avo } from '@viaa/avo2-types';
 import { IdpHelper } from '../auth/idp-helper';
 import _ from 'lodash';
 import DataService from '../data/service';
-import { GET_CONTENT_PAGE_BY_PATH, GET_NAVIGATION_ITEMS } from './queries.gql';
+import { GET_NAVIGATION_ITEMS } from './queries.gql';
 import { ExternalServerError } from '../../shared/helpers/error';
 
 interface GetNavElementsResponse {
@@ -70,31 +70,6 @@ export default class NavigationItemsController {
 			return _.groupBy(visibleItems, 'placement');
 		} catch (err) {
 			throw new ExternalServerError('Failed to get navigation items', err);
-		}
-	}
-
-	public static async getContentBlockByPath(path: string, request: Request): Promise<Avo.Content.Content | null> {
-		try {
-			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(request);
-			const response = await DataService.execute(GET_CONTENT_PAGE_BY_PATH, {
-				path,
-			});
-			const contentPage: Avo.Content.Content | undefined = _.get(response, 'data.app_content[0]');
-			if (contentPage) {
-				// Path is indeed a content page url
-				if (_.intersection(
-					contentPage.user_group_ids,
-					[
-						..._.get(user, 'profile.userGroupIds', []),
-						user ? SpecialPermissionGroups.loggedInUsers : SpecialPermissionGroups.loggedOutUsers,
-					]
-				).length) {
-					return contentPage;
-				}
-			}
-			return null;
-		} catch (err) {
-			throw new ExternalServerError('Failed to get content page', err);
 		}
 	}
 }
