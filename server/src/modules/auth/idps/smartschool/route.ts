@@ -47,7 +47,17 @@ export default class SmartschoolRoute {
 	@GET
 	async loginCallback(@QueryParam('code') code: string): Promise<Return.MovedTemporarily<void>> {
 		try {
-			const response: LoginSuccessResponse = await SmartschoolController.getUserFromSmartschoolLogin(code);
+			const userOrError: SmartschoolUserLoginResponse = await SmartschoolController.getUserFromSmartschoolLogin(code);
+			if ((userOrError as LoginErrorResponse).error) {
+				const errorMessage = GET_SMARTSCHOOL_ERROR_MESSAGES()[(userOrError as LoginErrorResponse).error];
+				return redirectToClientErrorPage(
+					errorMessage,
+					'alert-triangle',
+					['home', 'helpdesk'],
+				);
+			}
+
+			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
 
 			const redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
 			if (redirectUrl.includes(process.env.HOST)) {

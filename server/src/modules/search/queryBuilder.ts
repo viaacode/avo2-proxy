@@ -206,9 +206,9 @@ export default class QueryBuilder {
 			if (!elasticProperty) {
 				throw new InternalServerError(`Failed to resolve agg property: ${aggProperty}`);
 			}
-			if (filterOptionSearch && filterOptionSearch[aggProperty as AggProps]) {
+			if (filterOptionSearch && (filterOptionSearch as any)[aggProperty]) {
 				// An extra search filter should be applied for these filter options
-				const filterOptionsTerm: string | undefined = filterOptionSearch[aggProperty as AggProps];
+				const filterOptionsTerm: string | undefined = (filterOptionSearch as any)[aggProperty as AggProps];
 				aggs[elasticProperty] = {
 					filter: {
 						term: {
