@@ -206,6 +206,14 @@ export const INSERT_PROFILE = `
 	}
 `;
 
+export const GET_IDP_MAP = `
+	query insertIdp($idpType: users_idps_enum!, $idpUserId: String!, $localUserId: uuid!) {
+		users_idp_map(where: {idp_user_id: {_eq: $idpUserId}, local_user_id: {_eq: $localUserId}, idp: {_eq: $idpType}}) {
+			id
+		}
+	}
+`;
+
 /**
  * Link a user to a specific idp id
  * Eg: user links their account to smartschool
