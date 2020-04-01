@@ -111,11 +111,13 @@ export class IdpHelper {
 				);
 			}
 		} catch (err) {
-			throw new CustomError(
-				'Failed to link user to idp',
-				err,
-				{ idp, idpUserId, localUserId, query: INSERT_PROFILE }
-			);
+			if (!JSON.stringify(err).includes('constraint-violation')) { // idp map already exists
+				throw new CustomError(
+					'Failed to link user to idp',
+					err,
+					{ idp, idpUserId, localUserId, query: INSERT_PROFILE }
+				);
+			}
 		}
 	}
 
