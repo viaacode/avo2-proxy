@@ -8,7 +8,7 @@ import { CustomError, InternalServerError, ServerError } from '../../shared/help
 import { IdpMap, IdpType } from './types';
 import { AuthService } from './service';
 import DataService from '../data/service';
-import { INSERT_IDP_MAP, INSERT_PROFILE } from './queries.gql';
+import { GET_IDP_MAP, INSERT_IDP_MAP, INSERT_PROFILE } from './queries.gql';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
 const AVO_USER_INFO_PATH = 'session.avoUserInfo';
@@ -95,29 +95,41 @@ export class IdpHelper {
 		IdpHelper.setAvoUserInfoOnSession(req, null);
 	}
 
-	public static async createIdpMap(idp: IdpType, idpUserId: string, localUserId: string) {
+	public static async createIdpMap(idpType: IdpType, idpUserId: string, localUserId: string) {
 		try {
 			const idpMap: Partial<IdpMap> = {
-				idp,
+				idp: idpType,
 				idp_user_id: idpUserId,
 				local_user_id: localUserId,
 			};
-			const response = await DataService.execute(INSERT_IDP_MAP, { idpMap });
-			if (!response) {
+			const getResponse = await DataService.execute(GET_IDP_MAP, { idpType, idpUserId, localUserId });
+			if (!getResponse) {
+				throw new InternalServerError(
+					'Failed to get idp map entry from database',
+					null,
+					{ getResponse }
+				);
+			}
+
+			const entry = _.get(getResponse, 'data.users_idp_map[0]');
+			if (entry) {
+				return; // The required entry already exists
+			}
+
+			const insertResponse = await DataService.execute(INSERT_IDP_MAP, { idpMap });
+			if (!insertResponse) {
 				throw new InternalServerError(
 					'Failed to link avo user to an idp. Response from insert request was undefined',
 					null,
-					{ response }
+					{ insertResponse }
 				);
 			}
 		} catch (err) {
-			if (!JSON.stringify(err).includes('constraint-violation')) { // idp map already exists
 				throw new CustomError(
 					'Failed to link user to idp',
 					err,
-					{ idp, idpUserId, localUserId, query: INSERT_PROFILE }
+					{ idpType, idpUserId, localUserId, query: INSERT_PROFILE }
 				);
-			}
 		}
 	}
 
