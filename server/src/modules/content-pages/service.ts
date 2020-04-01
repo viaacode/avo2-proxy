@@ -8,7 +8,6 @@ import DataService from '../data/service';
 import { GET_COLLECTION_TILE_BY_ID, GET_CONTENT_PAGE_BY_PATH, GET_ITEM_TILE_BY_ID } from './queries.gql';
 import { MediaItemResponse } from './controller';
 import SearchController from '../search/controller';
-import { EsIndex } from '@viaa/avo2-types/types/search/index';
 
 export default class ContentPageService {
 	public static async getContentBlockByPath(path: string): Promise<Avo.Content.Content | null> {
@@ -50,7 +49,7 @@ export default class ContentPageService {
 				orderDirection,
 				from: 0,
 				size: limit,
-				index: 'all' as EsIndex, // TODO remove cast after update typings v2.14.0
+				index: 'all' as Avo.Search.EsIndex,
 			});
 		} catch (err) {
 			throw new CustomError('Failed to fetch search results for content page', err, { limit, filters });
