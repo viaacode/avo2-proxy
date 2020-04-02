@@ -40,10 +40,11 @@ export default class HetArchiefRoute {
 	@GET
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
+			const returnTo = returnToUrl || `${process.env.CLIENT_HOST}/home`;
 			if (AuthController.isAuthenticated(this.context.request)) {
-				return new Return.MovedTemporarily<void>(returnToUrl);
+				return new Return.MovedTemporarily<void>(returnTo);
 			}
-			const url = await HetArchiefService.createLoginRequestUrl(returnToUrl);
+			const url = await HetArchiefService.createLoginRequestUrl(returnTo);
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
