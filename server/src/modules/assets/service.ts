@@ -1,7 +1,8 @@
 import axios from 'axios';
 import AWS, { AWSError, S3 } from 'aws-sdk';
+import _ from 'lodash';
 
-import { BadRequestError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { BadRequestError, CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
@@ -50,32 +51,39 @@ export default class AssetService {
 	 * }
 	 */
 	private static async getS3Client(): Promise<S3> {
-		if (!AssetService.token || new Date(AssetService.token.expiration).getTime() > new Date().getTime() - 5 * 60 * 1000) {
-			try {
-				const response = await axios.post(process.env.ASSET_SERVER_TOKEN_ENDPOINT, undefined, {
-					headers: {
-						'cache-control': 'no-cache',
-						'X-User-Secret-Key-Meta': process.env.ASSET_SERVER_TOKEN_SECRET,
-					},
-					auth: {
-						username: process.env.ASSET_SERVER_TOKEN_USERNAME,
-						password: process.env.ASSET_SERVER_TOKEN_PASSWORD,
-					},
-				});
-				AssetService.token = response.data;
+		try {
+			const tokenExpiry = new Date(_.get(AssetService, 'token.expiration')).getTime();
+			const now = new Date().getTime();
+			const fiveMinutes = 5 * 60 * 1000;
+			if (!AssetService.token || tokenExpiry - fiveMinutes < now) { // Take 5 minutes margin, to ensure we get a new token well before is expires
+				try {
+					const response = await axios.post(process.env.ASSET_SERVER_TOKEN_ENDPOINT, undefined, {
+						headers: {
+							'cache-control': 'no-cache',
+							'X-User-Secret-Key-Meta': process.env.ASSET_SERVER_TOKEN_SECRET,
+						},
+						auth: {
+							username: process.env.ASSET_SERVER_TOKEN_USERNAME,
+							password: process.env.ASSET_SERVER_TOKEN_PASSWORD,
+						},
+					});
+					AssetService.token = response.data;
 
-				AssetService.s3 = new AWS.S3({
-					accessKeyId: AssetService.token.token,
-					secretAccessKey: AssetService.token.secret,
-					endpoint: 'https://assets-qas.hetarchief.be/avo2',
-					s3BucketEndpoint: true,
-				});
-			} catch (err) {
-				throw new ExternalServerError('Failed to get new s3 token for the asset service', err, {});
+					AssetService.s3 = new AWS.S3({
+						accessKeyId: AssetService.token.token,
+						secretAccessKey: AssetService.token.secret,
+						endpoint: 'https://assets-qas.hetarchief.be/avo2',
+						s3BucketEndpoint: true,
+					});
+				} catch (err) {
+					throw new ExternalServerError('Failed to get new s3 token for the asset service', err, {});
+				}
 			}
-		}
 
-		return AssetService.s3;
+			return AssetService.s3;
+		} catch (err) {
+			throw new CustomError('Failed to get s3 client', err, { token: AssetService.token });
+		}
 	}
 
 	/**
