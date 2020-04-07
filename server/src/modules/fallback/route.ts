@@ -1,4 +1,5 @@
 import { Path, GET, Context, ServiceContext, POST, PUT, DELETE } from 'typescript-rest';
+
 import { NotFoundError } from '../../shared/helpers/error';
 
 @Path('/')
