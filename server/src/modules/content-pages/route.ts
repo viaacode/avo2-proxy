@@ -57,7 +57,7 @@ export default class ContentPagesRoute {
 		} catch (err) {
 			throw new NotFoundError(
 				'Something went wrong while resolving the media grid blocks',
-				null,
+				err,
 				{ body }
 			);
 		}

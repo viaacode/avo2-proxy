@@ -20,8 +20,6 @@ interface RelayState {
 	returnToUrl: string;
 }
 
-const STAMBOEK_NUMBER_PATH = 'request.session.stamboekNumber';
-
 if (!process.env.SUMM_REGISTRATION_PAGE && !process.env.SSUM_REGISTRATION_PAGE) {
 	throw new InternalServerError('The environment variable SSUM_REGISTRATION_PAGE should have a value.');
 }
@@ -73,6 +71,11 @@ export default class HetArchiefRoute {
 			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
 
 			IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
+
+			if (isPartOfRegistrationProcess) {
+				return new Return.MovedTemporarily(info.returnToUrl);
+			}
+
 			try {
 				let avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
 
@@ -82,13 +85,15 @@ export default class HetArchiefRoute {
 					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(ldapUser);
 					if (avoUser) {
 						await IdpHelper.createIdpMap('HETARCHIEF', ldapUser.attributes.entryUUID[0], String(avoUser.uid));
-					} else if (!isPartOfRegistrationProcess) {
-						// No avo user exists yet and this call isn't part of a registration flow
-						// Check if ldap user has the avo group
-						if ((ldapUser.attributes.apps || []).includes('avo')) {
-							// Create the avo user for this ldap account
-							avoUser = await HetArchiefController.createUserAndProfile(this.context.request, null);
-						}
+					}
+				}
+
+				if (!avoUser) {
+					// No avo user exists yet and this call isn't part of a registration flow
+					// Check if ldap user has the avo group
+					if ((ldapUser.attributes.apps || []).includes('avo')) {
+						// Create the avo user for this ldap account
+						avoUser = await HetArchiefController.createUserAndProfile(this.context.request, null);
 					}
 				}
 
@@ -205,7 +210,6 @@ export default class HetArchiefRoute {
 		@QueryParam('stamboekNumber') stamboekNumber: string | undefined,
 	): Promise<any> {
 		try {
-			_.set(this.context, STAMBOEK_NUMBER_PATH, stamboekNumber);
 			const serverRedirectUrl = `${process.env.HOST}/auth/hetarchief/verify-email-callback?${queryString.stringify({
 				returnToUrl,
 				stamboekNumber: encrypt(stamboekNumber),
@@ -283,7 +287,23 @@ export default class HetArchiefRoute {
 			}
 			const stamboekValidateStatus = await StamboekController.validate(stamboekNumber);
 			if (stamboekValidateStatus === 'VALID') {
-				await HetArchiefController.createUserAndProfile(this.context.request, stamboekNumber);
+				let avoUser = await HetArchiefController.createUserAndProfile(this.context.request, stamboekNumber);
+
+				// Add permission groups
+				const ldapUser = IdpHelper.getIdpUserInfoFromSession(this.context.request);
+				const isUpdated = await HetArchiefController.updateUserGroups(ldapUser, avoUser);
+
+				if (isUpdated) {
+					// Get avo user from the database again after having updated its user groups
+					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(ldapUser.attributes.entryUUID[0]);
+				}
+
+				// Link avoUser to LdapUser using idp_map table
+				await IdpHelper.createIdpMap('HETARCHIEF', ldapUser.attributes.entryUUID[0], String(avoUser.uid));
+
+				IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
+
+				// redirect back to client, where user will be logged in immediately
 				return new Return.MovedTemporarily<void>(returnToUrl);
 			}
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
