@@ -27,8 +27,27 @@ export default class ContentPageController {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(request);
 			const contentPage: Avo.Content.Content | undefined = await ContentPageService.getContentBlockByPath(path);
 
+			const canEditContentPage =
+				user.profile.permissions.includes('EDIT_ANY_CONTENT_PAGES') ||
+				user.profile.permissions.includes('EDIT_OWN_CONTENT_PAGES') && contentPage.user_profile_id === _.get(user, 'profile.id');
+
 			if (!contentPage) {
 				return null;
+			}
+
+			// People that can edit the content page are not restricted by the publish_at, depublish_at, is_public settings
+			if (!canEditContentPage) {
+				if (contentPage.publish_at && new Date().getTime() < new Date(contentPage.publish_at).getTime()) {
+					return null; // Not yet published
+				}
+
+				if (contentPage.depublish_at && new Date().getTime() > new Date(contentPage.depublish_at).getTime()) {
+					return null; // Already depublished yet published
+				}
+
+				if (!contentPage.is_public) {
+					return null;
+				}
 			}
 
 			// Check if content page is accessible for the user who requested the content page
