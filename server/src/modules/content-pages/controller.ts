@@ -27,9 +27,11 @@ export default class ContentPageController {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(request);
 			const contentPage: Avo.Content.Content | undefined = await ContentPageService.getContentBlockByPath(path);
 
+			const permissions = _.get(user, 'profile.permissions', []);
+			const profileId = _.get(user, 'profile.id', []);
 			const canEditContentPage =
-				user.profile.permissions.includes('EDIT_ANY_CONTENT_PAGES') ||
-				user.profile.permissions.includes('EDIT_OWN_CONTENT_PAGES') && contentPage.user_profile_id === _.get(user, 'profile.id');
+				permissions.includes('EDIT_ANY_CONTENT_PAGES') ||
+				permissions.includes('EDIT_OWN_CONTENT_PAGES') && contentPage.user_profile_id === profileId;
 
 			if (!contentPage) {
 				return null;
