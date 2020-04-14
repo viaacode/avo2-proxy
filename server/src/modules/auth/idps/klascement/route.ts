@@ -26,7 +26,7 @@ export default class KlascementRoute {
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
 			const requestId = getUuid();
-			_.set(this.context, REDIRECT_URL_PATH, returnToUrl);
+			_.set(this.context, REDIRECT_URL_PATH, (returnToUrl || `${process.env.CLIENT_HOST}/home`));
 			_.set(this.context, REQUEST_ID_PATH, requestId);
 			const url = KlascementService.getRedirectUrlForCode(requestId);
 			return new Return.MovedTemporarily<void>(url);

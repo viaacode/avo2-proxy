@@ -1,6 +1,7 @@
 export const GET_CONTENT_PAGE_BY_PATH = `
 	query getContentPageByPath($path: String!) {
 		app_content(where: { path: { _eq: $path } }) {
+			thumbnail_path
 			title
 			content_type
 			content_width
