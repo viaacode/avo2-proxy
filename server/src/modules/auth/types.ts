@@ -61,7 +61,6 @@ interface LdapAttributes {
 }
 
 export interface SharedUser {
-	id: number;
 	first_name: string;
 	last_name: string;
 	profiles: Profile[];
