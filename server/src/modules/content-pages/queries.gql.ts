@@ -11,7 +11,6 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 			id
 			is_protected
 			is_public
-			is_published
 			publish_at
 			path
 			contentBlockssBycontentId {

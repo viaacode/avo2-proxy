@@ -24,8 +24,6 @@ export interface UpdateProfileValues {
 	alternativeEmail: string;
 	avatar: string | null;
 	bio: string | null;
-	function: string | null;
-	location: string;
 	stamboek: string | null;
 }
 
@@ -49,8 +47,6 @@ export default class ProfileController {
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,
 				bio: (profile as any).bio || null,
-				function: (profile as any).function || null,
-				location: profile.location || 'nvt',
 				stamboek: profile.stamboek,
 				...variables, // Override current profile variables with the variables in the parameter
 			};

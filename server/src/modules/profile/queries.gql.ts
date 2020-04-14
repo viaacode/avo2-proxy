@@ -22,8 +22,6 @@ export const UPDATE_PROFILE_INFO = `
 		$alternativeEmail: String
 		$avatar: String
 		$bio: String
-		$function: String
-		$location: bpchar
 		$stamboek: String
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
@@ -42,8 +40,6 @@ export const UPDATE_PROFILE_INFO = `
 				alternative_email: $alternativeEmail
 				avatar: $avatar
 				bio: $bio
-				function: $function
-				location: $location
 				stamboek: $stamboek
 			}
 		) {

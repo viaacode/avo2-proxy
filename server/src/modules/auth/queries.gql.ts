@@ -9,10 +9,8 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 				alternative_email
 				avatar
 				created_at
-				location
 				stamboek
 				bio
-				function
 				updated_at
 				user_id
 				profile_user_groups {
@@ -51,7 +49,6 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			uid
 			updated_at
 			mail
-			organisation_id
 			idpmaps {
 				idp
 			}
@@ -70,10 +67,8 @@ export const GET_USER_INFO_BY_ID = `
 				alternative_email
 				avatar
 				created_at
-				location
 				stamboek
 				bio
-				function
 				updated_at
 				user_id
 				profile_user_groups {
@@ -108,11 +103,9 @@ export const GET_USER_INFO_BY_ID = `
 				label
 				name
 			}
-			type
 			uid
 			updated_at
 			mail
-			organisation_id
 			idpmaps {
 				idp
 			}
@@ -132,10 +125,8 @@ export const GET_USER_BY_LDAP_UUID = `
 					alternative_email
 					avatar
 					created_at
-					location
 					stamboek
 					bio
-					function
 					updated_at
 					user_id
 					profile_user_groups {
@@ -170,11 +161,9 @@ export const GET_USER_BY_LDAP_UUID = `
 					label
 					name
 				}
-				type
 				uid
 				updated_at
 				mail
-				organisation_id
 				idpmaps {
 					idp
 				}
