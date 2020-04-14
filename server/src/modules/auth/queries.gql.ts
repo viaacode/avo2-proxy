@@ -1,7 +1,6 @@
 export const GET_USER_INFO_BY_USER_EMAIL = `
 	query getUserInfoByMail($email: String!) {
 		users: shared_users(limit: 1, where: {mail: {_eq: $email}}) {
-			id
 			first_name
 			last_name
 			profiles {
@@ -63,7 +62,6 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 export const GET_USER_INFO_BY_ID = `
 	query getUserInfoById($userId: uuid!) {
 		users: shared_users(limit: 1, where: {uid: {_eq: $userId}}) {
-			id
 			first_name
 			last_name
 			profiles {
@@ -126,7 +124,6 @@ export const GET_USER_BY_LDAP_UUID = `
 	query getUserByLdapUuid($ldapUuid: String!) {
 		users_idp_map(where: {idp: {_eq: HETARCHIEF}, idp_user_id: {_eq: $ldapUuid}}, limit: 1) {
 			local_user {
-				id
 				first_name
 				last_name
 				profiles {
