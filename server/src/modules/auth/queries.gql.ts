@@ -45,7 +45,6 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 				label
 				name
 			}
-			type
 			uid
 			updated_at
 			mail
