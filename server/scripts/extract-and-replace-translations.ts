@@ -28,6 +28,7 @@ import * as fs from 'fs';
 import glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
+import axios, { AxiosResponse } from 'axios';
 
 import localTranslations from '../src/shared/translations/nl.json';
 
@@ -140,20 +141,33 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 }
 
 async function getOnlineTranslations() {
-	// Read file from poeditor website under /src/shared/translations/poeditor/project-id/nl.json
-	const poEditorFiles = await getFilesByGlob('shared/translations/poeditor/*/nl.json');
-	const poEditorFile: string = poEditorFiles[0];
-	if (!poEditorFile) {
-		throw new Error(
-			'File fetched from poEditor website could not be found: /src/shared/translations/poeditor/*/nl.json'
-		);
+	const response: AxiosResponse<any> = await axios(process.env.GRAPHQL_URL,
+		{
+			data: {
+				query: `
+					query getSiteVariables($name: String!) {
+						app_site_variables(where: {name: {_ilike: $name }}) {
+							name
+							value
+						}
+					}
+				`,
+				variables: {
+					name: 'translations-backend',
+				},
+			},
+			method: 'post',
+			headers: {
+				'x-hasura-admin-secret': process.env.GRAPHQL_SECRET,
+			},
+		},
+	);
+
+	if (response.data.errors) {
+		throw new Error(`Graphql error during translations fetch: ${response.data.errors}`);
 	}
-	try {
-		const filePath = path.resolve(__dirname, '../src/', poEditorFile);
-		return JSON.parse(fs.readFileSync(filePath).toString());
-	} catch (err) {
-		throw new Error(`Failed to parse json file from poeditor: ${JSON.stringify(err, null, 2)}`);
-	}
+
+	return response.data.data.app_site_variables[0].value;
 }
 
 function checkTranslationsForKeysAsValue(translationJson: string) {
