@@ -128,7 +128,7 @@ export class IdpHelper {
 				throw new CustomError(
 					'Failed to link user to idp',
 					err,
-					{ idpType, idpUserId, localUserId, query: INSERT_PROFILE }
+					{ idpType, idpUserId, localUserId, query: [GET_IDP_MAP, INSERT_IDP_MAP] }
 				);
 		}
 	}

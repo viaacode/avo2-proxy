@@ -90,7 +90,6 @@ export interface Profile {
 	alternative_email: string;
 	avatar: any;
 	created_at: string;
-	location: string;
 	stamboek: any;
 	updated_at: string;
 	user_id: string;
