@@ -48,14 +48,6 @@ export default class SmartschoolRoute {
 	async loginCallback(@QueryParam('code') code: string): Promise<Return.MovedTemporarily<void>> {
 		try {
 			const userOrError: SmartschoolUserLoginResponse = await SmartschoolController.getUserFromSmartschoolLogin(code);
-			if ((userOrError as LoginErrorResponse).error) {
-				const errorMessage = GET_SMARTSCHOOL_ERROR_MESSAGES()[(userOrError as LoginErrorResponse).error];
-				return redirectToClientErrorPage(
-					errorMessage,
-					'alert-triangle',
-					['home', 'helpdesk'],
-				);
-			}
 
 			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
 
@@ -69,6 +61,14 @@ export default class SmartschoolRoute {
 				_.set(this.context, LINK_ACCOUNT_PATH, linkAccountInfo);
 			} else {
 				// User is logging in to enter avo using their smartschool account
+				if ((userOrError as LoginErrorResponse).error) {
+					const errorMessage = GET_SMARTSCHOOL_ERROR_MESSAGES()[(userOrError as LoginErrorResponse).error];
+					return redirectToClientErrorPage(
+						errorMessage,
+						'alert-triangle',
+						['home', 'helpdesk'],
+					);
+				}
 				// Check if accounts are linked
 				if (!response.avoUser) {
 					return redirectToClientErrorPage(
