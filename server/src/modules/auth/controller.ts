@@ -148,12 +148,11 @@ export default class AuthController {
 	}
 
 	public static async createProfile(profile: Partial<Avo.User.Profile>): Promise<string> {
-		const profileWithLocation = _.extend({
-			location: 'nvt',
+		const profileWithDefaults = _.extend({
 			alias: null,
 			avatar: null,
 		}, profile);
-		const response = await DataService.execute(INSERT_PROFILE, { profile: profileWithLocation });
+		const response = await DataService.execute(INSERT_PROFILE, { profile: profileWithDefaults });
 		if (!response) {
 			throw new InternalServerError(
 				'Failed to create avo user profile. Response from insert request was undefined',

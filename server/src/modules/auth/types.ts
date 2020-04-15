@@ -68,11 +68,9 @@ export interface SharedUser {
 	expires_at: any;
 	external_uid: number;
 	role: any;
-	type: string;
 	uid: string;
 	updated_at: string;
 	mail: string;
-	organisation_id: string;
 	idpmaps: { idp: IdpType }[];
 	profile_classifications: {
 		key: string;
@@ -92,7 +90,6 @@ export interface Profile {
 	alternative_email: string;
 	avatar: any;
 	created_at: string;
-	location: string;
 	stamboek: any;
 	updated_at: string;
 	user_id: string;
