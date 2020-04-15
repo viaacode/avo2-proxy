@@ -17,7 +17,6 @@ export interface BasicIdpUserInfo {
 	first_name: string;
 	last_name: string;
 	mail: string;
-	organisation_id: string;
 	roles: string[];
 }
 
@@ -144,7 +143,6 @@ export default class HetArchiefController {
 			first_name: _.get(ldapObject, 'attributes.givenName[0]', ''),
 			last_name: _.get(ldapObject, 'attributes.sn[0]', ''),
 			mail: _.get(ldapObject, 'attributes.mail[0]', ''),
-			organisation_id: _.get(ldapObject, 'attributes.o[0]', ''),
 			roles: _.get(ldapObject, 'attributes.organizationalStatus', []),
 		};
 	}

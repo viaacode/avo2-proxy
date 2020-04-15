@@ -68,11 +68,9 @@ export interface SharedUser {
 	expires_at: any;
 	external_uid: number;
 	role: any;
-	type: string;
 	uid: string;
 	updated_at: string;
 	mail: string;
-	organisation_id: string;
 	idpmaps: { idp: IdpType }[];
 	profile_classifications: {
 		key: string;

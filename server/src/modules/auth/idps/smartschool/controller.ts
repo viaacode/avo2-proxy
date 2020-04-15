@@ -108,7 +108,6 @@ export default class SmartschoolController extends IdpHelper {
 				first_name: smartschoolUserInfo.voornaam,
 				last_name: smartschoolUserInfo.naam,
 				mail: smartschoolUserInfo.email,
-				organisation_id: smartschoolUserInfo.instellingsnummer ? String(smartschoolUserInfo.instellingsnummer) : null,
 				roles: ['leerling'],
 			};
 			const userUid = await AuthController.createUser(user);
