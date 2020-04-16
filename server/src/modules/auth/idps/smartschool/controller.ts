@@ -69,8 +69,6 @@ export default class SmartschoolController extends IdpHelper {
 					if (!avoUser) {
 						throw new InternalServerError('Failed to get user by id from the database after smartschool login', null, { userUid });
 					}
-				} else {
-					return { error: 'FIRST_LINK_ACCOUNT' };
 				}
 
 				return { avoUser, smartschoolUserInfo };
