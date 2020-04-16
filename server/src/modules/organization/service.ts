@@ -6,6 +6,7 @@ import { InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 
 import { INSERT_ORGANIZATIONS, DELETE_ORGANIZATIONS } from './queries.gql';
+import _ from 'lodash';
 
 interface OrganizationResponse {
 	status: string;
@@ -120,7 +121,7 @@ export default class OrganizationService {
 
 		try {
 			return await DataService.execute(INSERT_ORGANIZATIONS, {
-				organizations: parsedOrganizations,
+				organizations: _.uniqBy(parsedOrganizations, 'or_id'),
 			});
 		} catch (err) {
 			throw new InternalServerError(
