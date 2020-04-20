@@ -30,6 +30,8 @@ import * as _ from 'lodash';
 import * as path from 'path';
 
 import localTranslations from '../src/shared/translations/nl.json';
+import TranslationsController from '../src/modules/site-variables/controllers/translations.controller';
+import { CustomError } from '../src/shared/helpers/error';
 
 type keyMap = { [key: string]: string };
 
@@ -140,19 +142,11 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 }
 
 async function getOnlineTranslations() {
-	// Read file from poeditor website under /src/shared/translations/poeditor/project-id/nl.json
-	const poEditorFiles = await getFilesByGlob('shared/translations/poeditor/*/nl.json');
-	const poEditorFile: string = poEditorFiles[0];
-	if (!poEditorFile) {
-		throw new Error(
-			'File fetched from poEditor website could not be found: /src/shared/translations/poeditor/*/nl.json'
-		);
-	}
 	try {
-		const filePath = path.resolve(__dirname, '../src/', poEditorFile);
-		return JSON.parse(fs.readFileSync(filePath).toString());
+		const response = await TranslationsController.getTranslationsJSON('backend');
+		return response.value;
 	} catch (err) {
-		throw new Error(`Failed to parse json file from poeditor: ${JSON.stringify(err, null, 2)}`);
+		throw new Error('Failed to get translations from the database');
 	}
 }
 

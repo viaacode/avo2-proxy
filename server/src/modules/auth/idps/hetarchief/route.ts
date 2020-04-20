@@ -110,7 +110,7 @@ export default class HetArchiefRoute {
 				if (JSON.stringify(err).includes('ENOTFOUND')) {
 					// Failed to connect to the database
 					return redirectToClientErrorPage(
-						i18n.t('De server kan je gebruikers informatie niet ophalen uit de database'),
+						i18n.t('modules/auth/idps/hetarchief/route___de-server-kan-je-gebruikers-informatie-niet-ophalen-uit-de-database'),
 						'alert-triangle',
 						['home', 'helpdesk'],
 					);
