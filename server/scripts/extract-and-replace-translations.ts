@@ -28,8 +28,8 @@ import * as fs from 'fs';
 import glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
-import axios, { AxiosResponse } from 'axios';
 
+import TranslationsController from '../src/modules/site-variables/controllers/translations.controller.js';
 import localTranslations from '../src/shared/translations/nl.json';
 
 type keyMap = { [key: string]: string };
@@ -141,33 +141,12 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 }
 
 async function getOnlineTranslations() {
-	const response: AxiosResponse<any> = await axios(process.env.GRAPHQL_URL,
-		{
-			data: {
-				query: `
-					query getSiteVariables($name: String!) {
-						app_site_variables(where: {name: {_ilike: $name }}) {
-							name
-							value
-						}
-					}
-				`,
-				variables: {
-					name: 'translations-backend',
-				},
-			},
-			method: 'post',
-			headers: {
-				'x-hasura-admin-secret': process.env.GRAPHQL_SECRET,
-			},
-		},
-	);
-
-	if (response.data.errors) {
-		throw new Error(`Graphql error during translations fetch: ${response.data.errors}`);
+	try {
+		const response = await TranslationsController.getTranslationsJSON('backend');
+		return response.value;
+	} catch (err) {
+		throw new Error('Failed to get translations from the database');
 	}
-
-	return response.data.data.app_site_variables[0].value;
 }
 
 function checkTranslationsForKeysAsValue(translationJson: string) {
