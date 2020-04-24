@@ -81,9 +81,6 @@ export default class HetArchiefController {
 			// Create avo profile object
 			await this.createProfile(ldapUserInfo, userUuid, stamboekNumber);
 
-			// Add the avo app to the list of allowed apps in ldap (this will be done by the ssum in the future)
-			await HetArchiefController.addAvoAppToLdap(ldapUserInfo);
-
 			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
@@ -145,37 +142,6 @@ export default class HetArchiefController {
 			mail: _.get(ldapObject, 'attributes.mail[0]', ''),
 			roles: _.get(ldapObject, 'attributes.organizationalStatus', []),
 		};
-	}
-
-	private static async addAvoAppToLdap(ldapObject: LdapUser): Promise<void> {
-		let url: string = undefined;
-		let data: any = undefined;
-		try {
-			// Request avo be added to ldap apps through ldap api
-			const ldapUuid = _.get(ldapObject, 'attributes.entryUUID[0]');
-			if (!ldapUuid) {
-				throw new InternalServerError('Failed to get uuid from ldap object');
-			}
-			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUuid}`;
-			data = {
-				apps: [(await AuthService.getLdapApps())['avo']],
-			};
-			await axios(url, {
-				data,
-				method: 'put',
-				auth: {
-					username: process.env.LDAP_API_USERNAME,
-					password: process.env.LDAP_API_PASSWORD,
-				},
-			});
-			return;
-		} catch (err) {
-			throw new InternalServerError(
-				'Failed to add avo app to ldap user object',
-				err,
-				{ ldapObject, url, data }
-			);
-		}
 	}
 
 	/**

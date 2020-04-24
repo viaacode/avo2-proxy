@@ -14,6 +14,7 @@ export const GET_NAVIGATION_ITEMS = `
 			description
 			created_at
 			content_id
+			tooltip
 		}
 	}
 `;

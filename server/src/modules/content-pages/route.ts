@@ -18,7 +18,8 @@ export default class ContentPagesRoute {
 	async getContentPageByPath(@QueryParam('path') path: string): Promise<Avo.Content.Content> {
 		let content: Avo.Content.Content = null;
 		try {
-			content = await ContentPageController.getContentBlockByPath(path, this.context.request);
+			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			content = await ContentPageController.getContentPageByPath(path, user);
 		} catch (err) {
 			throw new InternalServerError('Failed to get content page', err);
 		}

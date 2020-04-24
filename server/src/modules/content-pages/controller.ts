@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import _ from 'lodash';
 import * as promiseUtils from 'blend-promise-utils';
 
@@ -7,7 +6,6 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { logger } from '../../shared/helpers/logger';
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
-import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageService from './service';
 
@@ -22,9 +20,8 @@ export interface MediaItemResponse { // TODO move to typings repo
 }
 
 export default class ContentPageController {
-	public static async getContentBlockByPath(path: string, request: Request): Promise<Avo.Content.Content | null> {
+	public static async getContentPageByPath(path: string, user: Avo.User.User | null): Promise<Avo.Content.Content | null> {
 		try {
-			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(request);
 			const contentPage: Avo.Content.Content | undefined = await ContentPageService.getContentBlockByPath(path);
 
 			const permissions = _.get(user, 'profile.permissions', []);

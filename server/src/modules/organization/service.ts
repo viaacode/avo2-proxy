@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import _ from 'lodash';
 import cron from 'node-cron';
 
 import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
@@ -120,7 +121,7 @@ export default class OrganizationService {
 
 		try {
 			return await DataService.execute(INSERT_ORGANIZATIONS, {
-				organizations: parsedOrganizations,
+				organizations: _.uniqBy(parsedOrganizations, 'or_id'),
 			});
 		} catch (err) {
 			throw new InternalServerError(
