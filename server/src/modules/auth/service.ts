@@ -1,35 +1,21 @@
+import * as promiseUtils from 'blend-promise-utils';
 import _ from 'lodash';
+
 import { Avo } from '@viaa/avo2-types';
+
+import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
+import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
+import { ClientEducationOrganization } from '../education-organizations/route';
+
 import {
 	GET_USER_GROUPS,
-	GET_USER_GROUPS_BY_LDAP_ROLE_NAMES,
 	GET_USER_INFO_BY_ID,
 	GET_USER_INFO_BY_USER_EMAIL,
 	LINK_USER_GROUPS_TO_PROFILE,
 	UNLINK_USER_GROUP_FROM_PROFILE,
 } from './queries.gql';
-import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SharedUser, UserGroup } from './types';
-import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
-import * as promiseUtils from 'blend-promise-utils';
-import { ClientEducationOrganization } from '../education-organizations/route';
-import axios from 'axios';
-
-// {
-// 	'id': '4eed4626-301c-1038-90ba-7fcc964c0712',
-// 	'name': 'avo',
-// 	'description': 'Gebruikers Het Archief voor Onderwijs',
-// 	'dn': 'cn=avo,ou=apps,dc=hetarchief,dc=be',
-// 	'objectclass': ['groupOfUniqueNames']
-// }
-interface LdapApp {
-	id: string;
-	name: string;
-	description?: string;
-	dn: string;
-	objectclass: string[];
-}
 
 export class AuthService {
 	public static async getAvoUserInfoByEmail(email: string): Promise<Avo.User.User> {
@@ -160,46 +146,6 @@ export class AuthService {
 				err,
 				{ userGroupIds, profileId }
 			);
-		}
-	}
-
-	// curl -X GET "http://localhost:4000/apps"
-	// -H "accept: application/json"
-	// -H "authorization: Basic ..."
-	// -H "Content-Type: application/json"
-	public static async getLdapApps(): Promise<{ [name: string]: string }> {
-		let url: string | undefined = undefined;
-		try {
-			url = `${process.env.LDAP_API_ENDPOINT}/apps`;
-			const response = await axios(url, {
-				method: 'get',
-				auth: {
-					username: process.env.LDAP_API_USERNAME,
-					password: process.env.LDAP_API_PASSWORD,
-				},
-			});
-			const apps: LdapApp[] = response.data;
-			return _.fromPairs(apps.map(app => [app.name, app.id]));
-		} catch (err) {
-			throw new CustomError('Failed to get ldap apps from ldap api', err, { url });
-		}
-	}
-
-	// TODO switch label for idp_role column when added to the database: https://meemoo.atlassian.net/browse/DEV-708
-	public static async getUserGroupsByLdapRoleNames(roleNames: string[]): Promise<{ id: number, label: string }[]> {
-		try {
-			const response = await DataService.execute(GET_USER_GROUPS_BY_LDAP_ROLE_NAMES, { roleNames });
-
-			if (response.errors) {
-				throw new CustomError('Response contains errors', null, { response });
-			}
-
-			return _.get(response, 'data.users_groups', []);
-		} catch (err) {
-			throw new CustomError('Failed to get user groups by ldap role names', err, {
-				roleNames,
-				query: 'GET_USER_GROUPS_BY_LDAP_ROLE_NAMES',
-			});
 		}
 	}
 
