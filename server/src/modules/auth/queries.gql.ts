@@ -266,15 +266,6 @@ export const GET_USER_ROLE_BY_NAME = `
 	}
 `;
 
-export const GET_USER_GROUPS_BY_LDAP_ROLE_NAMES = `
-	query getUserGroupsByLdapRoleNames($roleNames: [String!]!) {
-		users_groups(where: {label: {_in: $roleNames}}) {
-			label
-			id
-		}
-	}
-`;
-
 export const GET_USER_GROUPS = `
 	query getUserGroups {
 		users_groups {
