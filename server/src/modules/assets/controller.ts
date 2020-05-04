@@ -29,7 +29,7 @@ export default class AssetController {
 	public static async upload(uploadAssetInfo: UploadAssetInfo): Promise<string> {
 		const parsedFilename = path.parse(uploadAssetInfo.filename);
 		const key = `${uploadAssetInfo.type}/${parsedFilename.name}-${getUuid()}${parsedFilename.ext}`;
-		const mimeType: string = EXTENSIONS_TO_MIME_TYPE[_.trimStart(parsedFilename.ext, '.')];
+		const mimeType: string = EXTENSIONS_TO_MIME_TYPE[_.trimStart(parsedFilename.ext, '.').toLowerCase()];
 		if (!mimeType) {
 			throw new BadRequestError('Invalid file extension');
 		}
