@@ -1,0 +1,20 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.14.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-LODASH-567746:
+    - lodash:
+        patched: '2020-04-30T21:40:37.120Z'
+    - typescript-rest > lodash:
+        patched: '2020-04-30T21:40:37.120Z'
+    - saml2-js > async > lodash:
+        patched: '2020-04-30T21:40:37.120Z'
+    - '@studiohyperdrive/logger > request-promise > request-promise-core > lodash':
+        patched: '2020-04-30T21:40:37.120Z'
+    - '@studiohyperdrive/logger > winston > async > lodash':
+        patched: '2020-04-30T21:40:37.120Z'
+    - passport-saml > xml-encryption > async > lodash:
+        patched: '2020-04-30T21:40:37.120Z'
+    - saml2-js > xml-encryption > async > lodash:
+        patched: '2020-04-30T21:40:37.120Z'
