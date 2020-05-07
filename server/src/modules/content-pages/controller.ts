@@ -77,13 +77,10 @@ export default class ContentPageController {
 				try {
 					const searchQuery = _.get(mediaGridBlock, 'variables.blockState.searchQuery.value');
 					const searchQueryLimit = _.get(mediaGridBlock, 'variables.blockState.searchQueryLimit');
-					const mediaItems = _.get(mediaGridBlock, 'variables.componentState');
+					const mediaItems = _.get(mediaGridBlock, 'variables.componentState', []).filter((item: any) => item.mediaItem);
 
 					const results: any[] = await this.resolveMediaTileItems(searchQuery, searchQueryLimit, mediaItems);
 
-					_.unset(mediaGridBlock, 'variables.componentState');
-					_.unset(mediaGridBlock, 'variables.blockState.searchQuery.value');
-					_.unset(mediaGridBlock, 'variables.blockState.searchQueryLimit');
 					_.set(mediaGridBlock, 'variables.blockState.results', results);
 				} catch (err) {
 					logger.error(new CustomError(
