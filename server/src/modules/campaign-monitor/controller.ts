@@ -3,7 +3,7 @@ import { map } from 'lodash';
 import CampaignMonitorService from './service';
 import { EmailInfo } from './route';
 import { NEWSLETTER_LISTS } from './const';
-import { NewsletterList } from './types';
+import { NewsletterList, NewsletterPreferences } from './types';
 
 export default class CampaignMonitorController {
 
@@ -27,12 +27,11 @@ export default class CampaignMonitorController {
 	 * Retrieve email preferences from campaign monitor api
 	 * @param email
 	 */
-	public static async updateNewsletterPreferences(name: string, email: string, preferences: any) { // TODO: type
-		// return CampaignMonitorService.updateNewsletterPreferences(email, preferences);
+	public static async updateNewsletterPreferences(name: string, email: string, preferences: NewsletterPreferences) {
 		const mappedPreferences = map(preferences, (value, key) => ([key, value]));
 
 		mappedPreferences.forEach((preference) => {
-			const key: NewsletterList = preference[0];
+			const key: NewsletterList = (preference as any)[0];
 			const subscribed = preference[1];
 
 			if (subscribed) {
