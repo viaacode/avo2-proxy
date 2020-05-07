@@ -15,6 +15,10 @@ const EXTENSIONS_TO_MIME_TYPE: { [ext: string]: string } = {
 	gif: 'image/gif',
 	jpg: 'image/jpeg',
 	jpeg: 'image/jpeg',
+	// videos
+	mp4: 'video/mp4',
+	webm: 'video/webm',
+	ogv: 'video/ogg',
 	// subtitles
 	srt: 'text/srt',
 	sub: 'image/vnd.dvb.subtitle',

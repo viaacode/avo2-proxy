@@ -37,7 +37,8 @@ export default class AssetRoute {
 		assetInfo: UploadAssetInfo
 	): Promise<{ url: string }> {
 		if (!assetInfo || !assetInfo.filename || !assetInfo.content || !assetInfo.type) {
-			throw new BadRequestError('the body must contain the filename, content and type (\'subtitle\' | \'profilePic\' | \'image\')');
+			throw new BadRequestError('the body must contain the filename, content and type (' +
+				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\'');
 		}
 
 		try {
