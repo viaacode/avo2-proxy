@@ -14,5 +14,6 @@ export function redirectToClientErrorPage(
 		icon,
 		actionButtons: actionButtons.join(','),
 		...(identifier ? { identifier } : {}), // If no hard error object exists, there will not be an identifier
+		logout: true,
 	})}`);
 }
