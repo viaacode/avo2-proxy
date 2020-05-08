@@ -1,16 +1,16 @@
-import * as util from 'util';
 import _ from 'lodash';
-import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
+import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
+import * as util from 'util';
 
 import { InternalServerError } from '../../../../shared/helpers/error';
-import i18n from '../../../../shared/translations/i18n';
+import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
+import i18n from '../../../../shared/translations/i18n';
 import { IdpHelper } from '../../idp-helper';
 import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
 
-import SmartschoolService from './service';
 import SmartschoolController, { LoginErrorResponse, LoginSuccessResponse, SmartschoolUserLoginResponse } from './controller';
-import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
+import SmartschoolService from './service';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const GET_SMARTSCHOOL_ERROR_MESSAGES = () => ({

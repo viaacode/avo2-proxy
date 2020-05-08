@@ -1,8 +1,9 @@
 import axios, { AxiosResponse } from 'axios';
+import * as querystring from 'query-string';
+
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { checkRequiredEnvs } from '../../shared/helpers/env-check';
-import * as querystring from 'query-string';
 
 export interface LdapEducationOrganization {
 	id: string;

@@ -1,12 +1,12 @@
-import * as util from 'util';
-import { Context, Path, ServiceContext, POST } from 'typescript-rest';
 import { Tickets } from 'node-zendesk';
+import { Context, Path, POST, ServiceContext } from 'typescript-rest';
+import * as util from 'util';
 
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
+import { UploadAssetInfo } from '../assets/route';
 
 import ZendeskController from './controller';
-import { UploadAssetInfo } from '../assets/route';
 
 export interface ZendeskFileInfo {
 	// TODO use typings version

@@ -1,9 +1,10 @@
 import { default as Joi, ValidationResult } from '@hapi/joi';
 
-import { allowUnknown, stripUnknown } from './options';
-import { InternalServerError } from '../error';
 import { IValidationPreset } from '../../shared.types';
+import { InternalServerError } from '../error';
+
 import { Validator } from './index';
+import { allowUnknown, stripUnknown } from './options';
 
 describe('[UNIT - SHARED] Validation - Validator', () => {
 	const preset: IValidationPreset = {

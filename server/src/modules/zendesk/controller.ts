@@ -1,7 +1,7 @@
 import { Tickets } from 'node-zendesk';
 
-import ZendeskService from './service';
 import { ZendeskFileInfo } from './route';
+import ZendeskService from './service';
 
 export default class ZendeskController {
 

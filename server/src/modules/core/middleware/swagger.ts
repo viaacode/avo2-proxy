@@ -2,9 +2,9 @@ import { Application } from 'express';
 import { express as swaggerExpress, SwaggerDefinitionConstant } from 'swagger-express-ts';
 import { serve as swaggerServe, setup as swaggerSetup } from 'swagger-ui-express';
 
+import { name, version } from '../../../../package.json';
 import { default as config }  from '../../../config';
 import { ISwaggerModels } from '../../../shared/shared.types';
-import { name, version } from '../../../../package.json';
 
 export class SwaggerMiddleware {
 	public static load(app: Application, models: ISwaggerModels): void {

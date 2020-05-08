@@ -1,8 +1,8 @@
-import { Context, Path, ServiceContext, POST, PreProcessor, DELETE } from 'typescript-rest';
+import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
 
+import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError, ClientError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import AssetController from './controller';
@@ -37,7 +37,8 @@ export default class AssetRoute {
 		assetInfo: UploadAssetInfo
 	): Promise<{ url: string }> {
 		if (!assetInfo || !assetInfo.filename || !assetInfo.content || !assetInfo.type) {
-			throw new BadRequestError('the body must contain the filename, content and type (\'subtitle\' | \'profilePic\' | \'image\')');
+			throw new BadRequestError('the body must contain the filename, content and type (' +
+				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\'');
 		}
 
 		try {

@@ -1,11 +1,11 @@
-import _ from 'lodash';
 import * as promiseUtils from 'blend-promise-utils';
+import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
-import { logger } from '../../shared/helpers/logger';
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 import ContentPageService from './service';
 
@@ -77,13 +77,10 @@ export default class ContentPageController {
 				try {
 					const searchQuery = _.get(mediaGridBlock, 'variables.blockState.searchQuery.value');
 					const searchQueryLimit = _.get(mediaGridBlock, 'variables.blockState.searchQueryLimit');
-					const mediaItems = _.get(mediaGridBlock, 'variables.componentState');
+					const mediaItems = _.get(mediaGridBlock, 'variables.componentState', []).filter((item: any) => item.mediaItem);
 
 					const results: any[] = await this.resolveMediaTileItems(searchQuery, searchQueryLimit, mediaItems);
 
-					_.unset(mediaGridBlock, 'variables.componentState');
-					_.unset(mediaGridBlock, 'variables.blockState.searchQuery.value');
-					_.unset(mediaGridBlock, 'variables.blockState.searchQueryLimit');
 					_.set(mediaGridBlock, 'variables.blockState.results', results);
 				} catch (err) {
 					logger.error(new CustomError(

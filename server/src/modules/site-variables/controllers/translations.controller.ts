@@ -5,7 +5,6 @@ import {
 	NotFoundError,
 } from '../../../shared/helpers/error';
 import DataService from '../../data/service';
-
 import { GET_SITE_VARIABLES_BY_NAME } from '../queries.gql';
 import { SiteVariable } from '../types';
 

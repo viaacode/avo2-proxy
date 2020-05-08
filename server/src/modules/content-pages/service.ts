@@ -3,11 +3,11 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
-
 import DataService from '../data/service';
-import { GET_COLLECTION_TILE_BY_ID, GET_CONTENT_PAGE_BY_PATH, GET_ITEM_TILE_BY_ID } from './queries.gql';
-import { MediaItemResponse } from './controller';
 import SearchController from '../search/controller';
+
+import { MediaItemResponse } from './controller';
+import { GET_COLLECTION_TILE_BY_ID, GET_CONTENT_PAGE_BY_PATH, GET_ITEM_TILE_BY_ID } from './queries.gql';
 
 export default class ContentPageService {
 	public static async getContentBlockByPath(path: string): Promise<Avo.Content.Content | null> {

@@ -1,13 +1,13 @@
-import * as queryString from 'querystring';
-import moment from 'moment';
 import _ from 'lodash';
+import moment from 'moment';
+import * as queryString from 'querystring';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, NotFoundError } from '../../shared/helpers/error';
-
 import ContentPageController from '../content-pages/controller';
 import DataService from '../data/service';
+
 import { GET_ITEM_THUMBNAIL_BY_EXTERNAL_ID } from './klaar.gql';
 
 interface KlaarNewsletterItem {

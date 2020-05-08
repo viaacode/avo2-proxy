@@ -1,8 +1,7 @@
-import { GET, Path } from 'typescript-rest';
 import memoize from 'memoizee';
+import { GET, Path } from 'typescript-rest';
 
 import { InternalServerError } from '../../../shared/helpers/error';
-
 import TranslationsController from '../controllers/translations.controller';
 
 @Path('/translations')

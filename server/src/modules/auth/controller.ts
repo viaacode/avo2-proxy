@@ -1,26 +1,26 @@
-import _ from 'lodash';
 import { Request } from 'express';
+import _ from 'lodash';
 import * as queryString from 'querystring';
 import { Return } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { logger } from '../../shared/helpers/logger';
-import DataService from '../data/service';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
+import { logger } from '../../shared/helpers/logger';
 import i18n from '../../shared/translations/i18n';
+import DataService from '../data/service';
 
-import { DELETE_IDP_MAPS, GET_NOTIFICATION, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
-import KlascementController from './idps/klascement/controller';
-import HetArchiefController, { BasicIdpUserInfo } from './idps/hetarchief/controller';
-import SmartschoolController from './idps/smartschool/controller';
-import ViaaController from './idps/viaa/controller';
 import { IdpHelper } from './idp-helper';
-import { LinkAccountInfo } from './route';
-import { SmartschoolUserInfo } from './idps/smartschool/service';
-import { IdpType, IdpMap } from './types';
+import HetArchiefController, { BasicIdpUserInfo } from './idps/hetarchief/controller';
+import KlascementController from './idps/klascement/controller';
 import { KlascementUserInfo } from './idps/klascement/service';
+import SmartschoolController from './idps/smartschool/controller';
+import { SmartschoolUserInfo } from './idps/smartschool/service';
+import ViaaController from './idps/viaa/controller';
+import { DELETE_IDP_MAPS, GET_NOTIFICATION, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import { LinkAccountInfo } from './route';
+import { IdpMap, IdpType } from './types';
 
 interface IdpInterface {
 	controller: { isLoggedIn: (req: Request) => boolean };

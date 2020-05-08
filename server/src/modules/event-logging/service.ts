@@ -1,9 +1,11 @@
-import { InternalServerError } from '../../shared/helpers/error';
-import { LogEvent } from './types';
-import { INSERT_EVENTS } from './queries.gql';
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
+
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
+import { InternalServerError } from '../../shared/helpers/error';
+
+import { INSERT_EVENTS } from './queries.gql';
+import { LogEvent } from './types';
 
 checkRequiredEnvs([
 	'GRAPHQL_LOGGING_URL',

@@ -1,11 +1,13 @@
-import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
-import VideoStillsController, { StillInfo } from './controller';
-import * as util from 'util';
-import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
-import { StillRequest, stillRequestValidation } from './validation';
 import { ValidationResult } from '@hapi/joi';
+import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
+import * as util from 'util';
+
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+
+import VideoStillsController, { StillInfo } from './controller';
+import { StillRequest, stillRequestValidation } from './validation';
 
 @Path('/video-stills')
 export default class VideoStillsRoute {

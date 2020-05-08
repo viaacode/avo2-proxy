@@ -1,8 +1,11 @@
-import DataService from './service';
-import _ from 'lodash';
 import { IncomingHttpHeaders } from 'http';
-import { logger } from '../../shared/helpers/logger';
+import _ from 'lodash';
+
 import { Avo } from '@viaa/avo2-types';
+
+import { logger } from '../../shared/helpers/logger';
+
+import DataService from './service';
 
 export default class DataController {
 

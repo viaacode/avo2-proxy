@@ -1,12 +1,12 @@
-import * as util from 'util';
-import zendesk, { Client, Tickets } from 'node-zendesk';
-import _ from 'lodash';
 import axios from 'axios';
+import _ from 'lodash';
+import zendesk, { Client, Tickets } from 'node-zendesk';
 import * as queryString from 'querystring';
+import * as util from 'util';
 
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 import { ZendeskFileInfo } from './route';
 

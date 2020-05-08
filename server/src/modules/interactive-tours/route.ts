@@ -1,11 +1,12 @@
+import _ from 'lodash';
 import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
 
+import { Avo } from '@viaa/avo2-types';
+
 import { InternalServerError } from '../../shared/helpers/error';
+import { IdpHelper } from '../auth/idp-helper';
 
 import InteractiveTourController from './controller';
-import { IdpHelper } from '../auth/idp-helper';
-import _ from 'lodash';
-import { Avo } from '@viaa/avo2-types';
 
 @Path('/interactive-tours')
 export default class InteractiveTourRoute {

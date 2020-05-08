@@ -1,7 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
-import { InternalServerError } from '../../shared/helpers/error';
+
 import { toMilliseconds } from '../../shared/helpers/duration';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
+import { InternalServerError } from '../../shared/helpers/error';
 
 export interface VideoStill {
 	time: number;

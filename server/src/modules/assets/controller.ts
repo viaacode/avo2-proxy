@@ -1,13 +1,13 @@
 import _ from 'lodash';
-import getUuid from 'uuid/v1';
 import * as path from 'path';
+import getUuid from 'uuid/v1';
 
 import { BadRequestError } from '../../shared/helpers/error';
-
-import AssetService from './service';
-import { UploadAssetInfo } from './route';
 import DataService from '../data/service';
+
 import { DELETE_CONTENT_ASSET, INSERT_CONTENT_ASSET } from './queries.gql';
+import { UploadAssetInfo } from './route';
+import AssetService from './service';
 
 const EXTENSIONS_TO_MIME_TYPE: { [ext: string]: string } = {
 	// images
@@ -15,6 +15,10 @@ const EXTENSIONS_TO_MIME_TYPE: { [ext: string]: string } = {
 	gif: 'image/gif',
 	jpg: 'image/jpeg',
 	jpeg: 'image/jpeg',
+	// videos
+	mp4: 'video/mp4',
+	webm: 'video/webm',
+	ogv: 'video/ogg',
 	// subtitles
 	srt: 'text/srt',
 	sub: 'image/vnd.dvb.subtitle',
@@ -28,8 +32,8 @@ export default class AssetController {
 	 */
 	public static async upload(uploadAssetInfo: UploadAssetInfo): Promise<string> {
 		const parsedFilename = path.parse(uploadAssetInfo.filename);
-		const key = `${uploadAssetInfo.type}/${parsedFilename.name}-${getUuid()}${parsedFilename.ext}`;
-		const mimeType: string = EXTENSIONS_TO_MIME_TYPE[_.trimStart(parsedFilename.ext, '.')];
+		const key = `${uploadAssetInfo.type}/${_.kebabCase(parsedFilename.name)}-${getUuid()}${parsedFilename.ext}`;
+		const mimeType: string = EXTENSIONS_TO_MIME_TYPE[_.trimStart(parsedFilename.ext, '.').toLowerCase()];
 		if (!mimeType) {
 			throw new BadRequestError('Invalid file extension');
 		}
