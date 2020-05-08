@@ -1,4 +1,4 @@
-import { map } from 'lodash';
+import { toPairs } from 'lodash';
 
 import CampaignMonitorService from './service';
 import { EmailInfo } from './route';
@@ -25,13 +25,15 @@ export default class CampaignMonitorController {
 
 	/**
 	 * Retrieve email preferences from campaign monitor api
+	 * @param name
 	 * @param email
+	 * @param preferences
 	 */
 	public static async updateNewsletterPreferences(name: string, email: string, preferences: NewsletterPreferences) {
-		const mappedPreferences = map(preferences, (value, key) => ([key, value]));
+		const mappedPreferences = toPairs(preferences) as [NewsletterList, boolean][];
 
 		mappedPreferences.forEach((preference) => {
-			const key: NewsletterList = (preference as any)[0];
+			const key: NewsletterList = preference[0];
 			const subscribed = preference[1];
 
 			if (subscribed) {

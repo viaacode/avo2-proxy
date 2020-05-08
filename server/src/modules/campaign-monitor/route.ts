@@ -63,7 +63,7 @@ export default class CampaignMonitorRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during send in campaignMonitor route', err, { info });
 			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			throw error;
 		}
 	}
 
@@ -77,13 +77,11 @@ export default class CampaignMonitorRoute {
 		@QueryParam('email') email: string
 	) {
 		try {
-			const response = await CampaignMonitorController.fetchNewsletterPreferences(email);
-
-			return response;
+			return await CampaignMonitorController.fetchNewsletterPreferences(email);
 		} catch (err) {
 			const error = new InternalServerError('Failed during fetch in campaign monitor preferences route', err, { email });
 			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			throw error;
 		}
 	}
 
@@ -97,13 +95,11 @@ export default class CampaignMonitorRoute {
 		body: any
 	) {
 		try {
-			const response = await CampaignMonitorController.updateNewsletterPreferences(body.name, body.email, body.preferences);
-
-			return response;
+			return await CampaignMonitorController.updateNewsletterPreferences(body.name, body.email, body.preferences);
 		} catch (err) {
 			const error = new InternalServerError('Failed during update in campaign monitor preferences route', err, { email: body.email });
 			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			throw error;
 		}
 	}
 }

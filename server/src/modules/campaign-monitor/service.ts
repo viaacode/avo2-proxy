@@ -46,44 +46,40 @@ export default class CampaignMonitorService {
 	}
 
 	public static async fetchNewsletterPreferences(email: string) {
-		const createRequestUrl = (listId: string) => `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${email}`;
-		const createRequest = (listId: string) => {
-			return axios(
-				createRequestUrl(listId),
-				{
-					method: 'GET',
-					auth: {
-						username: process.env.CAMPAIGN_MONITOR_API_KEY,
-						password: '.',
-					},
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
-		};
-
 		try {
+			const createRequestUrl = (listId: string) => `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${email}`;
+			const createRequest = (listId: string) => {
+				return axios(
+					createRequestUrl(listId),
+					{
+						method: 'GET',
+						auth: {
+							username: process.env.CAMPAIGN_MONITOR_API_KEY,
+							password: '.',
+						},
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					}
+				);
+			};
+
 			const responses: AxiosResponse[] = await axios.all(NEWSLETTER_LISTS_TO_FETCH.map((list => createRequest(NEWSLETTER_LISTS[list]))));
 
-			const parsedResponse = {
+			return {
 				newsletter: responses[0].data.State === 'Active',
 				ambassador: responses[1].data.State === 'Active',
 				workshop: responses[2].data.State === 'Active',
 			};
-
-			return parsedResponse;
 		} catch (err) {
-			throw new CustomError('Failed to retrieve newsletter preferences', err);
+			throw new CustomError('Failed to retrieve newsletter preferences', err, { email });
 		}
 	}
 
 	public static async unsubscribeFromNewsletterList(listId: string, email: string) {
-		const createRequestUrl = (listId: string) => `https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`;
-
 		try {
-			const response = await axios(
-				createRequestUrl(listId),
+			await axios(
+				`https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`,
 				{
 					method: 'POST',
 					auth: {
@@ -99,16 +95,14 @@ export default class CampaignMonitorService {
 				}
 			);
 		} catch (err) {
-			throw new CustomError('Failed to unsubscribe from newsletter list', err);
+			throw new CustomError('Failed to unsubscribe from newsletter list', err, { email });
 		}
 	}
 
 	public static async subscribeFromNewsletterList(listId: string, name: string, email: string) {
-		const createRequestUrl = (listId: string) => `https://api.createsend.com/api/v3.2/subscribers/${listId}.json`;
-
 		try {
 			await axios(
-				createRequestUrl(listId),
+				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`,
 				{
 					method: 'POST',
 					auth: {
@@ -127,7 +121,7 @@ export default class CampaignMonitorService {
 				}
 			);
 		} catch (err) {
-			throw new CustomError('Failed to subscribe from newsletter list', err);
+			throw new CustomError('Failed to subscribe from newsletter list', err, { listId, name, email });
 		}
 	}
 }
