@@ -1,8 +1,10 @@
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
-import DataController from './controller';
+
 import { InternalServerError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
+
+import DataController from './controller';
 
 interface DataQuery {
 	query: any;

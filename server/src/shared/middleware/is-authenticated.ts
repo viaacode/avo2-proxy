@@ -1,4 +1,5 @@
 import { Request } from 'express';
+
 import AuthController from '../../modules/auth/controller';
 import { UnauthorizedError } from '../helpers/error';
 

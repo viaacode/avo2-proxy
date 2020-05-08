@@ -1,8 +1,9 @@
-import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
-import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
+import simpleOauth2, { AccessToken, OAuthClient } from 'simple-oauth2';
+
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
+import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
 
 export interface SmartschoolToken {
 	token_type: string;

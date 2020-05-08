@@ -1,8 +1,8 @@
 import { Avo } from '@viaa/avo2-types';
 
-import DataService from '../data/service';
 import { CustomError } from '../../shared/helpers/error';
 import { AuthService } from '../auth/service';
+import DataService from '../data/service';
 
 import { DELETE_PROFILE_OBJECTS, UPDATE_PROFILE_INFO } from './queries.gql';
 

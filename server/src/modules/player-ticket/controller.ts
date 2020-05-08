@@ -1,8 +1,10 @@
-import PlayerTicketService, { PlayerTicket } from './service';
-import DataService from '../data/service';
-import { GET_ITEM_BY_ID } from './queries.gql';
 import { get } from 'lodash';
+
 import { InternalServerError } from '../../shared/helpers/error';
+import DataService from '../data/service';
+
+import { GET_ITEM_BY_ID } from './queries.gql';
+import PlayerTicketService, { PlayerTicket } from './service';
 
 export interface PlayerTicketResponse {
 	url: string;

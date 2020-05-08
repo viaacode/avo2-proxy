@@ -1,11 +1,13 @@
 import _ from 'lodash';
+import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
-import { Context, Path, ServiceContext, POST } from 'typescript-rest';
+
+import { ClientEvent } from '@viaa/avo2-types/types/event-logging';
+
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 import EventLoggingController from './controller';
-import { logger } from '../../shared/helpers/logger';
-import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
-import { ClientEvent } from '@viaa/avo2-types/types/event-logging';
 
 @Path('/event-logging')
 export default class EventLoggingRoute {

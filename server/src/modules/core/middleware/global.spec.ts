@@ -1,4 +1,4 @@
-import { default as express, Application } from 'express';
+import { Application, default as express } from 'express';
 
 import { GlobalMiddleware } from './global';
 

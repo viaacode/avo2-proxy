@@ -1,6 +1,6 @@
-import redis from 'redis';
-import session from 'express-session';
 import connectRedis from 'connect-redis';
+import session from 'express-session';
+import redis from 'redis';
 
 import { checkRequiredEnvs } from '../helpers/env-check';
 

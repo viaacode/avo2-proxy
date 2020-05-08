@@ -1,4 +1,5 @@
 import 'jest';
+
 import OrganizationService, { OrganizationInfo } from './service';
 
 const VRT = {

@@ -1,12 +1,13 @@
 import { Request } from 'express';
+import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { IdpHelper } from '../auth/idp-helper';
-import _ from 'lodash';
-import DataService from '../data/service';
-import { GET_NAVIGATION_ITEMS } from './queries.gql';
 import { ExternalServerError } from '../../shared/helpers/error';
+import { IdpHelper } from '../auth/idp-helper';
+import DataService from '../data/service';
+
+import { GET_NAVIGATION_ITEMS } from './queries.gql';
 
 interface GetNavElementsResponse {
 	errors?: any;

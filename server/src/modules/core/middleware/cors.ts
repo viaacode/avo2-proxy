@@ -1,5 +1,6 @@
-import { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import { NextFunction, Request, Response } from 'express';
+
 import { logger } from '../../../shared/helpers/logger';
 
 const WHITE_LIST_DOMAINS = [

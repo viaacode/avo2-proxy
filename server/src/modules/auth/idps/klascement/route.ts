@@ -1,17 +1,17 @@
-import * as util from 'util';
 import _ from 'lodash';
+import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
+import * as util from 'util';
 import getUuid from 'uuid/v1';
-import { Context, Path, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
 
 import { InternalServerError } from '../../../../shared/helpers/error';
-import i18n from '../../../../shared/translations/i18n';
+import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
+import i18n from '../../../../shared/translations/i18n';
 import { IdpHelper } from '../../idp-helper';
 import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
 
-import KlascementService from './service';
 import KlascementController, { LoginSuccessResponse } from './controller';
-import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
+import KlascementService from './service';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const REQUEST_ID_PATH = 'request.session.requestId';

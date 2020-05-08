@@ -3,8 +3,8 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
-
 import DataService from '../data/service';
+
 import {
 	GET_INTERACTIVE_TOUR_ROUTE_IDS, GET_INTERACTIVE_TOUR_WITH_STATUSES, GET_INTERACTIVE_TOUR_WITHOUT_STATUSES,
 } from './queries.gql';

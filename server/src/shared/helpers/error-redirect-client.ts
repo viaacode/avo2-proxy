@@ -1,5 +1,5 @@
-import { Return } from 'typescript-rest';
 import * as queryString from 'querystring';
+import { Return } from 'typescript-rest';
 
 export type ErrorActionButton = 'home' | 'helpdesk'; // TODO use type in typings repo
 

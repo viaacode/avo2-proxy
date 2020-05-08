@@ -1,11 +1,14 @@
-import { Avo } from '@viaa/avo2-types';
-import SearchService from './service';
-import QueryBuilder from './queryBuilder';
-import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
-import DataService from '../data/service';
-import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
 import _ from 'lodash';
+
+import { Avo } from '@viaa/avo2-types';
+
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import DataService from '../data/service';
+
+import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
+import QueryBuilder from './queryBuilder';
+import SearchService from './service';
 
 export type EsIndexType = 'items' | 'collections' | 'bundles'; // TODO replace with typings type after update to 2.14.0
 export type EsIndex = 'all' | EsIndexType;

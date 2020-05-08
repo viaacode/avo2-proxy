@@ -1,13 +1,13 @@
 import _ from 'lodash';
-import getUuid from 'uuid/v1';
 import * as path from 'path';
+import getUuid from 'uuid/v1';
 
 import { BadRequestError } from '../../shared/helpers/error';
-
-import AssetService from './service';
-import { UploadAssetInfo } from './route';
 import DataService from '../data/service';
+
 import { DELETE_CONTENT_ASSET, INSERT_CONTENT_ASSET } from './queries.gql';
+import { UploadAssetInfo } from './route';
+import AssetService from './service';
 
 const EXTENSIONS_TO_MIME_TYPE: { [ext: string]: string } = {
 	// images

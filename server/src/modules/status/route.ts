@@ -1,5 +1,6 @@
+import { GET, Path } from 'typescript-rest';
+
 import StatusController from './controller';
-import { Path, GET } from 'typescript-rest';
 import { IStatusResponse } from './types';
 
 @Path('/')

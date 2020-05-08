@@ -1,11 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
+
 import { Avo } from '@viaa/avo2-types';
+
+import { InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
+
 import {
 	ELASTIC_TO_READABLE_FILTER_NAMES,
 } from './constants';
-import { InternalServerError } from '../../shared/helpers/error';
-import { logger } from '../../shared/helpers/logger';
 
 interface ElasticsearchResponse {
 	took: number;

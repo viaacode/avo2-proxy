@@ -1,7 +1,9 @@
-import { Path, GET, QueryParam } from 'typescript-rest';
+import { GET, Path, QueryParam } from 'typescript-rest';
+
+import { InternalServerError } from '../../shared/helpers/error';
+
 import { CITIES } from './cities';
 import EducationOrganizationsController from './controller';
-import { InternalServerError } from '../../shared/helpers/error';
 
 export interface ClientEducationOrganization { // TODO move to typings repo
 	organizationId: string;

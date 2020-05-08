@@ -1,10 +1,10 @@
-import * as util from 'util';
 import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
+import * as util from 'util';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { logger } from '../../shared/helpers/logger';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import SearchController, { EsIndex } from './controller';

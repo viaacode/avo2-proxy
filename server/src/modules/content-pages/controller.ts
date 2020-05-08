@@ -1,11 +1,11 @@
-import _ from 'lodash';
 import * as promiseUtils from 'blend-promise-utils';
+import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
-import { logger } from '../../shared/helpers/logger';
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 import ContentPageService from './service';
 

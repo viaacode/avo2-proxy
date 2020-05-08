@@ -1,7 +1,8 @@
-import { curry } from 'ramda';
 import { default as Joi, ValidationResult } from '@hapi/joi';
+import { curry } from 'ramda';
 
 import { IInternalServerError, IValidationPreset } from '../../shared.types';
+
 import { ValidationError } from './error';
 
 export class Validator {

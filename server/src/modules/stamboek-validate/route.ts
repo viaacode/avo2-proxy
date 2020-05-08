@@ -1,8 +1,10 @@
-import { Context, Path, ServiceContext, QueryParam, GET } from 'typescript-rest';
-import StamboekController from './controller';
+import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
+
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
+
+import StamboekController from './controller';
 
 export type StamboekValidationStatuses = 'VALID' | 'ALREADY_IN_USE' | 'INVALID'; // TODO use typings version
 

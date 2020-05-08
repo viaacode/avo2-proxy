@@ -1,14 +1,14 @@
-import _ from 'lodash';
 import { Request } from 'express';
+import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
-
-import { IdpMap, IdpType } from './types';
-import { AuthService } from './service';
 import DataService from '../data/service';
+
 import { GET_IDP_MAP, INSERT_IDP_MAP, INSERT_PROFILE } from './queries.gql';
+import { AuthService } from './service';
+import { IdpMap, IdpType } from './types';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
 const AVO_USER_INFO_PATH = 'session.avoUserInfo';
