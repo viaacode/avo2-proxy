@@ -1,5 +1,5 @@
 import * as util from 'util';
-import { Context, Path, ServiceContext, POST, PreProcessor } from 'typescript-rest';
+import { Context, Path, ServiceContext, POST, GET, PreProcessor, QueryParam } from 'typescript-rest';
 
 import { logger } from '../../shared/helpers/logger';
 import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
@@ -30,7 +30,7 @@ export default class CampaignMonitorRoute {
 	context: ServiceContext;
 
 	/**
-	 * Send an email using the campaign monitor api
+	 * Send an email using the campaign monitor api.
 	 */
 	@Path('send')
 	@POST
@@ -63,7 +63,43 @@ export default class CampaignMonitorRoute {
 		} catch (err) {
 			const error = new InternalServerError('Failed during send in campaignMonitor route', err, { info });
 			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Retrieve newsletter preferences by user's email.
+	 */
+	@Path('preferences')
+	@GET
+	@PreProcessor(isAuthenticated)
+	async fetchNewsletterPreferences(
+		@QueryParam('email') email: string
+	) {
+		try {
+			return await CampaignMonitorController.fetchNewsletterPreferences(email);
+		} catch (err) {
+			const error = new InternalServerError('Failed during fetch in campaign monitor preferences route', err, { email });
+			logger.error(util.inspect(error));
+			throw error;
+		}
+	}
+
+	/**
+	 * Update newsletter preferences by user's email.
+	 */
+	@Path('preferences')
+	@POST
+	@PreProcessor(isAuthenticated)
+	async updateNewsletterPreferences(
+		body: any
+	) {
+		try {
+			return await CampaignMonitorController.updateNewsletterPreferences(body.name, body.email, body.preferences);
+		} catch (err) {
+			const error = new InternalServerError('Failed during update in campaign monitor preferences route', err, { email: body.email });
+			logger.error(util.inspect(error));
+			throw error;
 		}
 	}
 }
