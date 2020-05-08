@@ -1,20 +1,20 @@
-import * as util from 'util';
 import _ from 'lodash';
 import * as queryString from 'querystring';
-import { Context, Path, POST, Return, ServiceContext, QueryParam, GET } from 'typescript-rest';
+import { Context, GET, Path, POST, QueryParam, Return, ServiceContext } from 'typescript-rest';
+import * as util from 'util';
 
-import i18n from '../../../../shared/translations/i18n';
-import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
-import { logger } from '../../../../shared/helpers/logger';
-import { IdpHelper } from '../../idp-helper';
-import AuthController from '../../controller';
-import { LdapUser } from '../../types';
-import StamboekController from '../../../stamboek-validate/controller';
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
+import { logger } from '../../../../shared/helpers/logger';
+import i18n from '../../../../shared/translations/i18n';
+import StamboekController from '../../../stamboek-validate/controller';
+import AuthController from '../../controller';
+import { IdpHelper } from '../../idp-helper';
+import { LdapUser } from '../../types';
 
-import HetArchiefService, { SamlCallbackBody } from './service';
 import HetArchiefController from './controller';
+import HetArchiefService, { SamlCallbackBody } from './service';
 
 interface RelayState {
 	returnToUrl: string;

@@ -1,9 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import * as https from 'https';
+import util from 'util';
+
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import util from 'util';
-import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 export interface PlayerTicket {
 	jwt: string;

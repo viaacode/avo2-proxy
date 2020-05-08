@@ -5,8 +5,8 @@ import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
-import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
 import { ClientEducationOrganization } from '../education-organizations/route';
+import EducationOrganizationsService, { LdapEducationOrganization } from '../education-organizations/service';
 
 import {
 	GET_USER_GROUPS,

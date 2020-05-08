@@ -1,8 +1,8 @@
-import { Context, Path, ServiceContext, POST, PreProcessor, DELETE } from 'typescript-rest';
+import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
 
+import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError, ClientError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import AssetController from './controller';

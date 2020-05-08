@@ -1,4 +1,4 @@
-import { Path, GET, Context, ServiceContext, POST, PUT, DELETE } from 'typescript-rest';
+import { Context, DELETE, GET, Path, POST, PUT, ServiceContext } from 'typescript-rest';
 
 import { NotFoundError } from '../../shared/helpers/error';
 

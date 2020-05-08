@@ -1,10 +1,10 @@
-import axios from 'axios';
 import AWS, { AWSError, S3 } from 'aws-sdk';
+import axios from 'axios';
 import _ from 'lodash';
 
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 
 interface AssetTokenResponse {
 	token: string;

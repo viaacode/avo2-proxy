@@ -1,8 +1,10 @@
 import 'jest';
+
+import { Avo } from '@viaa/avo2-types';
+
+import { AGGS_PROPERTIES } from './constants';
 import aggregations from './fixtures/aggregations.json';
 import SearchService from './service';
-import { Avo } from '@viaa/avo2-types';
-import { AGGS_PROPERTIES } from './constants';
 
 describe('Search', () => {
 	it('should simplify aggregation object correctly', async () => {

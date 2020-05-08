@@ -1,9 +1,11 @@
-import { Context, Path, ServiceContext, QueryParam, GET, PreProcessor } from 'typescript-rest';
-import PlayerTicketController from './controller';
+import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
-import { logger } from '../../shared/helpers/logger';
+
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+
+import PlayerTicketController from './controller';
 
 const publicIp = require('public-ip');
 

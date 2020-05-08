@@ -1,19 +1,19 @@
-import * as queryString from 'querystring';
 import _ from 'lodash';
+import * as queryString from 'querystring';
+import { Context, GET, Path, PreProcessor, QueryParam, Return, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
-import { Context, Path, ServiceContext, GET, QueryParam, PreProcessor, Return } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { logger } from '../../shared/helpers/logger';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
-import i18n from '../../shared/translations/i18n';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
-
-import { IdpHelper } from './idp-helper';
-import AuthController from './controller';
-import { IdpType } from './types';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
+import { logger } from '../../shared/helpers/logger';
+import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import i18n from '../../shared/translations/i18n';
+
+import AuthController from './controller';
+import { IdpHelper } from './idp-helper';
+import { IdpType } from './types';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
 

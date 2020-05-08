@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
-import { IRequest, IResponse, INext, IInternalServerError } from '../../../shared/shared.types';
 import { logger } from '../../../shared/helpers/logger';
+import { IInternalServerError, INext, IRequest, IResponse } from '../../../shared/shared.types';
 
 export class ErrorMiddleware {
 	public static handleError(err: string | Error | IInternalServerError | null | undefined, req: IRequest, res: IResponse, next: INext): IResponse | void {

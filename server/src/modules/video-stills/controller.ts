@@ -1,10 +1,12 @@
-import VideoStillsService, { VideoStill } from './service';
-import DataService from '../data/service';
-import { GET_ITEMS_BY_IDS } from './queries.gql';
+import * as promiseUtils from 'blend-promise-utils';
 import * as _ from 'lodash';
+
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import * as promiseUtils from 'blend-promise-utils';
+import DataService from '../data/service';
+
+import { GET_ITEMS_BY_IDS } from './queries.gql';
+import VideoStillsService, { VideoStill } from './service';
 import { StillRequest } from './validation';
 
 export interface StillInfo { // TODO move this interface to types repo

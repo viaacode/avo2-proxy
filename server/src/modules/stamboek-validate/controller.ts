@@ -1,13 +1,14 @@
 import { Request } from 'express';
+import _ from 'lodash';
 
 import { InternalServerError } from '../../shared/helpers/error';
-import StamboekService from './service';
-import { AuthService } from '../auth/service';
 import { IdpHelper } from '../auth/idp-helper';
+import { AuthService } from '../auth/service';
 import DataService from '../data/service';
+
 import { GET_PROFILES_BY_STAMBOEK } from './queries.gql';
-import _ from 'lodash';
 import { StamboekValidationStatuses } from './route';
+import StamboekService from './service';
 
 interface GetProfilesByStamboekResponse {
 	data: {

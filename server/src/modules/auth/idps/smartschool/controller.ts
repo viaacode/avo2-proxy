@@ -1,18 +1,18 @@
-import _ from 'lodash';
 import { Request } from 'express';
+import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import DataService from '../../../data/service';
-import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID } from '../../queries.gql';
-import { IdpHelper } from '../../idp-helper';
-import { IdpType } from '../../types';
-import { AuthService } from '../../service';
-import AuthController from '../../controller';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
+import DataService from '../../../data/service';
+import AuthController from '../../controller';
+import { IdpHelper } from '../../idp-helper';
+import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID } from '../../queries.gql';
+import { AuthService } from '../../service';
+import { IdpType } from '../../types';
+import { BasicIdpUserInfo } from '../hetarchief/controller';
 
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
-import { BasicIdpUserInfo } from '../hetarchief/controller';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };

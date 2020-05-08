@@ -1,4 +1,5 @@
-import { Context, Path, ServiceContext, QueryParam, GET, Return } from 'typescript-rest';
+import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
+
 import { IdpHelper } from '../../idp-helper';
 
 @Path('/auth/viaa')

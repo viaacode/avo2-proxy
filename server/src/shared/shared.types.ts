@@ -1,9 +1,15 @@
-// Requests
 import {
+	Schema,
+	ValidationOptions,
+} from '@hapi/joi';
+import {
+	NextFunction,
 	Request,
 	Response,
-	NextFunction,
 } from 'express';
+import { ISwaggerBuildDefinitionModel } from 'swagger-express-ts/swagger.builder';
+
+import { ValidationError } from './helpers/validation/error';
 
 export interface IRequest extends Request {
 	data?: {
@@ -18,24 +24,12 @@ export interface IRequest extends Request {
 export type IResponse = Response;
 export type INext = NextFunction;
 
-// Validation
-import {
-	Schema,
-	ValidationOptions,
-} from '@hapi/joi';
-import { ValidationError } from './helpers/validation/error';
-
 export interface IValidationPreset {
 	schema: Schema;
 	options: ValidationOptions;
 }
 export type IValidationOrigin = 'body' | 'headers' | 'params' | 'query';
 export type IValidationError = ValidationError;
-
-// Error handling
-import { CustomValidationError } from './helpers/error';
-
-export type ICustomValidationError = CustomValidationError;
 
 export interface IInternalServerErrorDetail {
 	err: string;
@@ -70,11 +64,9 @@ export type IErrors =
 	IUnauthorizedError |
 	IForbiddenError |
 	INotFoundError |
-	IConflictError |
-	IInternalServerError;
+	IConflictError;
 
 // Swagger
-import { ISwaggerBuildDefinitionModel } from 'swagger-express-ts/swagger.builder';
 
 export interface ISwaggerModels {
 	[key: string]: ISwaggerBuildDefinitionModel;

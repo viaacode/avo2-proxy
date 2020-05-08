@@ -1,11 +1,12 @@
-import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
-import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import axios, { AxiosResponse } from 'axios';
-import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
-import convert = require('xml-js');
 import _ from 'lodash';
-import { IdpMetaData, LdapUser } from '../../types';
+import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
+import convert = require('xml-js');
+
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
+import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
+import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
+import { IdpMetaData, LdapUser } from '../../types';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;

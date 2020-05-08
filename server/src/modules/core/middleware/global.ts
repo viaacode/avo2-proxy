@@ -1,9 +1,11 @@
-import { Application } from 'express';
 import { default as bodyParser } from 'body-parser';
 import { default as cookieParser } from 'cookie-parser';
-import { default as helmet } from 'helmet';
-import session from '../../../shared/middleware/session';
+import { Application } from 'express';
 import useragent from 'express-useragent';
+import { default as helmet } from 'helmet';
+
+import session from '../../../shared/middleware/session';
+
 import cors from './cors';
 
 export class GlobalMiddleware {

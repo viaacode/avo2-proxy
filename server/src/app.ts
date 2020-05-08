@@ -1,52 +1,54 @@
-import { AddressInfo } from 'net';
 import {
-	default as express,
 	Application,
+	default as express,
+	NextFunction,
 	Request,
 	Response,
-	NextFunction,
 } from 'express';
 import * as http from 'http';
+import { AddressInfo } from 'net';
+import { Server } from 'typescript-rest';
 
 import { default as config } from './config';
-import { GlobalMiddleware } from './modules/core/middleware/global';
 import { IConfig } from './config/config.types';
 import { logger, logIfNotTestEnv } from './shared/helpers/logger';
-import { presets as corePresets } from './modules/core/helpers/presets';
 import { Validator } from './shared/helpers/validation';
-import { Server } from 'typescript-rest';
-import { ErrorMiddleware } from './modules/core/middleware/error';
-import OrganizationService from './modules/organization/service';
-import HetArchiefService from './modules/auth/idps/hetarchief/service';
-import SmartschoolService from './modules/auth/idps/smartschool/service';
-import KlascementService from './modules/auth/idps/klascement/service';
-import ZendeskService from './modules/zendesk/service';
 
+// tslint:disable
 // Routes
-import AuthRoute from './modules/auth/route';
-import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
-import SmartschoolRoute from './modules/auth/idps/smartschool/route';
-import KlascementRoute from './modules/auth/idps/klascement/route';
-import ZendeskRoute from './modules/zendesk/route';
 import AssetRoute from './modules/assets/route';
-import StatusRoute from './modules/status/route';
-import SearchRoute from './modules/search/route';
-import DataRoute from './modules/data/route';
-import ProfileRoute from './modules/profile/route';
-import NavigationItemsRoute from './modules/navigation-items/route';
-import ContentPagesRoute from './modules/content-pages/route';
-import PlayerTicketRoute from './modules/player-ticket/route';
-import StamboekRoute from './modules/stamboek-validate/route';
-import VideoStillsRoute from './modules/video-stills/route';
-import EventLoggingRoute from './modules/event-logging/route';
-import EducationOrganizationsRoute from './modules/education-organizations/route';
-import KlaarRoute from './modules/klaar/route';
+import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
+import HetArchiefService from './modules/auth/idps/hetarchief/service';
+import KlascementRoute from './modules/auth/idps/klascement/route';
+import KlascementService from './modules/auth/idps/klascement/service';
+import SmartschoolRoute from './modules/auth/idps/smartschool/route';
+import SmartschoolService from './modules/auth/idps/smartschool/service';
+import AuthRoute from './modules/auth/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/route';
-import TranslationsRoute from './modules/site-variables/route/translations.route';
+import ContentPagesRoute from './modules/content-pages/route';
+import { presets as corePresets } from './modules/core/helpers/presets';
+import { ErrorMiddleware } from './modules/core/middleware/error';
+import { GlobalMiddleware } from './modules/core/middleware/global';
+import DataRoute from './modules/data/route';
+import EducationOrganizationsRoute from './modules/education-organizations/route';
+import EventLoggingRoute from './modules/event-logging/route';
 import InteractiveTourRoute from './modules/interactive-tours/route';
+import KlaarRoute from './modules/klaar/route';
+import NavigationItemsRoute from './modules/navigation-items/route';
+import OrganizationService from './modules/organization/service';
+import PlayerTicketRoute from './modules/player-ticket/route';
+import ProfileRoute from './modules/profile/route';
+import SearchRoute from './modules/search/route';
+import TranslationsRoute from './modules/site-variables/route/translations.route';
+import StamboekRoute from './modules/stamboek-validate/route';
+import StatusRoute from './modules/status/route';
+import VideoStillsRoute from './modules/video-stills/route';
+import ZendeskRoute from './modules/zendesk/route';
+import ZendeskService from './modules/zendesk/service';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+// tslint:enable
 
 export class App {
 	public app: Application = express();

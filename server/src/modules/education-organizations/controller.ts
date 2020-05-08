@@ -1,7 +1,9 @@
-import { InternalServerError } from '../../shared/helpers/error';
-import EducationOrganizationsService, { LdapEducationOrganization, Unit } from './service';
 import _ from 'lodash';
+
+import { InternalServerError } from '../../shared/helpers/error';
+
 import { ClientEducationOrganization } from './route';
+import EducationOrganizationsService, { LdapEducationOrganization, Unit } from './service';
 
 export default class EducationOrganizationsController {
 

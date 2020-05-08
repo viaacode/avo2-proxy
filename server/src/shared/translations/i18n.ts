@@ -1,9 +1,8 @@
 import i18n from 'i18next';
 import { get } from 'lodash';
 
-import { logger } from '../helpers/logger';
-
 import TranslationsController from '../../modules/site-variables/controllers/translations.controller';
+import { logger } from '../helpers/logger';
 
 const retrieveBackendTranslations = async () => {
 	try {

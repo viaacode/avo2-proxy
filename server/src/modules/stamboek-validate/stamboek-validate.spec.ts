@@ -1,5 +1,6 @@
 import 'jest';
 import supertest from 'supertest';
+
 import { App } from '../../app';
 
 const api = supertest(new App(false).app);

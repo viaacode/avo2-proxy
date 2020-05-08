@@ -2,11 +2,11 @@ import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import cron from 'node-cron';
 
-import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import { InternalServerError } from '../../shared/helpers/error';
+import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 
-import { INSERT_ORGANIZATIONS, DELETE_ORGANIZATIONS } from './queries.gql';
+import { DELETE_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
 
 interface OrganizationResponse {
 	status: string;

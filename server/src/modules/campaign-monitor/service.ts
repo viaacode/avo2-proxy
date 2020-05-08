@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import { get } from 'lodash';
 
-import { CustomError } from '../../shared/helpers/error';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
-import { EmailInfo, templateIds } from './route';
+import { CustomError } from '../../shared/helpers/error';
+
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH } from './const';
+import { EmailInfo, templateIds } from './route';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',

@@ -1,6 +1,10 @@
 import _ from 'lodash';
-import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
+
 import { Avo } from '@viaa/avo2-types';
+
+import { InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
+
 import {
 	AggProps,
 	AGGS_PROPERTIES, MAX_COUNT_SEARCH_RESULTS,
@@ -8,8 +12,7 @@ import {
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from './constants';
-import { InternalServerError } from '../../shared/helpers/error';
-import { logger } from '../../shared/helpers/logger';
+import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 
 const removeAccents = require('remove-accents');
 

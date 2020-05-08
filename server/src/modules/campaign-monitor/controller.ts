@@ -1,8 +1,8 @@
 import { toPairs } from 'lodash';
 
-import CampaignMonitorService from './service';
-import { EmailInfo } from './route';
 import { NEWSLETTER_LISTS } from './const';
+import { EmailInfo } from './route';
+import CampaignMonitorService from './service';
 import { NewsletterKey, NewsletterPreferences } from './types';
 
 export default class CampaignMonitorController {

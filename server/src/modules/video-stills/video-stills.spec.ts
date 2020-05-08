@@ -1,6 +1,8 @@
 import 'jest';
 import supertest from 'supertest';
+
 import { App } from '../../app';
+
 import { StillRequest } from './validation';
 
 const api = supertest(new App(false).app);

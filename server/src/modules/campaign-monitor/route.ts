@@ -1,8 +1,8 @@
+import { Context, GET, Path, POST, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
-import { Context, Path, ServiceContext, POST, GET, PreProcessor, QueryParam } from 'typescript-rest';
 
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { InternalServerError, BadRequestError } from '../../shared/helpers/error';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
