@@ -3,7 +3,7 @@ import { toPairs } from 'lodash';
 import CampaignMonitorService from './service';
 import { EmailInfo } from './route';
 import { NEWSLETTER_LISTS } from './const';
-import { NewsletterList, NewsletterPreferences } from './types';
+import { NewsletterKey, NewsletterPreferences } from './types';
 
 export default class CampaignMonitorController {
 
@@ -30,10 +30,10 @@ export default class CampaignMonitorController {
 	 * @param preferences
 	 */
 	public static async updateNewsletterPreferences(name: string, email: string, preferences: NewsletterPreferences) {
-		const mappedPreferences = toPairs(preferences) as [NewsletterList, boolean][];
+		const mappedPreferences = toPairs(preferences) as [NewsletterKey, boolean][];
 
 		mappedPreferences.forEach((preference) => {
-			const key: NewsletterList = preference[0];
+			const key: NewsletterKey = preference[0];
 			const subscribed = preference[1];
 
 			if (subscribed) {

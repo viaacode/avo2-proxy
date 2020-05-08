@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
+import { get } from 'lodash';
 
 import { CustomError } from '../../shared/helpers/error';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { EmailInfo, templateIds } from './route';
-import { NEWSLETTER_LISTS, NEWSLETTER_LISTS_TO_FETCH } from './const';
-import { get } from 'lodash';
+import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH } from './const';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
@@ -48,10 +48,8 @@ export default class CampaignMonitorService {
 
 	public static async fetchNewsletterPreference(listId: string, email: string) {
 		try {
-			const createRequestUrl = (listId: string) => `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${email}`;
-
 			const response: AxiosResponse<any> = await axios(
-				createRequestUrl(listId),
+				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${email}`,
 				{
 					method: 'GET',
 					auth: {
@@ -76,7 +74,7 @@ export default class CampaignMonitorService {
 
 	public static async fetchNewsletterPreferences(email: string) {
 		try {
-			const responses = await axios.all(NEWSLETTER_LISTS_TO_FETCH.map((list => this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email))));
+			const responses = await axios.all(NEWSLETTERS_TO_FETCH.map((list => this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email))));
 
 			return {
 				newsletter: responses[0],

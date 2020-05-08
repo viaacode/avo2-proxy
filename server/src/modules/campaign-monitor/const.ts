@@ -1,6 +1,6 @@
 import { keys } from 'lodash';
 
-import { NewsletterList } from './types';
+import { NewsletterKey } from './types';
 
 export const NEWSLETTER_LISTS = {
 	newsletter: process.env.CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID,
@@ -8,4 +8,4 @@ export const NEWSLETTER_LISTS = {
 	workshop: process.env.CAMPAIGN_MONITOR_WORKSHOP_LIST_ID,
 };
 
-export const NEWSLETTER_LISTS_TO_FETCH = keys(NEWSLETTER_LISTS) as NewsletterList[];
+export const NEWSLETTERS_TO_FETCH = keys(NEWSLETTER_LISTS) as NewsletterKey[];

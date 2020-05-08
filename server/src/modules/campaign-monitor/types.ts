@@ -5,4 +5,4 @@ export interface NewsletterPreferences {
 	ambassador: boolean;
 }
 
-export type NewsletterList = keyof NewsletterPreferences;
+export type NewsletterKey = keyof NewsletterPreferences;
