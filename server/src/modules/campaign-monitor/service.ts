@@ -4,6 +4,7 @@ import { CustomError } from '../../shared/helpers/error';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { EmailInfo, templateIds } from './route';
 import { NEWSLETTER_LISTS, NEWSLETTER_LISTS_TO_FETCH } from './const';
+import { get } from 'lodash';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
@@ -45,31 +46,42 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async fetchNewsletterPreferences(email: string) {
+	public static async fetchNewsletterPreference(listId: string, email: string) {
 		try {
 			const createRequestUrl = (listId: string) => `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${email}`;
-			const createRequest = (listId: string) => {
-				return axios(
-					createRequestUrl(listId),
-					{
-						method: 'GET',
-						auth: {
-							username: process.env.CAMPAIGN_MONITOR_API_KEY,
-							password: '.',
-						},
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					}
-				);
-			};
 
-			const responses: AxiosResponse[] = await axios.all(NEWSLETTER_LISTS_TO_FETCH.map((list => createRequest(NEWSLETTER_LISTS[list]))));
+			const response: AxiosResponse<any> = await axios(
+				createRequestUrl(listId),
+				{
+					method: 'GET',
+					auth: {
+						username: process.env.CAMPAIGN_MONITOR_API_KEY,
+						password: '.',
+					},
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+
+			return get(response, 'data.State') === 'Active';
+		} catch (err) {
+			if (err.response.data.Code === 203) {
+				return false;
+			}
+
+			throw new CustomError('Failed to retrieve newsletter preference', err, { listId, email });
+		}
+	}
+
+	public static async fetchNewsletterPreferences(email: string) {
+		try {
+			const responses = await axios.all(NEWSLETTER_LISTS_TO_FETCH.map((list => this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email))));
 
 			return {
-				newsletter: responses[0].data.State === 'Active',
-				ambassador: responses[1].data.State === 'Active',
-				workshop: responses[2].data.State === 'Active',
+				newsletter: responses[0],
+				ambassador: responses[1],
+				workshop: responses[2],
 			};
 		} catch (err) {
 			throw new CustomError('Failed to retrieve newsletter preferences', err, { email });
