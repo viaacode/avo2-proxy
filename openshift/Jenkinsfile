@@ -1,9 +1,5 @@
-log/* import shared library */
+/* import shared library */
 @Library('jenkins-shared-libs')_
-def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/avo2-proxy/master/openshift/avo2-proxy-tmpl-dc.yaml'
-def TEMPLATENAME = 'avo2-proxy'
-def TARGET_NS = 'sc-avo2'
-def REGISTRY = 'docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud'
 def templateSelector = openshift.selector( "template", "avo2-proxy")
 // NOTE, the "pipeline" directive/closure from the declarative pipeline syntax needs to include, or be nested outside,
 // and "openshift" directive/closure from the OpenShift Client Plugin for Jenkins.  Otherwise, the declarative pipeline engine
