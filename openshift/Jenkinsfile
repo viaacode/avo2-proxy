@@ -21,13 +21,13 @@ pipeline {
         timeout(time: 120, unit: 'MINUTES')
     }
     environment {
-        ENDPOINT = 'https://c100-e.eu-de.containers.cloud.ibm.com:31240'
+        ENDPOINT = sh(returnStdout: true, script: 'echo https://c100-e.eu-de.containers.cloud.ibm.com:31240'
         VERSION = sh(returnStdout: true, script: "git describe --tags|| echo noTagFound").trim()
         shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
         BRANCH = sh(returnStdout: true, script: "git branch | grep '*' | cut -d ' ' -f2").trim()
-        REGISTRY = 'docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud'
-        OKD_REGISTRY = 'docker-registry-default.apps.do-prd-okp-m0.do.viaa.be'
-        OKD_ENDPOINT = 'https://do-prd-okp-m0.do.viaa.be:8443'
+        REGISTRY = sh(returnStdout: true, script: 'echo docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud'
+        OKD_REGISTRY = sh(returnStdout: true, script: 'echo docker-registry-default.apps.do-prd-okp-m0.do.viaa.be'
+        OKD_ENDPOINT = sh(returnStdout: true, script: 'echo https://do-prd-okp-m0.do.viaa.be:8443'
         //sh(returnStdout: true, script: 'git describe --tags')
     }
     stages {
@@ -36,10 +36,9 @@ pipeline {
                 script {
                     echo "Running login script for the external docker agent"
                     sh '''#!/bin/bash
-                    /usr/local/bin/agent-login.sh
-                    oc project sc-avo2
+                    login_oc.sh $ENDPOINT && oc project sc-avo2 &&
                     oc create -f openshift/proxy-cfg-tmpl.yaml 2>/dev/null || oc replace  -f openshift/proxy-cfg-tmpl.yaml
-                    echo template for config maps added , add to project per env,  and fillin the vars
+                    echo template for config map added 
                     '''
                     }
                     
@@ -89,9 +88,9 @@ pipeline {
                     script {sh '''#/bin/bash
                                 oc -n sc-avo2  tag  avo2-proxy:$VERSION  avo2-proxy:prd   
                             '''
-        } // script
-    } // steps
-} // stage
+                    } // script
+            } // steps
+        } // stage
     } // stages
     post {
         always {
