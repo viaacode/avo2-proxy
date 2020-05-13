@@ -1,5 +1,6 @@
 import connectRedis from 'connect-redis';
 import session from 'express-session';
+import cron from 'node-cron';
 import redis from 'redis';
 
 import { checkRequiredEnvs } from '../helpers/env-check';

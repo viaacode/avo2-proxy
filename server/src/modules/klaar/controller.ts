@@ -121,8 +121,8 @@ export default class KlaarController {
 			throw new CustomError('Failed to find klaar block on klaar page. This block is needed for the json date and subject', null, contentPage);
 		}
 		return {
-			subject: ((klaarBlocks[0].variables.componentState || []).map(klaarElem => klaarElem.title).join(' • ')),
-			date: klaarBlocks[0].variables.blockState.date,
+			subject: (_.get(klaarBlocks, '[0].variables.componentState.titles') || []).join(' • '),
+			date: _.get(klaarBlocks, '[0].variables.componentState.date'),
 		};
 	}
 
