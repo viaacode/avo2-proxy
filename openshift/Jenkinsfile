@@ -1,23 +1,30 @@
 /* import shared library */
 @Library('jenkins-shared-libs')_
-def TEMPLATEPATH = 'https://raw.githubusercontent.com/viaacode/avo2-proxy/master/openshift/avo2-proxy-tmpl-dc.yaml'
-def TEMPLATENAME = 'avo2-proxy'
-def TARGET_NS = 'sc-avo2'
 def templateSelector = openshift.selector( "template", "avo2-proxy")
 // NOTE, the "pipeline" directive/closure from the declarative pipeline syntax needs to include, or be nested outside,
 // and "openshift" directive/closure from the OpenShift Client Plugin for Jenkins.  Otherwise, the declarative pipeline engine
 // will not be fully engaged.
 pipeline {
     agent {
-      node {
+    node {
 
         // spin up a pod to run this build on
         label 'docker'
-      }
+    }
     }
     options {
         // set a timeout of 20 minutes for this pipeline
         timeout(time: 120, unit: 'MINUTES')
+    }
+    environment {
+        ENDPOINT = sh(returnStdout: true, script: 'echo https://c100-e.eu-de.containers.cloud.ibm.com:31240').trim()
+        VERSION = sh(returnStdout: true, script: "git describe --tags|| echo noTagFound").trim()
+        shortCommit = sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'").trim()
+        BRANCH = sh(returnStdout: true, script: "git branch | grep '*' | cut -d ' ' -f2").trim()
+        REGISTRY = sh(returnStdout: true, script: 'echo docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud').trim()
+        OKD_REGISTRY = sh(returnStdout: true, script: 'echo docker-registry-default.apps.do-prd-okp-m0.do.viaa.be').trim()
+        OKD_ENDPOINT = sh(returnStdout: true, script: 'echo https://do-prd-okp-m0.do.viaa.be:8443').trim()
+        //sh(returnStdout: true, script: 'git describe --tags')
     }
     stages {
         stage('preamble') {
@@ -25,9 +32,9 @@ pipeline {
                 script {
                     echo "Running login script for the external docker agent"
                     sh '''#!/bin/bash
-                    login_oc.sh https://do-prd-okp-m0.do.viaa.be:8443 && oc project sc-avo2 || exit 1
+                    login_oc.sh $ENDPOINT && oc project sc-avo2 &&
                     oc create -f openshift/proxy-cfg-tmpl.yaml 2>/dev/null || oc replace  -f openshift/proxy-cfg-tmpl.yaml
-                    echo template for config maps added , add to project per env,  and fillin the vars
+                    echo template for config map added 
                     '''
                     }
                     
@@ -37,54 +44,56 @@ pipeline {
         stage('Build Dockerfile in server dir') {
             steps {
                 script {sh'''#!/bin/bash
-		login_oc.sh https://do-prd-okp-m0.do.viaa.be:8443 && oc project sc-avo2 &&
-                cd server
-                 docker build  --no-cache \
-                 -t docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` . '''
+                    login_oc.sh $ENDPOINT && oc project sc-avo2 &&
+                    cd server &&
+                    docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION . '''
                 }//end script
                 script {sh'''#!/bin/bash
-                 docker push docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` '''
-                 sh'''#!/bin/bash
-                 oc tag sc-avo2/avo2-proxy:`git describe --tags` sc-avo2/avo2-proxy:int
-		 login_oc.sh https://c100-e.eu-de.containers.cloud.ibm.com:31240 && \
-		 docker tag docker-registry-default.apps.do-prd-okp-m0.do.viaa.be/sc-avo2/avo2-proxy:`git describe --tags` docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud/sc-avo2/avo2-proxy:`git describe --tags`  &&
-		 docker push docker-registry-default.meemoo-596946-2bc857e5f10eb63ab790a3a1d19a696c-0001.eu-de.containers.appdomain.cloud/sc-avo2/avo2-proxy:`git describe --tags` && 
-		 login_oc.sh https://do-prd-okp-m0.do.viaa.be:8443 && oc project sc-avo2 
-                '''
-
+                        echo PUSHING image $VERSION to $REGISTRY
+                        docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
+                        sh'''#!/bin/bash
+                        echo set INT tag to $VERSION
+                        oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:int
+                        '''
                         } // script
             } // steps
         } // stage
+        stage('INT TESTS') {
+            steps {
+                script {sh'''#!/bin/bash
+                        set +x
+                        echo tests NOT implemented atm ! .... Deploying staging on onprem OKD for manual inspect instead ....
+                        docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:qas  &&
+                        login_oc.sh $OKD_ENDPOINT 1> /dev/null && docker push  $OKD_REGISTRY/sc-avo2/avo2-proxy:qas 
+                       '''
+                    }//end script
+            } // steps
+        } // stage	 
         stage('Tag QAS') {
             steps {
                 script {sh'''#!/bin/bash
-                	  oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:qas
-			 '''
-              		  }//end script
+                        login_oc.sh $ENDPOINT 1>/dev/null
+                        oc -n sc-avo2 tag avo2-proxy:$VERSION avo2-proxy:qas
+                        '''
+                    }//end script
             } // steps
         } // stage	    
         stage('Tag prd') {
-     steps {
-      input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
-         script {
-             openshift.withCluster() {
-                 openshift.withProject("sc-avo2") {
-                      echo "Tag "
-                      sh '''#/bin/bash
-                      oc -n sc-avo2  tag  avo2-proxy:`git describe --tags`  avo2-proxy:prd   
-                      '''
-                 }
-             }
-         } // script
-     } // steps
- } // stage
+            steps {
+                    input message: "tag image for pod prd?: avo2-proxy:prd. Approve?", id: "approval"
+                    script {sh '''#/bin/bash
+                                oc -n sc-avo2  tag  avo2-proxy:$VERSION  avo2-proxy:prd   
+                            '''
+                    } // script
+            } // steps
+        } // stage
     } // stages
     post {
         always {
             script {
-               slackNotifier(currentBuild.currentResult)
+            slackNotifier(currentBuild.currentResult)
             }
-			cleanWs()
+            cleanWs()
         }
     }
 } // pipeline
