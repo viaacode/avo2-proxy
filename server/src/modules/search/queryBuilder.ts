@@ -113,6 +113,39 @@ export default class QueryBuilder {
 	}
 
 	/**
+	 * OR filter: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html
+	 * @param elasticKey
+	 * @param readableKey
+	 * @param values
+	 */
+	private static generateOrFilter(elasticKey: string, readableKey: string, values: string[]): any {
+		return {
+			terms: {
+				[elasticKey + this.suffix(readableKey as Avo.Search.FilterProp)]: values,
+			},
+		};
+	}
+
+	/**
+	 * AND filter: https://stackoverflow.com/a/52206289/373207
+	 * @param elasticKey
+	 * @param readableKey
+	 * @param values
+	 */
+	private static generateAndFilter(elasticKey: string, readableKey: string, values: string[]): any {
+		return {
+			bool: {
+				should: [values.map(value => ({
+					term: {
+						lom_keywords: value,
+					},
+				}))],
+				minimum_should_match : values.length,
+			},
+		};
+	}
+
+	/**
 	 * Creates the filter portion of the elsaticsearch query object
 	 * Containing the search terms and the checked filters
 	 * @param filters
@@ -157,11 +190,11 @@ export default class QueryBuilder {
 			if (_.isArray(value) && _.every(value, (val: any) => _.isString(val))) {
 				// Array of options
 				// TODO if only one option use "term" instead of "terms" (better efficiency for elasticsearch)
-				filterArray.push({
-					terms: {
-						[elasticKey + this.suffix(readableKey as Avo.Search.FilterProp)]: value,
-					},
-				});
+				if (readableKey === 'keyword') {
+					filterArray.push(this.generateAndFilter(elasticKey, readableKey, value));
+				} else {
+					filterArray.push(this.generateOrFilter(elasticKey, readableKey, value));
+				}
 			} else if (_.isPlainObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
 				// Date/number interval
 				const intervalValue = value as { gte?: string | number, lte?: string | number };
