@@ -170,7 +170,9 @@ export default class ContentPageController {
 				} as any,
 				view_counts_aggregate: {
 					aggregate: {
-						count: searchResult.views_count,
+						sum: {
+							count: searchResult.views_count,
+						},
 					},
 				},
 			} as Partial<Avo.Item.Item>;
@@ -205,7 +207,9 @@ export default class ContentPageController {
 			},
 			view_counts_aggregate: {
 				aggregate: {
-					count: searchResult.views_count,
+					sum: {
+						count: searchResult.views_count,
+					},
 				},
 			},
 		} as Partial<Avo.Collection.Collection>;
