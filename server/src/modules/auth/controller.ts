@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import _ from 'lodash';
+import moment from 'moment';
 import * as queryString from 'querystring';
 import { Return } from 'typescript-rest';
 
@@ -20,7 +21,7 @@ import { SmartschoolUserInfo } from './idps/smartschool/service';
 import ViaaController from './idps/viaa/controller';
 import { DELETE_IDP_MAPS, GET_NOTIFICATION, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import { LinkAccountInfo } from './route';
-import { IdpMap, IdpType } from './types';
+import { IdpType } from './types';
 
 interface IdpInterface {
 	controller: { isLoggedIn: (req: Request) => boolean };
@@ -65,12 +66,20 @@ export default class AuthController {
 			logger.info('check login: user is authenticated');
 			const userInfo = await IdpHelper.getUpdatedAvoUserInfoFromSession(req);
 			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo);
+			const now = moment();
 
 			return {
 				userInfo,
 				acceptedConditions,
 				message: 'LOGGED_IN',
-			} as any; // TODO remove cast once update to typings 2.14.0
+				sessionExpiresAt: now
+					.add(now.hours() < 5 ? 0 : 1, 'days')
+					.hours(5)
+					.minutes(0)
+					.seconds(0)
+					.milliseconds(0)
+					.toISOString(),
+			} as any; // TODO remove cast once update to typings 2.17.0
 		}
 		logger.info('check login: user is not authenticated');
 		return { message: 'LOGGED_OUT' };
