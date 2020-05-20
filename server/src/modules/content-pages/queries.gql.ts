@@ -40,10 +40,13 @@ export const GET_ITEM_TILE_BY_ID = `
 			title
 			type {
 				label
+				id
 			}
 			view_counts_aggregate {
 				aggregate {
-					count
+					sum {
+						count
+					}
 				}
 			}
 		}
@@ -58,6 +61,7 @@ export const GET_COLLECTION_TILE_BY_ID = `
 			thumbnail_path
 			type {
 				label
+				id
 			}
 			collection_fragments_aggregate {
 				aggregate {
@@ -66,7 +70,9 @@ export const GET_COLLECTION_TILE_BY_ID = `
 			}
 			view_counts_aggregate {
 				aggregate {
-					count
+					sum {
+						count
+					}
 				}
 			}
 		}
