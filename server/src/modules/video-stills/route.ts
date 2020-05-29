@@ -1,10 +1,9 @@
 import { ValidationResult } from '@hapi/joi';
-import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
+import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 
 import VideoStillsController, { StillInfo } from './controller';
 import { StillRequest, stillRequestValidation } from './validation';
@@ -19,7 +18,6 @@ export default class VideoStillsRoute {
 	 */
 	@Path('')
 	@POST
-	@PreProcessor(isAuthenticated)
 	async getVideoStills(stillRequests: StillRequest[]): Promise<StillInfo[]> {
 		// Check inputs
 		if (!stillRequests || !stillRequests.length) {
