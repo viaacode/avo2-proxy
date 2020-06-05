@@ -32,7 +32,8 @@ pipeline {
                 script {
                     echo "Running login script for the external docker agent"
                     sh '''#!/bin/bash
-                    login_oc.sh $ENDPOINT && oc project sc-avo2 &&
+                    set -x 
+                    login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
                     oc create -f openshift/proxy-cfg-tmpl.yaml 2>/dev/null || oc replace  -f openshift/proxy-cfg-tmpl.yaml
                     echo template for config map added 
                     '''
@@ -44,16 +45,20 @@ pipeline {
         stage('Build Dockerfile in server dir') {
             steps {
                 script {sh'''#!/bin/bash
-                    login_oc.sh $ENDPOINT && oc project sc-avo2 &&
+                    login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
                     cd server &&
-                    docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION . '''
+                    docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION . 
+                    docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
                 }//end script
                 script {sh'''#!/bin/bash
                         echo PUSHING image $VERSION to $REGISTRY
-                        docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
+                        docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION
+                        echo pushing image $VERSION $OKD_ENDPOINT
+                        login_oc.sh $OKD_ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 && docker push $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
                         sh'''#!/bin/bash
-                        echo set INT tag to $VERSION
+                        echo set INT and DEV tag to $VERSION
                         oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:int
+                        oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev
                         '''
                         } // script
             } // steps
@@ -61,10 +66,10 @@ pipeline {
         stage('INT TESTS') {
             steps {
                 script {sh'''#!/bin/bash
-                        set +x
-                        echo tests NOT implemented atm ! .... Deploying staging on onprem OKD for manual inspect instead ....
-                        docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:qas  &&
-                        login_oc.sh $OKD_ENDPOINT 1> /dev/null && docker push  $OKD_REGISTRY/sc-avo2/avo2-proxy:qas 
+                        set -x
+                        #echo tests NOT implemented atm ! .... Deploying staging on onprem OKD for manual inspect instead ....
+                        #docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:qas  &&
+                        #login_oc.sh $OKD_ENDPOINT 1> /dev/null && docker push  $OKD_REGISTRY/sc-avo2/avo2-proxy:qas 
                        '''
                     }//end script
             } // steps
@@ -72,7 +77,7 @@ pipeline {
         stage('Tag QAS') {
             steps {
                 script {sh'''#!/bin/bash
-                        login_oc.sh $ENDPOINT 1>/dev/null
+                        login_oc.sh $ENDPOINT  > /dev/null 2>&1 &&
                         oc -n sc-avo2 tag avo2-proxy:$VERSION avo2-proxy:qas
                         '''
                     }//end script
@@ -93,6 +98,10 @@ pipeline {
             script {
             slackNotifier(currentBuild.currentResult)
             }
+            sh '''#!/bin/bash
+            set +x
+            echo "cleaning docker images and containers"
+            docker image prune -f && docker container prune -f'''
             cleanWs()
         }
     }
