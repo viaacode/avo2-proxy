@@ -79,7 +79,7 @@ export default class AuthController {
 					.seconds(0)
 					.milliseconds(0)
 					.toISOString(),
-			} as any; // TODO remove cast once update to typings 2.17.0
+			};
 		}
 		logger.info('check login: user is not authenticated');
 		return { message: 'LOGGED_OUT' };
