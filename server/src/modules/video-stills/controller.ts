@@ -57,7 +57,7 @@ export default class VideoStillsController {
 
 			// Get first video still for each video after their startTime
 			return _.compact(allVideoStills.map((objectNameInfo: ObjectNameInfoAndStills): StillInfo | null => {
-				const firstVideoStill = _.find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime);
+				const firstVideoStill = _.find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime * 1000);
 				if (!firstVideoStill) {
 					return null;
 				}
