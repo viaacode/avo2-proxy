@@ -1,9 +1,12 @@
 import { ValidationErrorItem } from '@hapi/joi';
 import { pathOr } from 'ramda';
+import util from 'util';
 import { default as uuid } from 'uuid';
 
 import { default as config } from '../../config';
 import { IInternalServerErrorDetail, IValidationError } from '../shared.types';
+
+import { omitByDeep } from './omit-by-deep';
 
 export class CustomError {
 	public message: string;
@@ -34,16 +37,10 @@ export class CustomError {
 	}
 
 	public toString(): string {
-		return JSON.stringify(
-			this,
-			(key, value) => {
-				if (key === 'request') {
-					// Avoid huge request object in error json
-					return '[request]';
-				}
-				return value;
-			},
-			2);
+		return util.inspect(
+			omitByDeep(this, key => key === 'request'),
+			{ showHidden: false, depth: 20, colors: true, compact: false }
+		);
 	}
 }
 
@@ -124,7 +121,8 @@ export class GoneError extends ClientError {
 	public statusCode: number = 410;
 }
 
-export class ServerError extends CustomError {}
+export class ServerError extends CustomError {
+}
 
 export class InternalServerError extends ServerError {
 	// public message: string = 'Something went wrong';
