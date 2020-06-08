@@ -20,9 +20,9 @@ export interface MediaItemResponse { // TODO move to typings repo
 }
 
 export default class ContentPageController {
-	public static async getContentPageByPath(path: string, user: Avo.User.User | null): Promise<Avo.Content.Content | null> {
+	public static async getContentPageByPath(path: string, user: Avo.User.User | null): Promise<Avo.ContentPage.Page | null> {
 		try {
-			const contentPage: Avo.Content.Content | undefined = await ContentPageService.getContentBlockByPath(path);
+			const contentPage: Avo.ContentPage.Page | undefined = await ContentPageService.getContentBlockByPath(path);
 
 			const permissions = _.get(user, 'profile.permissions', []);
 			const profileId = _.get(user, 'profile.id', []);
@@ -69,7 +69,7 @@ export default class ContentPageController {
 		}
 	}
 
-	private static async resolveMediaTileItemsInPage(contentPage: Avo.Content.Content) {
+	private static async resolveMediaTileItemsInPage(contentPage: Avo.ContentPage.Page) {
 		const mediaGridBlocks = contentPage.contentBlockssBycontentId.filter(contentBlock =>
 			contentBlock.content_block_type === 'MEDIA_GRID');
 		if (mediaGridBlocks.length) {

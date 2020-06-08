@@ -82,7 +82,7 @@ export default class AuthController {
 			};
 		}
 		logger.info('check login: user is not authenticated');
-		return { message: 'LOGGED_OUT' };
+		return { message: 'LOGGED_OUT' } as any; // Remove after update typings to v2.20.0
 	}
 
 	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo: Avo.User.User): Promise<boolean> {

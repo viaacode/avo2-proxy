@@ -15,8 +15,8 @@ export default class ContentPagesRoute {
 
 	@Path('')
 	@GET
-	async getContentPageByPath(@QueryParam('path') path: string): Promise<Avo.Content.Content> {
-		let content: Avo.Content.Content = null;
+	async getContentPageByPath(@QueryParam('path') path: string): Promise<Avo.ContentPage.Page> {
+		let content: Avo.ContentPage.Page = null;
 		try {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 			content = await ContentPageController.getContentPageByPath(path, user);
