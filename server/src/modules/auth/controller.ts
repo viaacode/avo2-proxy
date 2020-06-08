@@ -79,10 +79,10 @@ export default class AuthController {
 					.seconds(0)
 					.milliseconds(0)
 					.toISOString(),
-			} as any; // TODO remove cast once update to typings 2.17.0
+			};
 		}
 		logger.info('check login: user is not authenticated');
-		return { message: 'LOGGED_OUT' };
+		return { message: 'LOGGED_OUT' } as any; // Remove after update typings to v2.20.0
 	}
 
 	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo: Avo.User.User): Promise<boolean> {

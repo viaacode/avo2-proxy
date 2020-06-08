@@ -1,19 +1,38 @@
 export const GET_CONTENT_PAGE_BY_PATH = `
 	query getContentPageByPath($path: String!) {
 		app_content(where: { path: { _eq: $path } }) {
-			thumbnail_path
-			title
 			content_type
 			content_width
 			created_at
 			depublish_at
 			description
+			seo_description
 			id
+			thumbnail_path
 			is_protected
 			is_public
-			publish_at
 			path
-			contentBlockssBycontentId {
+			profile {
+				user: usersByuserId {
+					first_name
+					last_name
+					role {
+						id
+						label
+					}
+				}
+			}
+			publish_at
+			title
+			updated_at
+			user_group_ids
+			content_content_labels {
+				content_label {
+					label
+					id
+				}
+			}
+			contentBlockssBycontentId(order_by: { position: asc }) {
 				content_block_type
 				content_id
 				created_at
@@ -26,7 +45,6 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 					value
 				}
 			}
-			user_group_ids
 		}
 	}
 `;

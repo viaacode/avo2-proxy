@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { get } from 'lodash';
+import * as querystring from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
@@ -48,9 +49,10 @@ export default class CampaignMonitorService {
 	}
 
 	public static async fetchNewsletterPreference(listId: string, email: string) {
+		let url: string;
 		try {
-			const response: AxiosResponse<any> = await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${email}`,
+			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${querystring.stringify({ email })}`;
+			const response: AxiosResponse<any> = await axios(url,
 				{
 					method: 'GET',
 					auth: {
@@ -69,7 +71,7 @@ export default class CampaignMonitorService {
 				return false;
 			}
 
-			throw new CustomError('Failed to retrieve newsletter preference', err, { listId, email });
+			throw new CustomError('Failed to retrieve newsletter preference', err, { listId, email, url });
 		}
 	}
 
