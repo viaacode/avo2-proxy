@@ -113,7 +113,7 @@ export default class KlaarController {
 		}
 	}
 
-	private static extractKlaarSubjectAndDate(contentPage: Avo.Content.Content): { date: string, subject: string } {
+	private static extractKlaarSubjectAndDate(contentPage: Avo.ContentPage.Page): { date: string, subject: string } {
 		const klaarBlocks: KlaarBlock[] = contentPage.contentBlockssBycontentId.filter(block =>
 			block.content_block_type === 'KLAAR'
 		) as unknown as KlaarBlock[];
@@ -130,7 +130,7 @@ export default class KlaarController {
 	 * Convert each block of type MEDIA_PLAYER_TITLE_TEXT_BUTTON to the correct json object for the klaar json
 	 * @param contentPage
 	 */
-	private static async extractMediaItems(contentPage: Avo.Content.Content): Promise<KlaarNewsletterItem[]> {
+	private static async extractMediaItems(contentPage: Avo.ContentPage.Page): Promise<KlaarNewsletterItem[]> {
 		try {
 			const itemBlocks: MediaPlayerTitleTextButtonBlock[] = contentPage.contentBlockssBycontentId.filter(block =>
 				block.content_block_type === 'MEDIA_PLAYER_TITLE_TEXT_BUTTON'

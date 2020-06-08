@@ -10,12 +10,12 @@ import { MediaItemResponse } from './controller';
 import { GET_COLLECTION_TILE_BY_ID, GET_CONTENT_PAGE_BY_PATH, GET_ITEM_TILE_BY_ID } from './queries.gql';
 
 export default class ContentPageService {
-	public static async getContentBlockByPath(path: string): Promise<Avo.Content.Content | null> {
+	public static async getContentBlockByPath(path: string): Promise<Avo.ContentPage.Page | null> {
 		try {
 			const response = await DataService.execute(GET_CONTENT_PAGE_BY_PATH, {
 				path,
 			});
-			const contentPage: Avo.Content.Content | undefined = _.get(response, 'data.app_content[0]');
+			const contentPage: Avo.ContentPage.Page | undefined = _.get(response, 'data.app_content[0]');
 
 			return contentPage || null;
 		} catch (err) {
