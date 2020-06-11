@@ -38,7 +38,7 @@ export default class HetArchiefRoute {
 	@GET
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
-			const returnTo = returnToUrl || `${process.env.CLIENT_HOST}/home`;
+			const returnTo = returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`;
 			if (AuthController.isAuthenticated(this.context.request)) {
 				return new Return.MovedTemporarily<void>(returnTo);
 			}

@@ -28,7 +28,7 @@ export default class SmartschoolRoute {
 	@GET
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
-			_.set(this.context, REDIRECT_URL_PATH, (returnToUrl || `${process.env.CLIENT_HOST}/home`));
+			_.set(this.context, REDIRECT_URL_PATH, (returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`));
 			const url = SmartschoolService.getRedirectUrlForCode();
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
