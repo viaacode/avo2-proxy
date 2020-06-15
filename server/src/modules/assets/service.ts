@@ -72,7 +72,7 @@ export default class AssetService {
 					AssetService.s3 = new AWS.S3({
 						accessKeyId: AssetService.token.token,
 						secretAccessKey: AssetService.token.secret,
-						endpoint: process.env.ASSET_SERVER_ENDPOINT,
+						endpoint: `${process.env.ASSET_SERVER_ENDPOINT}/${process.env.ASSET_SERVER_BUCKET_NAME}`,
 						s3BucketEndpoint: true,
 					});
 				} catch (err) {
