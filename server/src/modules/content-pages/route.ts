@@ -3,6 +3,7 @@ import { Context, GET, Path, POST, PreProcessor, QueryParam, ServiceContext } fr
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError, NotFoundError, UnauthorizedError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
@@ -21,7 +22,8 @@ export default class ContentPagesRoute {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 			content = await ContentPageController.getContentPageByPath(path, user);
 		} catch (err) {
-			throw new InternalServerError('Failed to get content page', err);
+			logger.error(new InternalServerError('Failed to get content page', err));
+			throw new InternalServerError('Failed to get content page', null, { path });
 		}
 		if (content) {
 			return content;
@@ -44,10 +46,12 @@ export default class ContentPagesRoute {
 	async resolveMediaGridBlocks(body: {
 		searchQuery: string | undefined;
 		searchQueryLimit: string | undefined;
-		mediaItems: {mediaItem: {
+		mediaItems: {
+			mediaItem: {
 				type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
 				value: string
-			}}[] | undefined;
+			}
+		}[] | undefined;
 	}): Promise<any[]> {
 		try {
 			const user = IdpHelper.getAvoUserInfoFromSession(this.context.request);

@@ -1,3 +1,4 @@
+import cors from 'cors';
 import _ from 'lodash';
 
 import { logger } from '../../../shared/helpers/logger';
@@ -11,6 +12,16 @@ export class ErrorMiddleware {
 		res.set('Content-Type', 'application/json');
 		res.status(_.get(err, 'statusCode', 500));
 		logger.error(JSON.stringify(err, null, 2));
+
+		cors({
+			origin: (origin, callback) => {
+				callback(null, true);
+			},
+			credentials: true,
+			allowedHeaders: 'X-Requested-With, Content-Type, authorization, Origin, Accept, cache-control',
+			methods: 'GET, POST, OPTIONS, PUT, DELETE',
+		})(req, res, next);
+
 		res.send(JSON.stringify(err, null, 2));
 	}
 }

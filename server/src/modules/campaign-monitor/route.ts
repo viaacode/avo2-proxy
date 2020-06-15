@@ -1,7 +1,6 @@
 import { Context, GET, Path, POST, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
-import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
@@ -37,7 +36,7 @@ export default class CampaignMonitorRoute {
 	@PreProcessor(isAuthenticated)
 	async send(
 		info: EmailInfo
-	): Promise<void> {
+	): Promise<void | BadRequestError> {
 		// Check inputs
 		if (!info || !info.template || !info.to) {
 			throw new BadRequestError('body with templateId and to properties is required');
@@ -48,7 +47,7 @@ export default class CampaignMonitorRoute {
 
 		const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 		if (!avoUser) {
-			throw new InternalServerError('To send emails you need to have an active session with the server', null, { avoUser });
+			throw new BadRequestError('To send emails you need to have an active session with the server', null, { avoUser });
 		}
 		const username = `${avoUser.first_name} ${avoUser.last_name}`;
 
@@ -62,8 +61,8 @@ export default class CampaignMonitorRoute {
 			});
 		} catch (err) {
 			const error = new InternalServerError('Failed during send in campaignMonitor route', err, { info });
-			logger.error(util.inspect(error));
-			throw error;
+			logger.error(error);
+			throw new ClientError('Something failed during the request to campaign monitor', null, { info });
 		}
 	}
 
@@ -80,7 +79,7 @@ export default class CampaignMonitorRoute {
 			return await CampaignMonitorController.fetchNewsletterPreferences(email);
 		} catch (err) {
 			const error = new InternalServerError('Failed during fetch in campaign monitor preferences route', err, { email });
-			logger.error(util.inspect(error));
+			logger.error(error);
 			throw error;
 		}
 	}
@@ -98,7 +97,7 @@ export default class CampaignMonitorRoute {
 			return await CampaignMonitorController.updateNewsletterPreferences(body.name, body.email, body.preferences);
 		} catch (err) {
 			const error = new InternalServerError('Failed during update in campaign monitor preferences route', err, { email: body.email });
-			logger.error(util.inspect(error));
+			logger.error(error);
 			throw error;
 		}
 	}

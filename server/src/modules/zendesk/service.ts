@@ -2,7 +2,6 @@ import axios from 'axios';
 import _ from 'lodash';
 import zendesk, { Client, Tickets } from 'node-zendesk';
 import * as queryString from 'querystring';
-import * as util from 'util';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, CustomError, ExternalServerError } from '../../shared/helpers/error';
@@ -34,7 +33,7 @@ export default class ZendeskService {
 				});
 			} catch (err) {
 				const error = new ExternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
-				logger.error(util.inspect(error));
+				logger.error(error);
 				reject(error);
 			}
 		});
@@ -88,7 +87,7 @@ export default class ZendeskService {
 					fileInfo,
 					startOfFile: fileInfo.base64.substring(0, 50),
 				});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			throw error;
 		}
 	}

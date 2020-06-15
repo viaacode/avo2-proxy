@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 import getUuid from 'uuid/v1';
 
 import { InternalServerError } from '../../../../shared/helpers/error';
@@ -32,7 +31,7 @@ export default class KlascementRoute {
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-inloggen-met-klascement'),
 				'alert-triangle',
@@ -73,7 +72,7 @@ export default class KlascementRoute {
 			return new Return.MovedTemporarily(redirectUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-na-het-inloggen-met-klascement'),
 				'alert-triangle',
@@ -91,7 +90,7 @@ export default class KlascementRoute {
 			return new Return.MovedTemporarily(returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during klascement/logout route', err, { returnToUrl });
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-uitloggen-met-klascement'),
 				'alert-triangle',

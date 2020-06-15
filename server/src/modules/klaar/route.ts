@@ -1,6 +1,7 @@
 import { GET, Path } from 'typescript-rest';
 
 import { InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 import KlaarController from './controller';
 
@@ -15,7 +16,9 @@ export default class KlaarRoute {
 		try {
 			return await KlaarController.getKlaarJson();
 		} catch (err) {
-			throw new InternalServerError('Failed to generate klaar newsletter json', err);
+			const error = new InternalServerError('Failed to generate klaar newsletter json', err);
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

@@ -1,10 +1,8 @@
 import { Tickets } from 'node-zendesk';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { UploadAssetInfo } from '../assets/route';
 
 import ZendeskController from './controller';
 
@@ -37,8 +35,8 @@ export default class ZendeskRoute {
 			return await ZendeskController.createTicket(ticket);
 		} catch (err) {
 			const error = new InternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		}
 	}
 
@@ -59,8 +57,8 @@ export default class ZendeskRoute {
 			return await ZendeskController.uploadAttachment(fileInfo);
 		} catch (err) {
 			const error = new InternalServerError('Failed to upload file to the zendesk api', err, { fileInfo });
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		}
 	}
 }

@@ -23,14 +23,7 @@ const WHITE_LIST_DOMAINS = [
 export default function (req: Request, res: Response, next: NextFunction) {
 	cors({
 		origin: (origin, callback) => {
-			// logger.info('request from: ', origin);
-			// if (WHITE_LIST_DOMAINS.indexOf(origin) !== -1 ||
-			// 	((!origin || origin === 'null' || origin === 'undefined') && (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development'))) {
-				callback(null, true);
-			// } else {
-			// 	logger.info('            : declined');
-			// 	callback(new Error(`Domain: "${origin}" has not been whitelisted`));
-			// }
+			callback(null, true);
 		},
 		credentials: true,
 		allowedHeaders: 'X-Requested-With, Content-Type, authorization, Origin, Accept, cache-control',
