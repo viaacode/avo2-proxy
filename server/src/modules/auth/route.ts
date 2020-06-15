@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import * as queryString from 'querystring';
 import { Context, GET, Path, PreProcessor, QueryParam, Return, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -34,7 +33,7 @@ export default class AuthRoute {
 			return await AuthController.getLoginResponse(this.context.request);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			throw error;
 		}
 	}
@@ -58,7 +57,7 @@ export default class AuthRoute {
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/route___er-ging-iets-mis-tijdens-het-uitloggen'),
 				'alert-triangle',

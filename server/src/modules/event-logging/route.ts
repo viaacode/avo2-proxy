@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { ClientEvent } from '@viaa/avo2-types/types/event-logging';
 
@@ -32,8 +31,8 @@ export default class EventLoggingRoute {
 			logger.info('event inserted');
 		}).catch((err) => {
 			const error = new InternalServerError('Failed during insert event route', err, {});
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		});
 		return; // Return before event is inserted, since we do not want to hold up the client if the event fails to be inserted
 	}

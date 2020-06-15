@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -36,7 +35,7 @@ export default class AssetRoute {
 	@PreProcessor(isAuthenticated)
 	async uploadAsset(
 		assetInfo: UploadAssetInfo
-	): Promise<{ url: string }> {
+	): Promise<{ url: string } | BadRequestError> {
 		if (!assetInfo || !assetInfo.filename || !assetInfo.content || !assetInfo.type) {
 			throw new BadRequestError('the body must contain the filename, content and type (' +
 				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\'');
@@ -48,20 +47,18 @@ export default class AssetRoute {
 			};
 		} catch (err) {
 			if (err instanceof ClientError) {
-				// TODO make global error handler that omits stacktraces if client error
 				throw new ClientError('Failed to upload file', err, {});
-			} else {
-				const error = new InternalServerError(
-					'Failed to upload file to asset server',
-					err,
-					{
-						...assetInfo,
-						content: _.get(assetInfo, 'content', '').substring(0, 50),
-					}
-				);
-				logger.error(util.inspect(error));
-				throw util.inspect(error);
 			}
+			const error = new InternalServerError(
+				'Failed to upload file to asset server',
+				err,
+				{
+					...assetInfo,
+					content: _.get(assetInfo, 'content', '').substring(0, 50),
+				}
+			);
+			logger.error(error);
+			throw error;
 		}
 	}
 
@@ -73,18 +70,18 @@ export default class AssetRoute {
 	@PreProcessor(isAuthenticated)
 	async deleteAsset(
 		body: { url: string }
-	): Promise<{ status: 'deleted' }> {
+	): Promise<{ status: 'deleted' } | BadRequestError> {
 		if (!body || !body.url) {
 			throw new BadRequestError('the body must contain the url of the to-be-deleted asset  {url: string}');
 		}
 
 		try {
 			await AssetController.delete(body.url);
-			return { status: 'deleted' };
+			throw { status: 'deleted' };
 		} catch (err) {
 			const error = new InternalServerError('Failed to delete asset file', err, { body });
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		}
 	}
 }

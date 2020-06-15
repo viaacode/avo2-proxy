@@ -1,6 +1,5 @@
 import { ValidationResult } from '@hapi/joi';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -37,8 +36,8 @@ export default class VideoStillsRoute {
 			return await VideoStillsController.getFirstVideoStills(stillRequests);
 		} catch (err) {
 			const error = new InternalServerError('Failed during get video stills route', err, { stillRequests });
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		}
 	}
 }

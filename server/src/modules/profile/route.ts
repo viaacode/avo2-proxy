@@ -3,6 +3,7 @@ import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-re
 import { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
@@ -32,7 +33,9 @@ export default class ProfileRoute {
 			}
 			await ProfileController.updateProfile(user.profile, variables);
 		} catch (err) {
-			throw new InternalServerError('Failed to update profile', err);
+			const error = new InternalServerError('Failed to update profile', err);
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

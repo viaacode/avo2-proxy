@@ -1,5 +1,4 @@
 import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -39,8 +38,8 @@ export default class StamboekRoute {
 
 		} catch (err) {
 			const error = new InternalServerError('Failed during validate stamboek route', err, { stamboekNumber });
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		}
 	}
 }
