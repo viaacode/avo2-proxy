@@ -1,6 +1,7 @@
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
-import { InternalServerError } from '../../shared/helpers/error';
+import { ClientError, InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { isAuthenticated } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
@@ -32,7 +33,8 @@ export default class DataRoute {
 				IdpHelper.getAvoUserInfoFromSession(this.context.request)
 			);
 		} catch (err) {
-			throw new InternalServerError('Failed to get data from graphql', err, { ...body });
+			logger.error(new InternalServerError('Failed to get data from graphql', err, { ...body }));
+			throw new ClientError('Something failed while making the request to the database');
 		}
 	}
 }

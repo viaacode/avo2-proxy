@@ -4,6 +4,7 @@ import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest'
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { IdpHelper } from '../auth/idp-helper';
 
 import InteractiveTourController from './controller';
@@ -19,7 +20,9 @@ export default class InteractiveTourRoute {
 		try {
 			return await InteractiveTourController.getInteractiveTourRouteIds();
 		} catch (err) {
-			throw new InternalServerError('Failed to get interactive tour route ids', err);
+			const error = new InternalServerError('Failed to get interactive tour route ids', err);
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 
@@ -30,7 +33,9 @@ export default class InteractiveTourRoute {
 			const user = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 			return await InteractiveTourController.getInteractiveTour(routeId, _.get(user, 'profile.id'));
 		} catch (err) {
-			throw new InternalServerError('Failed to get interactive tour by routeId', err, { routeId });
+			const error = new InternalServerError('Failed to get interactive tour by routeId', err, { routeId });
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

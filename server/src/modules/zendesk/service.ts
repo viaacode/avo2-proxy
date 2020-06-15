@@ -2,7 +2,6 @@ import axios from 'axios';
 import _ from 'lodash';
 import zendesk, { Client, Tickets } from 'node-zendesk';
 import * as queryString from 'querystring';
-import * as util from 'util';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, CustomError, ExternalServerError } from '../../shared/helpers/error';
@@ -34,7 +33,7 @@ export default class ZendeskService {
 				});
 			} catch (err) {
 				const error = new ExternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
-				logger.error(util.inspect(error));
+				logger.error(error);
 				reject(error);
 			}
 		});
@@ -45,9 +44,7 @@ export default class ZendeskService {
 			const base64Code = (fileInfo.base64.split(';base64,').pop() || '').trim();
 			if (!base64Code) {
 				throw new BadRequestError(
-					'Failed to upload file because the base64 code was invalid',
-					null,
-					{ base64String: fileInfo.base64 }
+					'Failed to upload file because the base64 code was invalid'
 				);
 			}
 			const buffer = new Buffer(base64Code, 'base64');
@@ -86,8 +83,11 @@ export default class ZendeskService {
 			return attachmentInfo;
 		} catch (err) {
 			const error = new ExternalServerError(
-				'Failed to upload file to zendesk attachment api', err, { fileInfo });
-			logger.error(util.inspect(error));
+				'Failed to upload file to zendesk attachment api', err, {
+					fileInfo,
+					startOfFile: fileInfo.base64.substring(0, 50),
+				});
+			logger.error(error);
 			throw error;
 		}
 	}

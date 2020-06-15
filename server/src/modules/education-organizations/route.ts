@@ -1,6 +1,6 @@
 import { GET, Path, QueryParam } from 'typescript-rest';
 
-import { InternalServerError } from '../../shared/helpers/error';
+import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 
 import { CITIES } from './cities';
 import EducationOrganizationsController from './controller';
@@ -26,7 +26,7 @@ export default class EducationOrganizationsRoute {
 	@GET
 	async getOrganizationsByCity(@QueryParam('city') city: string, @QueryParam('zipCode') zipCode: string): Promise<ClientEducationOrganization[]> {
 		if (!zipCode && !city) {
-			throw new InternalServerError('Failed to get organizations because neither the city nor the zipCode queryParams were provided');
+			throw new BadRequestError('Failed to get organizations because neither the city nor the zipCode queryParams were provided');
 		}
 		return await EducationOrganizationsController.getOrganizations(city, zipCode);
 	}

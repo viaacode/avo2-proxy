@@ -72,7 +72,7 @@ export default class AssetService {
 					AssetService.s3 = new AWS.S3({
 						accessKeyId: AssetService.token.token,
 						secretAccessKey: AssetService.token.secret,
-						endpoint: 'https://assets-qas.hetarchief.be/avo2',
+						endpoint: `${process.env.ASSET_SERVER_ENDPOINT}/${process.env.ASSET_SERVER_BUCKET_NAME}`,
 						s3BucketEndpoint: true,
 					});
 				} catch (err) {
@@ -96,7 +96,7 @@ export default class AssetService {
 
 				const base64Code = (base64String.split(';base64,').pop() || '').trim();
 				if (!base64Code) {
-					throw new BadRequestError('Failed to upload file because the base64 code was invalid', null, { base64String });
+					throw new BadRequestError('Failed to upload file because the base64 code was invalid', null);
 				}
 				const buffer = new Buffer(base64Code, 'base64');
 				const s3Client: S3 = await this.getS3Client();
@@ -110,12 +110,7 @@ export default class AssetService {
 					if (err) {
 						const error = new ExternalServerError(
 							'Failed to upload asset to the s3 asset service',
-							err,
-							{
-								key,
-								base64String,
-								mimeType,
-							});
+							err);
 						logger.error(error);
 						reject(error);
 					} else {
@@ -128,8 +123,8 @@ export default class AssetService {
 					err,
 					{
 						key,
-						base64String,
 						mimeType,
+						startOfFile: base64String.substring(0, 50),
 					});
 				logger.error(error);
 				reject(error);

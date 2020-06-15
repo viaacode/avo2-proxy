@@ -1,6 +1,7 @@
 import { Context, GET, Path, ServiceContext } from 'typescript-rest';
 
 import { InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 
 import NavigationItemsController from './controller';
 
@@ -18,7 +19,9 @@ export default class NavigationItemsRoute {
 		try {
 			return await NavigationItemsController.getNavigationItems(this.context.request);
 		} catch (err) {
-			throw new InternalServerError('Failed to get navigation items', err);
+			const error = new InternalServerError('Failed to get navigation items', err);
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

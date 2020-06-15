@@ -1,5 +1,4 @@
 import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
-import * as util from 'util';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -24,7 +23,7 @@ export default class SearchRoute {
 			return await SearchController.search(searchRequest);
 		} catch (err) {
 			const error = new InternalServerError('failed during search route', err, { ...searchRequest });
-			logger.error(util.inspect(error));
+			logger.error(error);
 			throw error;
 		}
 	}
@@ -44,7 +43,7 @@ export default class SearchRoute {
 			return await SearchController.getRelatedItems(itemId, type as any, limit); // TODO remove cast after update to typings v2.14.0
 		} catch (err) {
 			const error = new InternalServerError('failed during search/related route', err, { itemId, type, limit });
-			logger.error(util.inspect(error));
+			logger.error(error);
 			throw error;
 		}
 	}

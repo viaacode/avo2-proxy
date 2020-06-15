@@ -1,6 +1,5 @@
 import memoize from 'memoizee';
 import { GET, Path } from 'typescript-rest';
-import * as util from 'util';
 
 import { InternalServerError } from '../../../shared/helpers/error';
 import { logger } from '../../../shared/helpers/logger';
@@ -20,8 +19,8 @@ export default class TranslationsRoute {
 				'Failed to generate front-end translations json',
 				err
 			);
-			logger.error(util.inspect(error));
-			throw error;
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

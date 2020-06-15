@@ -1,5 +1,4 @@
 import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -35,8 +34,8 @@ export default class PlayerTicketRoute {
 			);
 		} catch (err) {
 			const error = new InternalServerError('Failed during get player token route', err, {});
-			logger.error(util.inspect(error));
-			throw util.inspect(error);
+			logger.error(error);
+			throw error;
 		}
 	}
 

@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import * as queryString from 'querystring';
 import { Context, GET, Path, POST, QueryParam, Return, ServiceContext } from 'typescript-rest';
-import * as util from 'util';
 
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
@@ -46,7 +45,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'),
 				'alert-triangle',
@@ -131,7 +130,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-inloggen'),
 				'alert-triangle',
@@ -167,7 +166,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'),
 				'alert-triangle',
@@ -189,7 +188,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, { relayState: response.RelayState });
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
 				'alert-triangle',
@@ -221,7 +220,7 @@ export default class HetArchiefRoute {
 			})}`);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'),
 				'alert-triangle',
@@ -250,7 +249,7 @@ export default class HetArchiefRoute {
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth verify email callback route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'),
 				'alert-triangle',
@@ -321,7 +320,7 @@ export default class HetArchiefRoute {
 			);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
-			logger.error(util.inspect(error));
+			logger.error(error);
 			if (JSON.stringify(err).includes('Failed to create user because an avo user with this email address already exists')) {
 				return redirectToClientErrorPage(
 					i18n.t('modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'),
