@@ -37,8 +37,8 @@ export class CustomError {
 	}
 
 	public toString(): string {
-		return
-			omitByDeep(this, key => key === 'request',
+		return util.inspect(
+			omitByDeep(this, key => key === 'request'),
 			{ showHidden: false, depth: 20, colors: true, compact: false }
 		);
 	}
