@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 import * as util from 'util';
 
@@ -50,7 +51,14 @@ export default class AssetRoute {
 				// TODO make global error handler that omits stacktraces if client error
 				throw new ClientError('Failed to upload file', err, {});
 			} else {
-				const error = new InternalServerError('Failed to upload file to asset server', err, { assetInfo });
+				const error = new InternalServerError(
+					'Failed to upload file to asset server',
+					err,
+					{
+						...assetInfo,
+						content: _.get(assetInfo, 'content', '').substring(0, 50),
+					}
+				);
 				logger.error(util.inspect(error));
 				throw util.inspect(error);
 			}
