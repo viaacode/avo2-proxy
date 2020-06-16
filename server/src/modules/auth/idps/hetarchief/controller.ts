@@ -7,6 +7,7 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import DataService from '../../../data/service';
+import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
 import { IdpHelper } from '../../idp-helper';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
@@ -193,6 +194,7 @@ export default class HetArchiefController {
 		// Remove the user groups that are managed by avo without a corresponding role in ldap
 		// eg: lesgever secundair, student lesgever secundair
 		const avoUserGroupsFiltered = avoUserGroups.filter(ug => ug.ldap_role !== null);
+		const avoUserGroupIdsOther = avoUserGroups.filter(ug => ug.ldap_role === null).map(ug => ug.id);
 
 		// Update user groups:
 		const ldapUserGroupIds = _.uniq(ldapUserGroups.map(ug => ug.id));
@@ -215,6 +217,12 @@ export default class HetArchiefController {
 				AuthService.removeUserGroupsFromProfile(deletedUserGroupIds, profileId),
 			]);
 		}
+
+		await ProfileController.updateUserGroupsSecondaryEducation(
+			_.uniq([...ldapUserGroupIds, ...avoUserGroupIdsOther]),
+			profileId,
+			_.get(avoUser, 'profile.educationLevels', [])
+		);
 
 		return !!addedUserGroupIds.length || !!deletedUserGroupIds.length;
 	}
