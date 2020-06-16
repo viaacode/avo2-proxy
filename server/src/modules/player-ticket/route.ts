@@ -2,7 +2,7 @@ import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'ty
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
 import PlayerTicketController from './controller';
 
@@ -18,7 +18,7 @@ export default class PlayerTicketRoute {
 	 */
 	@Path('')
 	@GET
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async getPlayableUrl(
 		@QueryParam('externalId') externalId: string,
 	): Promise<any> {
