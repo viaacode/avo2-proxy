@@ -4,7 +4,7 @@ import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError, NotFoundError, UnauthorizedError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
@@ -42,7 +42,7 @@ export default class ContentPagesRoute {
 	 */
 	@Path('')
 	@POST
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async resolveMediaGridBlocks(body: {
 		searchQuery: string | undefined;
 		searchQueryLimit: string | undefined;

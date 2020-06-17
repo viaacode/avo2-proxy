@@ -6,7 +6,7 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 
-import { GET_IDP_MAP, INSERT_IDP_MAP, INSERT_PROFILE } from './queries.gql';
+import { GET_IDP_MAP, INSERT_IDP_MAP } from './queries.gql';
 import { AuthService } from './service';
 import { IdpMap, IdpType } from './types';
 
@@ -35,7 +35,7 @@ export class IdpHelper {
 	}
 
 	public static clearAllIdpUserInfosFromSession(request: Express.Request) {
-		const idpTypes: IdpType[] = ['HETARCHIEF', 'VIAA', 'SMARTSCHOOL', 'KLASCEMENT'];
+		const idpTypes: IdpType[] = ['HETARCHIEF', 'SMARTSCHOOL', 'KLASCEMENT'];
 		idpTypes.forEach((idpType: IdpType) => this.setIdpUserInfoOnSession(request, null, idpType));
 	}
 

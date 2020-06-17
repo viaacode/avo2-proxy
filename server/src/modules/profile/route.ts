@@ -4,7 +4,7 @@ import { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
 import ProfileController, { UpdateProfileValues } from './controller';
@@ -21,7 +21,7 @@ export default class ProfileRoute {
 	 */
 	@Path('')
 	@POST
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async updateProfile(variables: UpdateProfileValues): Promise<any> {
 		try {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(this.context.request);

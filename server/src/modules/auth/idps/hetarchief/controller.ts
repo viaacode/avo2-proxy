@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { Request } from 'express';
 import _ from 'lodash';
 
@@ -11,7 +10,7 @@ import AuthController from '../../controller';
 import { IdpHelper } from '../../idp-helper';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
 import { AuthService } from '../../service';
-import { IdpType, LdapUser, UserGroup } from '../../types';
+import { LdapUser, UserGroup } from '../../types';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
@@ -21,36 +20,6 @@ export interface BasicIdpUserInfo {
 }
 
 export default class HetArchiefController {
-	public static isLoggedIn(request: Request): boolean {
-		const idpType: IdpType | null = IdpHelper.getIdpTypeFromSession(request);
-		if (!idpType) {
-			return false;
-		}
-		if (idpType !== 'HETARCHIEF') {
-			return false;
-		}
-
-		// Check if ldap user object is present on session
-		const idpUserInfo: LdapUser | null = IdpHelper.getIdpUserInfoFromSession(request);
-		if (!idpUserInfo) {
-			return false;
-		}
-		// Check if the ldap user is expired
-		const ldapExpireOn: number = new Date(_.get(idpUserInfo, 'session_not_on_or_after', 0)).getTime();
-		if (Date.now() > ldapExpireOn) {
-			return false;
-		}
-
-		// Check if ldap user has access to avo
-		if (!_.get(idpUserInfo, 'attributes.apps', []).includes('avo')) {
-			return false;
-		}
-
-		// Check if avo user is present on session
-		const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
-		return !!avoUserInfo;
-	}
-
 	public static async getAvoUserInfoFromDatabaseByEmail(ldapUserInfo: LdapUser): Promise<Avo.User.User> {
 		const email = ldapUserInfo.name_id;
 		return await AuthService.getAvoUserInfoByEmail(email);

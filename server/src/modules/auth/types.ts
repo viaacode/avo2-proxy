@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export interface IdpMap {
 	id: number;
 	local_user_id: string; // uuid
@@ -108,7 +110,7 @@ export interface Profile {
 	}[];
 }
 
-export type IdpType = 'HETARCHIEF' | 'VIAA' | 'SMARTSCHOOL' | 'KLASCEMENT'; // TODO switch to typings library
+export type IdpType = 'HETARCHIEF' | 'SMARTSCHOOL' | 'KLASCEMENT'; // TODO switch to typings library
 
 export interface IdpMetaData {
 	'md:EntityDescriptor': {
@@ -174,4 +176,11 @@ export interface UserGroup {
 	label: string;
 	id: number;
 	ldap_role: string | null;
+}
+
+export interface IdpInterface {
+	isLoggedIn: (req: Request) => boolean;
+	logoutPath: string;
+	loginPath?: string;
+	getUserId?: (userInfo: any) => string | number;
 }
