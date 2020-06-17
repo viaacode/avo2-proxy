@@ -20,6 +20,7 @@ export interface UpdateProfileValues {
 		organization_id: string;
 		unit_id: string | null;
 	}[];
+	company_id: string;
 	alias: string;
 	alternativeEmail: string;
 	avatar: string | null;
@@ -43,6 +44,7 @@ export default class ProfileController {
 						unit_id: org.unitId || null,
 					})
 				),
+				company_id: variables.company_id || profile.company_id,
 				alias: profile.alias || profile.alternative_email,
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,
