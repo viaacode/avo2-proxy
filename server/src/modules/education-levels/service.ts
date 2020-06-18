@@ -11,7 +11,7 @@ interface EducationLevelObject {
 
 export default class EducationLevelsService {
 
-	public static async getEducationLevels(): Promise<void> {
+	public static async getEducationLevels(): Promise<string[]> {
 		let url: string;
 		const data = {
 			query: GET_EDUCATION_LEVELS,

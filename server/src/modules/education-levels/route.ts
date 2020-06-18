@@ -8,7 +8,7 @@ import EducationLevelsController from './controller';
 export default class EducationLevelsRoute {
 	@Path('')
 	@GET
-	async getEducationLevels(): Promise<any[]> {
+	async getEducationLevels(): Promise<string[]> {
 		try {
 			return await EducationLevelsController.getEducationLevels();
 		} catch (err) {
