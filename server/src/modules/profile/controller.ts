@@ -44,7 +44,7 @@ export default class ProfileController {
 						unit_id: org.unitId || null,
 					})
 				),
-				company_id: variables.company_id || profile.company_id,
+				company_id: variables.company_id || (profile as any).company_id, // TODO remove any after typings v2.20.0
 				alias: profile.alias || profile.alternative_email,
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,

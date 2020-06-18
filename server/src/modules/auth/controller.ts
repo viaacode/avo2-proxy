@@ -151,7 +151,7 @@ export default class AuthController {
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to create avo user',
-				null,
+				err,
 				{ insertUserResponse: ldapUser, query: INSERT_USER });
 		}
 	}
