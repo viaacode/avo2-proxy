@@ -30,6 +30,7 @@ import { presets as corePresets } from './modules/core/helpers/presets';
 import { ErrorMiddleware } from './modules/core/middleware/error';
 import { GlobalMiddleware } from './modules/core/middleware/global';
 import DataRoute from './modules/data/route';
+import EducationLevelsRoute from './modules/education-levels/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
 import EventLoggingRoute from './modules/event-logging/route';
 import InteractiveTourRoute from './modules/interactive-tours/route';
@@ -87,7 +88,7 @@ export class App {
 
 			logIfNotTestEnv(
 				`Server running on ${this.config.state.env} environment at port ${
-					(this.server.address() as AddressInfo).port
+				(this.server.address() as AddressInfo).port
 				}`
 			);
 		});
@@ -148,6 +149,7 @@ export class App {
 			SmartschoolRoute,
 			KlascementRoute,
 
+			EducationLevelsRoute,
 			EducationOrganizationsRoute,
 			SearchRoute,
 			DataRoute,

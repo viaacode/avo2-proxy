@@ -1,5 +1,5 @@
 import * as promiseUtils from 'blend-promise-utils';
-import * as _ from 'lodash';
+import { compact, find, get } from 'lodash';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -38,6 +38,7 @@ export default class VideoStillsController {
 			// Get browse paths for all items
 			const ids: string[] = stillRequests.map((stillRequest: StillRequest) => stillRequest.externalId);
 			const response = await DataService.execute(GET_ITEMS_BY_IDS, { ids });
+
 			if (response.errors) {
 				throw new InternalServerError(
 					'Failed to lookup item info from graphql',
@@ -45,19 +46,21 @@ export default class VideoStillsController {
 					{ stillRequests, errors: response.errors }
 				);
 			}
-			const items = _.get(response, 'data.app_item_meta', []);
+			const items = get(response, 'data.app_item_meta', []);
+
 			const objectNameInfos: ObjectNameInfo[] = items.map((item: { external_id: string, browse_path: string }) => ({
 				externalId: item.external_id,
 				objectName: this.extractObjectName(item.browse_path),
-				startTime: _.find(stillRequests, (stillRequest: StillRequest) => stillRequest.externalId === item.external_id).startTime,
+				startTime: find(stillRequests, (stillRequest: StillRequest) => stillRequest.externalId === item.external_id).startTime,
 			}));
 
 			// Get stills for all videos
-			const allVideoStills: ObjectNameInfoAndStills[] = _.compact(await promiseUtils.mapLimit(objectNameInfos, 20, this.getVideoStillsWithLogging));
+			const allVideoStills: ObjectNameInfoAndStills[] = compact(await promiseUtils.mapLimit(objectNameInfos, 20, this.getVideoStillsWithLogging));
 
 			// Get first video still for each video after their startTime
-			return _.compact(allVideoStills.map((objectNameInfo: ObjectNameInfoAndStills): StillInfo | null => {
-				const firstVideoStill = _.find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime * 1000);
+			return compact(allVideoStills.map((objectNameInfo: ObjectNameInfoAndStills): StillInfo | null => {
+				const firstVideoStill = find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime * 1000);
+
 				if (!firstVideoStill) {
 					return null;
 				}

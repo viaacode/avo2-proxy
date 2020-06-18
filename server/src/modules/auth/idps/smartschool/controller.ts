@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
@@ -20,15 +19,6 @@ export type LoginSuccessResponse = { avoUser?: Avo.User.User, smartschoolUserInf
 export type SmartschoolUserLoginResponse = LoginErrorResponse | LoginSuccessResponse;
 
 export default class SmartschoolController extends IdpHelper {
-
-	public static isLoggedIn(request: Request): boolean {
-		if (IdpHelper.isSessionExpired(request)) {
-			return false;
-		}
-		const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
-		return !!avoUserInfo;
-	}
-
 	public static async getUserFromSmartschoolLogin(code: string): Promise<SmartschoolUserLoginResponse> {
 		try {
 

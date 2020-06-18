@@ -1,12 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
-import { get } from 'lodash';
+import * as _ from 'lodash';
 import * as querystring from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
 
-import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH } from './const';
-import { EmailInfo, templateIds } from './route';
+import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
+import { CustomFields, EmailInfo, NewsletterPreferences } from './types';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
@@ -65,7 +65,7 @@ export default class CampaignMonitorService {
 				}
 			);
 
-			return get(response, 'data.State') === 'Active';
+			return _.get(response, 'data.State') === 'Active';
 		} catch (err) {
 			if (err.response.data.Code === 203) {
 				return false;
@@ -75,7 +75,7 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async fetchNewsletterPreferences(email: string) {
+	public static async fetchNewsletterPreferences(email: string): Promise<NewsletterPreferences> {
 		try {
 			const responses = await axios.all(NEWSLETTERS_TO_FETCH.map((list => this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email))));
 
@@ -83,13 +83,14 @@ export default class CampaignMonitorService {
 				newsletter: responses[0],
 				ambassador: responses[1],
 				workshop: responses[2],
+				allActiveUsers: responses[3],
 			};
 		} catch (err) {
 			throw new CustomError('Failed to retrieve newsletter preferences', err, { email });
 		}
 	}
 
-	public static async unsubscribeFromNewsletterList(listId: string, email: string) {
+	public static async unsubscribeFromNewsletterList(listId: string, email: string): Promise<void> {
 		try {
 			await axios(
 				`https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`,
@@ -112,11 +113,22 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async subscribeFromNewsletterList(listId: string, name: string, email: string) {
+	public static async subscribeToNewsletterList(listId: string, email: string, name: string, customFields: CustomFields) {
 		try {
+			const data = {
+				EmailAddress: email,
+				Name: name,
+				Resubscribe: true,
+				ConsentToTrack: 'Yes',
+				CustomFields: _.toPairs(customFields).map(pair => ({
+					Key: pair[0],
+					Value: pair[1],
+				})),
+			};
 			await axios(
 				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`,
 				{
+					data,
 					method: 'POST',
 					auth: {
 						username: process.env.CAMPAIGN_MONITOR_API_KEY,
@@ -124,12 +136,6 @@ export default class CampaignMonitorService {
 					},
 					headers: {
 						'Content-Type': 'application/json',
-					},
-					data: {
-						EmailAddress: email,
-						Name: name,
-						Resubscribe: true,
-						ConsentToTrack: 'Yes',
 					},
 				}
 			);

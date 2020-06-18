@@ -4,7 +4,7 @@ import { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
 import SearchController, { EsIndex } from './controller';
 
@@ -17,7 +17,7 @@ export default class SearchRoute {
 	 */
 	@Path('')
 	@POST
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async search(searchRequest: any): Promise<any> {
 		try {
 			return await SearchController.search(searchRequest);
@@ -30,7 +30,7 @@ export default class SearchRoute {
 
 	@Path('/related')
 	@GET
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async related(
 		@QueryParam('id') itemId: string,
 		@QueryParam('type') type: EsIndex,

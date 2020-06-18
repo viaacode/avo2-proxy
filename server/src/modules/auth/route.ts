@@ -7,7 +7,7 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import i18n from '../../shared/translations/i18n';
 
 import AuthController from './controller';
@@ -69,7 +69,7 @@ export default class AuthRoute {
 
 	@Path('link-account')
 	@GET
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async linkAccount(
 		@QueryParam('returnToUrl') returnToUrl: string,
 		@QueryParam('idpType') idpType: IdpType,
@@ -79,7 +79,7 @@ export default class AuthRoute {
 
 	@Path('link-account-callback')
 	@GET
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async linkAccountCallback(
 		@QueryParam('returnToUrl') returnToUrl: string,
 	): Promise<any> {
@@ -110,7 +110,7 @@ export default class AuthRoute {
 
 	@Path('unlink-account')
 	@GET
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async unlinkAccount(
 		@QueryParam('returnToUrl') returnToUrl: string,
 		@QueryParam('idpType') idpType: IdpType,
