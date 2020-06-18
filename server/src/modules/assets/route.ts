@@ -1,7 +1,18 @@
 import _ from 'lodash';
-import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
+import {
+	Context,
+	DELETE,
+	Path,
+	POST,
+	PreProcessor,
+	ServiceContext,
+} from 'typescript-rest';
 
-import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
+import {
+	BadRequestError,
+	ClientError,
+	InternalServerError,
+} from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
@@ -14,7 +25,8 @@ export type AssetType =
 	| 'PROFILE_AVATAR'
 	| 'ITEM_SUBTITLE';
 
-export interface UploadAssetInfo { // TODO use typings version
+export interface UploadAssetInfo {
+	// TODO use typings version
 	filename: string;
 	content: string;
 	mimeType: string;
@@ -36,9 +48,16 @@ export default class AssetRoute {
 	async uploadAsset(
 		assetInfo: UploadAssetInfo
 	): Promise<{ url: string } | BadRequestError> {
-		if (!assetInfo || !assetInfo.filename || !assetInfo.content || !assetInfo.type) {
-			throw new BadRequestError('the body must contain the filename, content and type (' +
-				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\'');
+		if (
+			!assetInfo ||
+			!assetInfo.filename ||
+			!assetInfo.content ||
+			!assetInfo.type
+		) {
+			throw new BadRequestError(
+				'the body must contain the filename, content and type (' +
+					"'BUNDLE_COVER','COLLECTION_COVER','CONTENT_PAGE_IMAGE','PROFILE_AVATAR','ITEM_SUBTITLE'"
+			);
 		}
 
 		try {
@@ -68,18 +87,24 @@ export default class AssetRoute {
 	@Path('delete')
 	@DELETE
 	@PreProcessor(isAuthenticatedRouteGuard)
-	async deleteAsset(
-		body: { url: string }
-	): Promise<{ status: 'deleted' } | BadRequestError> {
+	async deleteAsset(body: {
+		url: string;
+	}): Promise<{ status: 'deleted' } | BadRequestError> {
 		if (!body || !body.url) {
-			throw new BadRequestError('the body must contain the url of the to-be-deleted asset  {url: string}');
+			throw new BadRequestError(
+				'the body must contain the url of the to-be-deleted asset  {url: string}'
+			);
 		}
 
 		try {
 			await AssetController.delete(body.url);
-			throw { status: 'deleted' };
+			return { status: 'deleted' };
 		} catch (err) {
-			const error = new InternalServerError('Failed to delete asset file', err, { body });
+			const error = new InternalServerError(
+				'Failed to delete asset file',
+				err,
+				{ body }
+			);
 			logger.error(error);
 			throw error;
 		}
