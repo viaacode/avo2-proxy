@@ -88,11 +88,14 @@ export class AuthService {
 			// Simplify linked objects
 			(user as any).profile.educationLevels = (_.get(user, 'profile.profile_contexts', []) as { key: string }[]).map(context => context.key);
 			(user as any).profile.subjects = (_.get(user, 'profile.profile_classifications', []) as { key: string }[]).map(classification => classification.key);
-			(user as any).profile.organizations = await promiseUtils.mapLimit(
+			(user as any).profile.organizations = _.compact(await promiseUtils.mapLimit(
 				_.get(user, 'profile.profile_organizations', []),
 				5,
 				async (org): Promise<ClientEducationOrganization> => {
 					const ldapOrg: LdapEducationOrganization = await EducationOrganizationsService.getOrganization(org.organization_id, org.unit_id);
+					if (!ldapOrg) {
+						return null;
+					}
 					const unitAddress = _.get((ldapOrg.units || []).find(unit => unit.id === org.unit_id), 'address', null);
 					return {
 						organizationId: org.organization_id,
@@ -100,7 +103,7 @@ export class AuthService {
 						label: ldapOrg.name + (unitAddress ? ` - ${unitAddress}` : ''),
 					};
 				}
-			);
+			));
 			delete (user as any).profile.profile_contexts;
 			delete (user as any).profile.profile_classifications;
 			delete (user as any).profile.profile_organizations;
