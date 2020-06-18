@@ -60,14 +60,25 @@ export default class ProfileController {
 				...completeVars,
 			});
 
-			const userGroupIds = ((profile as any).userGroupIds || []);
-			await this.updateUserGroupsSecondaryEducation(userGroupIds, profile.id, (completeVars.educationLevels || []).map(el => el.key));
+			const userGroupIds = (profile as any).userGroupIds || [];
+			await this.updateUserGroupsSecondaryEducation(
+				userGroupIds,
+				profile.id,
+				(completeVars.educationLevels || []).map(el => el.key)
+			);
 		} catch (err) {
-			throw new CustomError('Failed to update profile info', err, { profile, variables });
+			throw new CustomError('Failed to update profile info', err, {
+				profile,
+				variables,
+			});
 		}
 	}
 
-	public static async updateUserGroupsSecondaryEducation(userGroupIds: number[], profileId: string, educationLevels: string[]) {
+	public static async updateUserGroupsSecondaryEducation(
+		userGroupIds: number[],
+		profileId: string,
+		educationLevels: string[]
+	) {
 		// Add extra usergroup for lesgever secundair en student lesgever secudair
 		if (
 			educationLevels.includes('Secundair onderwijs') &&
@@ -83,20 +94,27 @@ export default class ProfileController {
 			!userGroupIds.includes(5)
 		) {
 			await AuthService.addUserGroupsToProfile([5], profileId);
+			await AuthService.removeUserGroupsFromProfile([23], profileId);
 		}
 
 		// Remove usergroup if not lesgever secundair nor student lesgever secudair
 		if (
-			(!educationLevels.includes('Secundair onderwijs') || !userGroupIds.includes(2)) &&
+			!educationLevels.includes('Secundair onderwijs') &&
 			userGroupIds.includes(3)
 		) {
 			await AuthService.removeUserGroupsFromProfile([3], profileId);
 		}
+		if (userGroupIds.includes(2) && userGroupIds.includes(3)) {
+			await AuthService.removeUserGroupsFromProfile([2], profileId);
+		}
 		if (
-			(!educationLevels.includes('Secundair onderwijs') || !userGroupIds.includes(23)) &&
+			!educationLevels.includes('Secundair onderwijs') &&
 			userGroupIds.includes(5)
 		) {
 			await AuthService.removeUserGroupsFromProfile([5], profileId);
+		}
+		if (userGroupIds.includes(23) && userGroupIds.includes(5)) {
+			await AuthService.removeUserGroupsFromProfile([23], profileId);
 		}
 	}
 }
