@@ -3,7 +3,7 @@ import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'types
 
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
 import AssetController from './controller';
 
@@ -32,7 +32,7 @@ export default class AssetRoute {
 	 */
 	@Path('upload')
 	@POST
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async uploadAsset(
 		assetInfo: UploadAssetInfo
 	): Promise<{ url: string } | BadRequestError> {
@@ -67,7 +67,7 @@ export default class AssetRoute {
 	 */
 	@Path('delete')
 	@DELETE
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async deleteAsset(
 		body: { url: string }
 	): Promise<{ status: 'deleted' } | BadRequestError> {

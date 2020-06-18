@@ -2,7 +2,7 @@ import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-re
 
 import { ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticated } from '../../shared/middleware/is-authenticated';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
 import DataController from './controller';
@@ -23,7 +23,7 @@ export default class DataRoute {
 	 */
 	@Path('')
 	@POST
-	@PreProcessor(isAuthenticated)
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async post(body: DataQuery): Promise<any> {
 		try {
 			return await DataController.execute(
