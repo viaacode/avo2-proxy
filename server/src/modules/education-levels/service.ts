@@ -1,8 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
+import { get } from 'lodash';
 
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 
 import { GET_EDUCATION_LEVELS } from './queries.gql';
+
+interface EducationLevelObject {
+	description: string;
+}
 
 export default class EducationLevelsService {
 
@@ -29,7 +34,11 @@ export default class EducationLevelsService {
 				throw error;
 			}
 
-			return response.data;
+			const educationLevelsObjects = get(response, 'data.data.lookup_enum_lom_context') || [];
+
+			const educationLevels = educationLevelsObjects.map((educationLevelObject: EducationLevelObject) => educationLevelObject.description);
+
+			return educationLevels;
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to retrieve education levels from GraphQL database.',
