@@ -5,11 +5,11 @@ import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { AuthService } from '../auth/service';
+import EducationOrganizationsService from '../education-organizations/service';
 
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
 import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
-import EducationOrganizationsService from '../education-organizations/service';
 
 export default class CampaignMonitorController {
 

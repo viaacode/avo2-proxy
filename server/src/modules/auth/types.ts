@@ -95,6 +95,7 @@ export interface Profile {
 	stamboek: any;
 	updated_at: string;
 	user_id: string;
+	company_id: string | null;
 	groups: {
 		group: {
 			group_user_permission_groups: {
