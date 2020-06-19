@@ -26,14 +26,14 @@ export default class EducationOrganizationsController {
 				if (org.units && org.units.length) {
 					// Organizations with units
 					return org.units.map((unit: Unit): ClientEducationOrganization => ({
-						organizationId: org.id,
-						unitId: unit.id,
+						organizationId: org.or_id,
+						unitId: unit.ou_id,
 						label: `${org.name} - ${unit.address}`,
 					}));
 				}
 				// Organizations without any units
 				return {
-					organizationId: org.id,
+					organizationId: org.or_id,
 					unitId: null,
 					label: `${org.name}`,
 				};
