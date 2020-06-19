@@ -80,7 +80,7 @@ export default class EducationOrganizationsService {
 		try {
 			url = `${process.env.LDAP_API_ENDPOINT}/organizations?${querystring.stringify({
 				sideload: 'units',
-				id: organizationId,
+				or_id: organizationId,
 			})}`;
 			const response: AxiosResponse<LdapEducationOrganization[]> = await axios(url, {
 				method: 'get',

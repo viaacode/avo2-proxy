@@ -17,6 +17,7 @@ export const UPDATE_PROFILE_INFO = `
 		$educationLevels: [users_profile_contexts_insert_input!]!
 		$subjects: [users_profile_classifications_insert_input!]!
 		$organizations: [users_profile_organizations_insert_input!]!
+		$company_id: String
 		$profileId: uuid!
 		$alias: String
 		$alternativeEmail: String
@@ -41,6 +42,7 @@ export const UPDATE_PROFILE_INFO = `
 				avatar: $avatar
 				bio: $bio
 				stamboek: $stamboek
+				company_id: $company_id
 			}
 		) {
 			affected_rows

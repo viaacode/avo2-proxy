@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { Request } from 'express';
 import _ from 'lodash';
 
@@ -7,11 +6,12 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import DataService from '../../../data/service';
+import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
 import { IdpHelper } from '../../idp-helper';
 import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
 import { AuthService } from '../../service';
-import { IdpType, LdapUser, UserGroup } from '../../types';
+import { LdapUser, UserGroup } from '../../types';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
@@ -21,36 +21,6 @@ export interface BasicIdpUserInfo {
 }
 
 export default class HetArchiefController {
-	public static isLoggedIn(request: Request): boolean {
-		const idpType: IdpType | null = IdpHelper.getIdpTypeFromSession(request);
-		if (!idpType) {
-			return false;
-		}
-		if (idpType !== 'HETARCHIEF') {
-			return false;
-		}
-
-		// Check if ldap user object is present on session
-		const idpUserInfo: LdapUser | null = IdpHelper.getIdpUserInfoFromSession(request);
-		if (!idpUserInfo) {
-			return false;
-		}
-		// Check if the ldap user is expired
-		const ldapExpireOn: number = new Date(_.get(idpUserInfo, 'session_not_on_or_after', 0)).getTime();
-		if (Date.now() > ldapExpireOn) {
-			return false;
-		}
-
-		// Check if ldap user has access to avo
-		if (!_.get(idpUserInfo, 'attributes.apps', []).includes('avo')) {
-			return false;
-		}
-
-		// Check if avo user is present on session
-		const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
-		return !!avoUserInfo;
-	}
-
 	public static async getAvoUserInfoFromDatabaseByEmail(ldapUserInfo: LdapUser): Promise<Avo.User.User> {
 		const email = ldapUserInfo.name_id;
 		return await AuthService.getAvoUserInfoByEmail(email);
@@ -193,6 +163,7 @@ export default class HetArchiefController {
 		// Remove the user groups that are managed by avo without a corresponding role in ldap
 		// eg: lesgever secundair, student lesgever secundair
 		const avoUserGroupsFiltered = avoUserGroups.filter(ug => ug.ldap_role !== null);
+		const avoUserGroupIdsOther = avoUserGroups.filter(ug => ug.ldap_role === null).map(ug => ug.id);
 
 		// Update user groups:
 		const ldapUserGroupIds = _.uniq(ldapUserGroups.map(ug => ug.id));
@@ -215,6 +186,12 @@ export default class HetArchiefController {
 				AuthService.removeUserGroupsFromProfile(deletedUserGroupIds, profileId),
 			]);
 		}
+
+		await ProfileController.updateUserGroupsSecondaryEducation(
+			_.uniq([...ldapUserGroupIds, ...avoUserGroupIdsOther]),
+			profileId,
+			_.get(avoUser, 'profile.educationLevels', [])
+		);
 
 		return !!addedUserGroupIds.length || !!deletedUserGroupIds.length;
 	}

@@ -9,60 +9,21 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 import { logger } from '../../shared/helpers/logger';
+import { isAuthenticatedRouteGuard, isLoggedIn } from '../../shared/middleware/is-authenticated';
 import i18n from '../../shared/translations/i18n';
+import CampaignMonitorController from '../campaign-monitor/controller';
 import DataService from '../data/service';
 
+import { ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS, IDP_ADAPTERS } from './consts';
 import { IdpHelper } from './idp-helper';
-import HetArchiefController, { BasicIdpUserInfo } from './idps/hetarchief/controller';
-import KlascementController from './idps/klascement/controller';
-import { KlascementUserInfo } from './idps/klascement/service';
-import SmartschoolController from './idps/smartschool/controller';
-import { SmartschoolUserInfo } from './idps/smartschool/service';
-import ViaaController from './idps/viaa/controller';
+import { BasicIdpUserInfo } from './idps/hetarchief/controller';
 import { DELETE_IDP_MAPS, GET_NOTIFICATION, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
 import { LinkAccountInfo } from './route';
 import { IdpType } from './types';
 
-interface IdpInterface {
-	controller: { isLoggedIn: (req: Request) => boolean };
-	logoutPath: string;
-	loginPath?: string;
-	getUserId?: (userInfo: any) => string | number;
-}
-
-export const ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS =
-	'ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS';
-
-const IDP_ADAPTERS: { [idpType in IdpType]: IdpInterface } = {
-	HETARCHIEF: {
-		controller: HetArchiefController,
-		logoutPath: 'auth/hetarchief/logout',
-	},
-	SMARTSCHOOL: {
-		controller: SmartschoolController,
-		logoutPath: 'auth/smartschool/logout',
-		loginPath: 'auth/smartschool/login', // Used for linking accounts
-		getUserId: (idpUserInfo: SmartschoolUserInfo): string => idpUserInfo.userID,
-	},
-	KLASCEMENT: {
-		controller: KlascementController,
-		logoutPath: 'auth/klascement/logout',
-		loginPath: 'auth/klascement/login', // Used for linking accounts
-		getUserId: (idpUserInfo: KlascementUserInfo): string => idpUserInfo.id,
-	},
-	VIAA: {
-		controller: ViaaController,
-		logoutPath: 'auth/viaa/logout',
-	},
-};
-
 export default class AuthController {
-	public static isAuthenticated(req: Request) {
-		return _.some(IDP_ADAPTERS, adapter => adapter.controller.isLoggedIn(req));
-	}
-
 	public static async getLoginResponse(req: Request): Promise<Avo.Auth.LoginResponse> {
-		if (AuthController.isAuthenticated(req)) {
+		if (isLoggedIn(req)) {
 			logger.info('check login: user is authenticated');
 			const userInfo = await IdpHelper.getUpdatedAvoUserInfoFromSession(req);
 			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo);
@@ -151,7 +112,7 @@ export default class AuthController {
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to create avo user',
-				null,
+				err,
 				{ insertUserResponse: ldapUser, query: INSERT_USER });
 		}
 	}

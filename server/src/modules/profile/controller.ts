@@ -20,6 +20,7 @@ export interface UpdateProfileValues {
 		organization_id: string;
 		unit_id: string | null;
 	}[];
+	company_id: string;
 	alias: string;
 	alternativeEmail: string;
 	avatar: string | null;
@@ -43,6 +44,7 @@ export default class ProfileController {
 						unit_id: org.unitId || null,
 					})
 				),
+				company_id: variables.company_id || (profile as any).company_id, // TODO remove any after typings v2.20.0
 				alias: profile.alias || profile.alternative_email,
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,
@@ -57,22 +59,62 @@ export default class ProfileController {
 				profileId: profile.id,
 				...completeVars,
 			});
-			if (
-				completeVars.educationLevels.find(edLevel => edLevel.key === 'Secundair onderwijs') &&
-				!((profile as any).userGroupIds || []).includes(3)
-			) {
-				// Add "lesgever secundair" to this profile's usergroups
-				await AuthService.addUserGroupsToProfile([3], profile.id);
-			}
-			if (
-				!completeVars.educationLevels.find(edLevel => edLevel.key === 'Secundair onderwijs') &&
-				((profile as any).userGroupIds || []).includes(3)
-			) {
-				// Remove "lesgever secundair" from this profile's usergroups
-				await AuthService.removeUserGroupsFromProfile([3], profile.id);
-			}
+
+			const userGroupIds = (profile as any).userGroupIds || [];
+			await this.updateUserGroupsSecondaryEducation(
+				userGroupIds,
+				profile.id,
+				(completeVars.educationLevels || []).map(el => el.key)
+			);
 		} catch (err) {
-			throw new CustomError('Failed to update profile info', err, { profile, variables });
+			throw new CustomError('Failed to update profile info', err, {
+				profile,
+				variables,
+			});
+		}
+	}
+
+	public static async updateUserGroupsSecondaryEducation(
+		userGroupIds: number[],
+		profileId: string,
+		educationLevels: string[]
+	) {
+		// Add extra usergroup for lesgever secundair en student lesgever secudair
+		if (
+			educationLevels.includes('Secundair onderwijs') &&
+			userGroupIds.includes(2) &&
+			!userGroupIds.includes(3)
+		) {
+			await AuthService.addUserGroupsToProfile([3], profileId);
+			await AuthService.removeUserGroupsFromProfile([2], profileId);
+		}
+		if (
+			educationLevels.includes('Secundair onderwijs') &&
+			userGroupIds.includes(23) &&
+			!userGroupIds.includes(5)
+		) {
+			await AuthService.addUserGroupsToProfile([5], profileId);
+			await AuthService.removeUserGroupsFromProfile([23], profileId);
+		}
+
+		// Remove usergroup if not lesgever secundair nor student lesgever secudair
+		if (
+			!educationLevels.includes('Secundair onderwijs') &&
+			userGroupIds.includes(3)
+		) {
+			await AuthService.removeUserGroupsFromProfile([3], profileId);
+		}
+		if (userGroupIds.includes(2) && userGroupIds.includes(3)) {
+			await AuthService.removeUserGroupsFromProfile([2], profileId);
+		}
+		if (
+			!educationLevels.includes('Secundair onderwijs') &&
+			userGroupIds.includes(5)
+		) {
+			await AuthService.removeUserGroupsFromProfile([5], profileId);
+		}
+		if (userGroupIds.includes(23) && userGroupIds.includes(5)) {
+			await AuthService.removeUserGroupsFromProfile([23], profileId);
 		}
 	}
 }

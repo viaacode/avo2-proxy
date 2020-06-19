@@ -6,9 +6,9 @@ import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
+import { isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
 import StamboekController from '../../../stamboek-validate/controller';
-import AuthController from '../../controller';
 import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';
 
@@ -38,7 +38,7 @@ export default class HetArchiefRoute {
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
 			const returnTo = returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`;
-			if (AuthController.isAuthenticated(this.context.request)) {
+			if (isLoggedIn(this.context.request)) {
 				return new Return.MovedTemporarily<void>(returnTo);
 			}
 			const url = await HetArchiefService.createLoginRequestUrl(returnTo);
