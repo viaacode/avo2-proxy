@@ -12,7 +12,7 @@ export const NEWSLETTER_LISTS = {
 export const NEWSLETTERS_TO_FETCH = keys(NEWSLETTER_LISTS) as NewsletterKey[];
 
 export const templateIds = {
-	item: '4293ab4f-40a9-47ae-bb17-32edb593c3ba',
-	collection: 'f0a7ca5e-63f6-43e7-9bba-8f266a0edb32',
-	bundle: '57e3816c-8fda-4d30-8b59-1483d89798f6',
+	item: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_ITEM,
+	collection: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_COLLECTION,
+	bundle: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_BUNDLE,
 };
