@@ -9,16 +9,22 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticatedRouteGuard, isLoggedIn } from '../../shared/middleware/is-authenticated';
+import { isLoggedIn } from '../../shared/middleware/is-authenticated';
 import i18n from '../../shared/translations/i18n';
-import CampaignMonitorController from '../campaign-monitor/controller';
 import DataService from '../data/service';
 
 import { ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS, IDP_ADAPTERS } from './consts';
 import { IdpHelper } from './idp-helper';
 import { BasicIdpUserInfo } from './idps/hetarchief/controller';
-import { DELETE_IDP_MAPS, GET_NOTIFICATION, GET_USER_ROLE_BY_NAME, INSERT_PROFILE, INSERT_USER } from './queries.gql';
+import {
+	DELETE_IDP_MAPS,
+	GET_NOTIFICATION,
+	GET_USER_ROLE_BY_NAME,
+	INSERT_PROFILE,
+	INSERT_USER,
+} from './queries.gql';
 import { LinkAccountInfo } from './route';
+import { AuthService } from './service';
 import { IdpType } from './types';
 
 export default class AuthController {
@@ -26,7 +32,16 @@ export default class AuthController {
 		if (isLoggedIn(req)) {
 			logger.info('check login: user is authenticated');
 			const userInfo = await IdpHelper.getUpdatedAvoUserInfoFromSession(req);
-			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo);
+			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(
+				userInfo
+			);
+			AuthService.updateUserLastAccessDate(userInfo.uid).catch(err => {
+				logger.error(
+					new CustomError('Failed to update user last access date', err, {
+						userId: userInfo.uid,
+					})
+				);
+			});
 			const now = moment();
 
 			return {
@@ -46,7 +61,9 @@ export default class AuthController {
 		return { message: 'LOGGED_OUT' } as any; // Remove after update typings to v2.20.0
 	}
 
-	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(userInfo: Avo.User.User): Promise<boolean> {
+	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(
+		userInfo: Avo.User.User
+	): Promise<boolean> {
 		const profileId = _.get(userInfo, 'profile.id');
 		if (!profileId) {
 			return false;
@@ -56,17 +73,16 @@ export default class AuthController {
 			key: ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS,
 		});
 		if (response.errors) {
-			logger.error(new CustomError(
-				'Failed to get notification from database',
-				null,
-				{
+			logger.error(
+				new CustomError('Failed to get notification from database', null, {
 					response,
 					query: GET_NOTIFICATION,
 					variables: {
 						profileId,
 						key: ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS,
 					},
-				}));
+				})
+			);
 			return false;
 		}
 		return _.get(response, 'data.users_notifications[0].through_platform', false);
@@ -74,7 +90,9 @@ export default class AuthController {
 
 	private static async getRoleId(roleName: string): Promise<number> {
 		try {
-			const response = await DataService.execute(GET_USER_ROLE_BY_NAME, { roleName });
+			const response = await DataService.execute(GET_USER_ROLE_BY_NAME, {
+				roleName,
+			});
 			const roleId: number | undefined = _.get(response, 'data.shared_user_roles[0].id');
 			if (_.isNil(roleId)) {
 				throw new CustomError('Role with specified name was not found');
@@ -95,76 +113,95 @@ export default class AuthController {
 			avoUser.role_id = await this.getRoleId(ldapUser.roles[0]);
 			const response = await DataService.execute(INSERT_USER, { user });
 			if (!response) {
-				throw new InternalServerError(
-					'Response from insert request was undefined',
-					null,
-					{ insertUserResponse: response });
+				throw new InternalServerError('Response from insert request was undefined', null, {
+					insertUserResponse: response,
+				});
 			}
 
 			const userUid = _.get(response, 'data.insert_shared_users.returning[0].uid');
 			if (_.isNil(userUid)) {
 				throw new InternalServerError(
-					'Response from insert request didn\'t contain a uid',
+					"Response from insert request didn't contain a uid",
 					null,
-					{ response });
+					{ response }
+				);
 			}
 			return userUid;
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to create avo user',
-				err,
-				{ insertUserResponse: ldapUser, query: INSERT_USER });
+			throw new InternalServerError('Failed to create avo user', err, {
+				insertUserResponse: ldapUser,
+				query: INSERT_USER,
+			});
 		}
 	}
 
 	public static async createProfile(profile: Partial<Avo.User.Profile>): Promise<string> {
-		const profileWithDefaults = _.extend({
-			alias: null,
-			avatar: null,
-		}, profile);
-		const response = await DataService.execute(INSERT_PROFILE, { profile: profileWithDefaults });
+		const profileWithDefaults = _.extend(
+			{
+				alias: null,
+				avatar: null,
+			},
+			profile
+		);
+		const response = await DataService.execute(INSERT_PROFILE, {
+			profile: profileWithDefaults,
+		});
 		if (!response) {
 			throw new InternalServerError(
 				'Failed to create avo user profile. Response from insert request was undefined',
 				null,
-				{ insertProfileResponse: response, query: INSERT_PROFILE });
+				{ insertProfileResponse: response, query: INSERT_PROFILE }
+			);
 		}
 
 		const profileId = _.get(response, 'data.insert_users_profiles.returning[0].id');
 		if (_.isNil(profileId)) {
 			throw new InternalServerError(
-				'Failed to create avo user profile. Response from insert request didn\'t contain a uid',
+				"Failed to create avo user profile. Response from insert request didn't contain a uid",
 				null,
-				{ response, query: INSERT_PROFILE });
+				{ response, query: INSERT_PROFILE }
+			);
 		}
 		return profileId;
 	}
 
-	public static getIdpSpecificLogoutPage(req: Request, returnToUrl: string): Return.MovedTemporarily<void> {
+	public static getIdpSpecificLogoutPage(
+		req: Request,
+		returnToUrl: string
+	): Return.MovedTemporarily<void> {
 		const idpType = IdpHelper.getIdpTypeFromSession(req);
 		if (!idpType) {
 			// already logged out
 			return new Return.MovedTemporarily(returnToUrl);
 		}
 		// Redirect to dp specific logout page
-		return new Return.MovedTemporarily(`${process.env.HOST}/${IDP_ADAPTERS[idpType].logoutPath}?${queryString.stringify({
-			returnToUrl,
-		})}`);
+		return new Return.MovedTemporarily(
+			`${process.env.HOST}/${IDP_ADAPTERS[idpType].logoutPath}?${queryString.stringify({
+				returnToUrl,
+			})}`
+		);
 	}
 
-	public static async redirectToIdpLoginForLinkingAccounts(request: Request, returnToUrl: string, idpType: IdpType) {
-		const avoUserInfo: Avo.User.User = await IdpHelper.getUpdatedAvoUserInfoFromSession(request);
+	public static async redirectToIdpLoginForLinkingAccounts(
+		request: Request,
+		returnToUrl: string,
+		idpType: IdpType
+	) {
+		const avoUserInfo: Avo.User.User = await IdpHelper.getUpdatedAvoUserInfoFromSession(
+			request
+		);
 
 		// Check if this idp type is already linked to the currently logged in account
 		if ((avoUserInfo.idpmaps || []).includes(idpType)) {
 			const idpTypeLowerCase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
 				// TODO rename this key so it doesn't include "smartschool"
-				i18n.t('modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
+				i18n.t(
+					'modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
 					{ idpType: idpTypeLowerCase }
 				),
 				'link',
-				['home', 'helpdesk'],
+				['home', 'helpdesk']
 			);
 		}
 
@@ -172,22 +209,32 @@ export default class AuthController {
 		const idpLoginPath: string | undefined = IDP_ADAPTERS[idpType].loginPath;
 		if (!idpLoginPath) {
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'),
+				i18n.t(
+					'modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'
+				),
 				'link',
-				['home', 'helpdesk'],
+				['home', 'helpdesk']
 			);
 		}
 
 		// Let the user login to smartschool, then redirect to this url
-		const serverRedirectUrl = `${process.env.HOST}/auth/link-account-callback?${queryString.stringify({
+		const serverRedirectUrl = `${
+			process.env.HOST
+		}/auth/link-account-callback?${queryString.stringify({
 			returnToUrl,
 		})}`;
-		return new Return.MovedTemporarily(`${process.env.HOST}/${idpLoginPath}?${queryString.stringify({
-			returnToUrl: serverRedirectUrl,
-		})}`);
+		return new Return.MovedTemporarily(
+			`${process.env.HOST}/${idpLoginPath}?${queryString.stringify({
+				returnToUrl: serverRedirectUrl,
+			})}`
+		);
 	}
 
-	public static async linkAccounts(request: Request, idpUserInfo: LinkAccountInfo, returnToUrl: string) {
+	public static async linkAccounts(
+		request: Request,
+		idpUserInfo: LinkAccountInfo,
+		returnToUrl: string
+	) {
 		let avoUserInfo: Avo.User.User | undefined;
 		try {
 			avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
@@ -200,14 +247,20 @@ export default class AuthController {
 			);
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			const error = new ExternalServerError('Failed to insert the idp map to link an account', err, {
-				avoUserInfo,
-				idpUserInfo,
-				returnToUrl,
-			});
+			const error = new ExternalServerError(
+				'Failed to insert the idp map to link an account',
+				err,
+				{
+					avoUserInfo,
+					idpUserInfo,
+					returnToUrl,
+				}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'),
+				i18n.t(
+					'modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'
+				),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -224,11 +277,17 @@ export default class AuthController {
 				avoUserId: avoUserInfo.uid,
 			});
 		} catch (err) {
-			const error = new ExternalServerError('Failed to remove idp map from database', err, { idpType, avoUserInfo });
+			const error = new ExternalServerError('Failed to remove idp map from database', err, {
+				idpType,
+				avoUserInfo,
+			});
 			logger.error(error);
 			const idpTypeLowercase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account', { idpType: idpTypeLowercase }),
+				i18n.t(
+					'modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account',
+					{ idpType: idpTypeLowercase }
+				),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
