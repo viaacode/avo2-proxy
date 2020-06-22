@@ -9,11 +9,19 @@ export interface NewsletterPreferences {
 }
 
 export interface CustomFields {
-	Role: string;
-	Lerarenkaart: string;
-	Graad: string;
-	School: string;
-	Vestigingsnummer: string;
+	gebruikersrol: string;
+	gebruikersgroep: string;
+	oormerk: string;
+	stamboeknummer: string;
+	is_uitzondering: string;
+	firstname: string;
+	lastname: string;
+	graad: string;
+	vakken: string;
+	school_postcodes: string;
+	school_ids: string;
+	school_campus_ids: string;
+	school_namen: string;
 }
 
 export type NewsletterKey = keyof NewsletterPreferences;

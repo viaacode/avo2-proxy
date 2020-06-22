@@ -8,6 +8,8 @@ import { IdpHelper } from '../auth/idp-helper';
 import { templateIds } from './const';
 import CampaignMonitorController from './controller';
 import { EmailInfo } from './types';
+import HetArchiefService from '../auth/idps/hetarchief/service';
+import { AuthService } from '../auth/service';
 
 @Path('/campaign-monitor')
 export default class CampaignMonitorRoute {
@@ -80,7 +82,9 @@ export default class CampaignMonitorRoute {
 		body: any
 	) {
 		try {
-			return await CampaignMonitorController.updateNewsletterPreferences(IdpHelper.getAvoUserInfoFromSession(this.context.request), body.preferences);
+			let avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			avoUser = await AuthService.getAvoUserInfoById(avoUser.uid);
+			return await CampaignMonitorController.updateNewsletterPreferences(avoUser, body.preferences);
 		} catch (err) {
 			const error = new InternalServerError('Failed during update in campaign monitor preferences route', err, { email: body.email });
 			logger.error(error);
