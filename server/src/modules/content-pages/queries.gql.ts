@@ -72,10 +72,17 @@ export const GET_ITEM_TILE_BY_ID = `
 `;
 
 export const GET_ITEM_BY_EXTERNAL_ID = `
-	query getItemTileById($externalId: bpchar!) {
-		app_item_meta(where: { external_id: { _eq: $externalId } }) {
+	query getItemByExternalId($externalId: bpchar!) {
+		app_item_meta(where: {external_id: {_eq: $externalId}}) {
+			browse_path
 			thumbnail_path
 			title
+			description
+			issued
+			organisation {
+				name
+				logo_url
+			}
 		}
 	}
 `;

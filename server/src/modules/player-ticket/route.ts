@@ -1,5 +1,5 @@
-import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
 import { Request } from 'express';
+import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -8,6 +8,10 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import PlayerTicketController from './controller';
 
 const publicIp = require('public-ip');
+
+export interface PlayerTicketResponse {
+	url: string;
+}
 
 @Path('/player-ticket')
 export default class PlayerTicketRoute {
@@ -21,18 +25,23 @@ export default class PlayerTicketRoute {
 	@GET
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async getPlayableUrl(
-		@QueryParam('externalId') externalId: string,
-	): Promise<any> {
+		@QueryParam('externalId') externalId: string
+	): Promise<PlayerTicketResponse> {
 		if (!externalId) {
 			throw new BadRequestError('query param externalId is required');
 		}
 		try {
-			return await PlayerTicketController.getPlayableUrl(
+			const url = await PlayerTicketController.getPlayableUrl(
 				externalId,
 				await PlayerTicketRoute.getIp(this.context.request),
 				this.context.request.header('Referer') || 'http://localhost:8080/',
-				8 * 60 * 60 * 1000,
+				8 * 60 * 60 * 1000
 			);
+			return url
+				? {
+						url,
+				  }
+				: null;
 		} catch (err) {
 			const error = new InternalServerError('Failed during get player token route', err, {});
 			logger.error(error);
@@ -41,7 +50,8 @@ export default class PlayerTicketRoute {
 	}
 
 	public static async getIp(request: Request): Promise<string> {
-		const forwardedFor = request.headers['X-Forwarded-For'] || request.headers['x-forwarded-for'];
+		const forwardedFor =
+			request.headers['X-Forwarded-For'] || request.headers['x-forwarded-for'];
 		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || request.ip;
 
 		if (ip.includes('::ffff:')) {

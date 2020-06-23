@@ -1,3 +1,5 @@
+import { Avo } from '@viaa/avo2-types';
+
 // TODO: Implement in typings
 import { templateIds } from './const';
 
@@ -18,7 +20,8 @@ export interface CustomFields {
 
 export type NewsletterKey = keyof NewsletterPreferences;
 
-export interface EmailInfo { // TODO use typings version
+export interface EmailInfo {
+	// TODO use typings version
 	template: keyof typeof templateIds;
 	to: string;
 	data: {
