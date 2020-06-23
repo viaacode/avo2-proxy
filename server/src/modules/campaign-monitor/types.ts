@@ -9,7 +9,6 @@ export interface NewsletterPreferences {
 }
 
 export interface CustomFields {
-	gebruikersrol: string;
 	gebruikersgroep: string;
 	oormerk: string;
 	stamboeknummer: string;

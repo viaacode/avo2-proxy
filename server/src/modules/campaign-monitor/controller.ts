@@ -54,7 +54,6 @@ export default class CampaignMonitorController {
 			const lastName = _.get(user, 'last_name');
 			const name = [firstName, lastName].join(' ').trim();
 
-			const userRole = _.get(user, 'role.label');
 			const userGroupId = _.get(user, 'profile.userGroupIds[0]');
 			const allUserGroups = await AuthService.getAllUserGroups();
 			const userGroup = _.get(
@@ -102,7 +101,6 @@ export default class CampaignMonitorController {
 						name,
 						{
 							oormerk,
-							gebruikersrol: userRole,
 							gebruikersgroep: userGroup,
 							stamboeknummer: stamboekNumber,
 							is_uitzondering: isExceptionAccount ? 'true' : 'false',
