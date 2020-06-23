@@ -287,3 +287,11 @@ export const GET_NOTIFICATION = `
 		}
 	}
 `;
+
+export const UPDATE_USER_LAST_ACCESS_DATE = `
+	mutation updateUserLastAccessDate($userUid: uuid!, $date: timestamptz) {
+		update_shared_users(where: {uid: {_eq: $userUid}}, _set: {last_access_at: $date}) {
+			affected_rows
+		}
+	}
+`;
