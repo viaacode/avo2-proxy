@@ -14,6 +14,7 @@ checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID',
 	'CAMPAIGN_MONITOR_AMBASSADOR_LIST_ID',
 	'CAMPAIGN_MONITOR_WORKSHOP_LIST_ID',
+	'CAMPAIGN_MONITOR_ALL_ACTIVE_USERS_LIST_ID',
 ]);
 
 export default class CampaignMonitorService {
@@ -125,6 +126,7 @@ export default class CampaignMonitorService {
 					Value: pair[1],
 				})),
 			};
+
 			await axios(
 				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`,
 				{
