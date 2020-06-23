@@ -1,4 +1,5 @@
 import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
+import { Request } from 'express';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -28,7 +29,7 @@ export default class PlayerTicketRoute {
 		try {
 			return await PlayerTicketController.getPlayableUrl(
 				externalId,
-				await PlayerTicketRoute.getIp(this.context),
+				await PlayerTicketRoute.getIp(this.context.request),
 				this.context.request.header('Referer') || 'http://localhost:8080/',
 				8 * 60 * 60 * 1000,
 			);
@@ -39,9 +40,9 @@ export default class PlayerTicketRoute {
 		}
 	}
 
-	private static async getIp(context: ServiceContext): Promise<string> {
-		const forwardedFor = context.request.headers['X-Forwarded-For'] || context.request.headers['x-forwarded-for'];
-		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || context.request.ip;
+	public static async getIp(request: Request): Promise<string> {
+		const forwardedFor = request.headers['X-Forwarded-For'] || request.headers['x-forwarded-for'];
+		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || request.ip;
 
 		if (ip.includes('::ffff:')) {
 			return ip.replace('::ffff:', '');

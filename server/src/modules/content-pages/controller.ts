@@ -1,4 +1,5 @@
 import * as promiseUtils from 'blend-promise-utils';
+import { Request } from 'express';
 import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
@@ -6,7 +7,10 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import PlayerTicketController from '../player-ticket/controller';
+import PlayerTicketRoute from '../player-ticket/route';
 
+import { MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
 
 export enum SpecialPermissionGroups {
@@ -20,7 +24,7 @@ export interface MediaItemResponse { // TODO move to typings repo
 }
 
 export default class ContentPageController {
-	public static async getContentPageByPath(path: string, user: Avo.User.User | null): Promise<Avo.ContentPage.Page | null> {
+	public static async getContentPageByPath(path: string, user: Avo.User.User | null, request: Request | null): Promise<Avo.ContentPage.Page | null> {
 		try {
 			const contentPage: Avo.ContentPage.Page | undefined = await ContentPageService.getContentBlockByPath(path);
 
@@ -63,6 +67,11 @@ export default class ContentPageController {
 			// Check if content page contains any search query content bocks (eg: media grids)
 			await this.resolveMediaTileItemsInPage(contentPage);
 
+			// Check if content page contains any media player content blocks (eg: mediaplayer, mediaPlayerTitleTextButton, hero)
+			if (request) {
+				await this.resolveMediaPlayersInPage(contentPage, request);
+			}
+
 			return contentPage;
 		} catch (err) {
 			throw new ExternalServerError('Failed to get content page', err);
@@ -93,10 +102,50 @@ export default class ContentPageController {
 		}
 	}
 
-	public static async resolveMediaTileItems(searchQuery: string | undefined, searchQueryLimit: string | undefined, mediaItems: {mediaItem: {
-		type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
-		value: string
-	}}[] | undefined): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {
+	private static async resolveMediaPlayersInPage(contentPage: Avo.ContentPage.Page, request: Request) {
+		const mediaPlayerBlocks = contentPage.contentBlockssBycontentId.filter(contentBlock =>
+			_.keys(MEDIA_PLAYER_BLOCKS).includes(contentBlock.content_block_type)
+		);
+		if (mediaPlayerBlocks.length) {
+			await promiseUtils.mapLimit(mediaPlayerBlocks, 2, async (mediaPlayerBlock: any) => {
+				try {
+					const blockInfo = MEDIA_PLAYER_BLOCKS[mediaPlayerBlock.content_block_type];
+					const externalId = _.get(mediaPlayerBlock, blockInfo.getItemExternalIdPath);
+					if (externalId) {
+						const itemInfo = await ContentPageService.fetchItemByExternalId(externalId);
+						const videoSrc = await PlayerTicketController.getPlayableUrl(
+							externalId,
+							await PlayerTicketRoute.getIp(request),
+							request.header('Referer') || 'http://localhost:8080/',
+							8 * 60 * 60 * 1000
+						);
+						if (videoSrc && !_.get(mediaPlayerBlock, blockInfo.setVideoSrcPath)) {
+							_.set(mediaPlayerBlock, blockInfo.setVideoSrcPath, videoSrc.url);
+						}
+						if (itemInfo && itemInfo.thumbnail_path && !_.get(mediaPlayerBlock, blockInfo.setPosterSrcPath)) {
+							_.set(mediaPlayerBlock, blockInfo.setPosterSrcPath, itemInfo.thumbnail_path);
+						}
+						if (itemInfo && itemInfo.title && !_.get(mediaPlayerBlock, blockInfo.setTitlePath)) {
+							_.set(mediaPlayerBlock, blockInfo.setTitlePath, itemInfo.title);
+						}
+					}
+				} catch (err) {
+					logger.error(new CustomError(
+						'Failed to resolve media grid content',
+						err,
+						{ mediaPlayerBlocks, mediaPlayerBlock }
+					));
+				}
+			});
+		}
+	}
+
+	public static async resolveMediaTileItems(searchQuery: string | undefined, searchQueryLimit: string | undefined, mediaItems: {
+		mediaItem: {
+			type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
+			value: string
+		}
+	}[] | undefined): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {
 		try {
 			let results: any[] = [];
 			// Check for search queries

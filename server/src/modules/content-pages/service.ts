@@ -7,7 +7,11 @@ import DataService from '../data/service';
 import SearchController from '../search/controller';
 
 import { MediaItemResponse } from './controller';
-import { GET_COLLECTION_TILE_BY_ID, GET_CONTENT_PAGE_BY_PATH, GET_ITEM_TILE_BY_ID } from './queries.gql';
+import {
+	GET_COLLECTION_TILE_BY_ID,
+	GET_CONTENT_PAGE_BY_PATH, GET_ITEM_BY_EXTERNAL_ID,
+	GET_ITEM_TILE_BY_ID,
+} from './queries.gql';
 
 export default class ContentPageService {
 	public static async getContentBlockByPath(path: string): Promise<Avo.ContentPage.Page | null> {
@@ -33,6 +37,16 @@ export default class ContentPageService {
 			return itemOrCollection;
 		} catch (err) {
 			throw new CustomError('Failed to fetch collection or item', err, { type, id });
+		}
+	}
+
+	public static async fetchItemByExternalId(externalId: string): Promise<{title: string, thumbnail_path: string} | null> {
+		try {
+			const response = await DataService.execute(GET_ITEM_BY_EXTERNAL_ID, { externalId });
+
+			return _.get(response, 'data.app_item_meta[0]', null);
+		} catch (err) {
+			throw new CustomError('Failed to fetch item by external id', err, { externalId });
 		}
 	}
 

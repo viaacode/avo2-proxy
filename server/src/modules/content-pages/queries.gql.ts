@@ -71,6 +71,15 @@ export const GET_ITEM_TILE_BY_ID = `
 	}
 `;
 
+export const GET_ITEM_BY_EXTERNAL_ID = `
+	query getItemTileById($externalId: bpchar!) {
+		app_item_meta(where: { external_id: { _eq: $externalId } }) {
+			thumbnail_path
+			title
+		}
+	}
+`;
+
 export const GET_COLLECTION_TILE_BY_ID = `
 	query getCollectionTileById($id: uuid!) {
 		obj: app_collections(where: {id: {_eq: $id}}) {

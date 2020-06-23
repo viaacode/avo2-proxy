@@ -20,7 +20,7 @@ export default class ContentPagesRoute {
 		let content: Avo.ContentPage.Page = null;
 		try {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(this.context.request);
-			content = await ContentPageController.getContentPageByPath(path, user);
+			content = await ContentPageController.getContentPageByPath(path, user, this.context.request);
 		} catch (err) {
 			logger.error(new InternalServerError('Failed to get content page', err));
 			throw new InternalServerError('Failed to get content page', null, { path });
