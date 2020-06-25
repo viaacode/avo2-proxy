@@ -7,6 +7,7 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import OrganizationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';
 
@@ -313,6 +314,20 @@ export default class ContentPageController {
 				logger.error(
 					new CustomError('Failed to set video source for item', err, {
 						external_id: searchResult.external_id,
+					})
+				);
+			}
+			try {
+				// TODO cache logos for quicker access
+				const org = await OrganizationService.fetchOrganization(
+					searchResult.original_cp_id
+				);
+				item.organisation.logo_url = _.get(org, 'logo_url') || null;
+			} catch (err) {
+				logger.error(
+					new CustomError('Failed to set organization logo_url for item', err, {
+						external_id: searchResult.external_id,
+						original_cp_id: searchResult.original_cp_id,
 					})
 				);
 			}
