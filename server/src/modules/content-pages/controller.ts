@@ -318,6 +318,7 @@ export default class ContentPageController {
 				);
 			}
 			try {
+				// TODO cache logos for quicker access
 				const org = await OrganizationService.fetchOrganization(
 					searchResult.original_cp_id
 				);
