@@ -2,11 +2,13 @@ import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 import cron from 'node-cron';
 
+import { Avo } from '@viaa/avo2-types';
+
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 
-import { DELETE_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
+import { DELETE_ORGANIZATIONS, GET_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
 
 interface OrganizationResponse {
 	status: string;
@@ -62,7 +64,12 @@ export default class OrganizationService {
 			logIfNotTestEnv('caching organizations... error');
 
 			/* istanbul ignore next */
-			logger.error(new InternalServerError('Failed to fill initial organizations cache or schedule cron job to renew the cache', err));
+			logger.error(
+				new InternalServerError(
+					'Failed to fill initial organizations cache or schedule cron job to renew the cache',
+					err
+				)
+			);
 		}
 	}
 
@@ -81,7 +88,11 @@ export default class OrganizationService {
 			});
 
 			// Handle response
-			if (orgResponse.status >= 200 && orgResponse.status < 400 && orgResponse.data.data.length > 50) {
+			if (
+				orgResponse.status >= 200 &&
+				orgResponse.status < 400 &&
+				orgResponse.data.data.length > 50
+			) {
 				await OrganizationService.emptyOrganizations();
 				await OrganizationService.insertOrganizations(orgResponse.data.data);
 			} else {
@@ -94,40 +105,49 @@ export default class OrganizationService {
 						method: 'get',
 						status: orgResponse.status,
 						statusText: orgResponse.statusText,
-					});
+					}
+				);
 			}
-
 		} catch (err) {
 			/* istanbul ignore next */
-			throw new InternalServerError(
-				'Failed to make update organization cache',
-				err,
-				{
-					url,
-					method: 'get',
-				});
+			throw new InternalServerError('Failed to make update organization cache', err, {
+				url,
+				method: 'get',
+			});
 		}
 	}
 
 	private static async insertOrganizations(organizations: OrganizationInfo[]): Promise<void> {
-		const parsedOrganizations: ParsedOrganization[] = organizations.map((organization: OrganizationInfo) => ({
-			or_id: organization.or_id,
-			name: organization.cp_name,
-			website: organization.contact_information.website,
-			logo_url: organization.contact_information.logoUrl,
-			description: organization.description,
-			data: organization,
-		}));
+		const parsedOrganizations: ParsedOrganization[] = organizations.map(
+			(organization: OrganizationInfo) => ({
+				or_id: organization.or_id,
+				name: organization.cp_name,
+				website: organization.contact_information.website,
+				logo_url: organization.contact_information.logoUrl,
+				description: organization.description,
+				data: organization,
+			})
+		);
 
 		try {
 			return await DataService.execute(INSERT_ORGANIZATIONS, {
 				organizations: _.uniqBy(parsedOrganizations, 'or_id'),
 			});
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to insert organizations',
-				err
-			);
+			throw new InternalServerError('Failed to insert organizations', err);
+		}
+	}
+
+	static async fetchOrganization(id: string): Promise<Avo.Organization.Organization | null> {
+		try {
+			const response = await DataService.execute(GET_ORGANIZATIONS, { id });
+			const org = _.get(response, 'data.shared_organisations[0]') || null;
+			return org;
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch organization', err, {
+				id,
+				query: GET_ORGANIZATIONS,
+			});
 		}
 	}
 
@@ -135,10 +155,7 @@ export default class OrganizationService {
 		try {
 			return await DataService.execute(DELETE_ORGANIZATIONS);
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to empty organizations',
-				err
-			);
+			throw new InternalServerError('Failed to empty organizations', err);
 		}
 	}
 }

@@ -1,3 +1,5 @@
+import { Avo } from '@viaa/avo2-types';
+
 // TODO: Implement in typings
 import { templateIds } from './const';
 
@@ -9,16 +11,24 @@ export interface NewsletterPreferences {
 }
 
 export interface CustomFields {
-	Role: string;
-	Lerarenkaart: string;
-	Graad: string;
-	School: string;
-	Vestigingsnummer: string;
+	gebruikersgroep: string;
+	oormerk: string;
+	stamboeknummer: string;
+	is_uitzondering: string;
+	firstname: string;
+	lastname: string;
+	graad: string;
+	vakken: string;
+	school_postcodes: string;
+	school_ids: string;
+	school_campus_ids: string;
+	school_namen: string;
 }
 
 export type NewsletterKey = keyof NewsletterPreferences;
 
-export interface EmailInfo { // TODO use typings version
+export interface EmailInfo {
+	// TODO use typings version
 	template: keyof typeof templateIds;
 	to: string;
 	data: {

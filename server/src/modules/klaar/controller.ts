@@ -77,7 +77,7 @@ export default class KlaarController {
 	 */
 	public static async getKlaarJson(): Promise<KlaarNewsletter> {
 		try {
-			const klaarNewsLetterContentPage = await ContentPageController.getContentPageByPath(process.env.KLAAR_NEWSLETTER_CONTENT_PAGE_PATH, null);
+			const klaarNewsLetterContentPage = await ContentPageController.getContentPageByPath(process.env.KLAAR_NEWSLETTER_CONTENT_PAGE_PATH, null, null);
 			if (!klaarNewsLetterContentPage) {
 				throw new NotFoundError(
 					'Failed to find klaar newsletter content page by path',

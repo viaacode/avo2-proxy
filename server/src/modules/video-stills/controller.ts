@@ -1,5 +1,6 @@
 import * as promiseUtils from 'blend-promise-utils';
 import { compact, find, get } from 'lodash';
+import * as _ from 'lodash';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -59,10 +60,10 @@ export default class VideoStillsController {
 
 			// Get first video still for each video after their startTime
 			return compact(allVideoStills.map((objectNameInfo: ObjectNameInfoAndStills): StillInfo | null => {
-				const firstVideoStill = find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime * 1000);
+				const firstVideoStill = find(objectNameInfo.videoStills, (videoStill: VideoStill) => videoStill.time > objectNameInfo.startTime);
 
 				if (!firstVideoStill) {
-					return null;
+					return _.last(objectNameInfo.videoStills) || null;
 				}
 				return {
 					previewImagePath: firstVideoStill.previewImagePath,

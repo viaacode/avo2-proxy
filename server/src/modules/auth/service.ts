@@ -14,6 +14,7 @@ import {
 	GET_USER_INFO_BY_USER_EMAIL,
 	LINK_USER_GROUPS_TO_PROFILE,
 	UNLINK_USER_GROUP_FROM_PROFILE,
+	UPDATE_USER_LAST_ACCESS_DATE,
 } from './queries.gql';
 import { SharedUser, UserGroup } from './types';
 
@@ -129,6 +130,23 @@ export class AuthService {
 				userGroupIds,
 				profileId,
 				query: 'LINK_USER_GROUPS_TO_PROFILE',
+			});
+		}
+	}
+
+	static async updateUserLastAccessDate(userUid: string): Promise<void> {
+		try {
+			const response = await DataService.execute(UPDATE_USER_LAST_ACCESS_DATE, {
+				userUid,
+				date: new Date().toISOString(),
+			});
+			if (response.errors) {
+				throw new CustomError('Response contains graphql errors', null, { response });
+			}
+		} catch (err) {
+			throw new CustomError('Failed to update user last access date', err, {
+				userUid,
+				query: 'UPDATE_USER_LAST_ACCESS_DATE',
 			});
 		}
 	}
