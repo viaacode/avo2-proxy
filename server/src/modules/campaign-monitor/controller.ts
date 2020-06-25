@@ -9,10 +9,14 @@ import EducationOrganizationsService from '../education-organizations/service';
 
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
-import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
+import {
+	CustomFields,
+	EmailInfo,
+	NewsletterKey,
+	NewsletterPreferences,
+} from './types';
 
 export default class CampaignMonitorController {
-
 	/**
 	 * Send an email using the campaign monitor api
 	 * @param info
@@ -34,9 +38,15 @@ export default class CampaignMonitorController {
 	 * @param user
 	 * @param preferences
 	 */
-	public static async updateNewsletterPreferences(user: Avo.User.User, preferences: Partial<NewsletterPreferences>) {
+	public static async updateNewsletterPreferences(
+		user: Avo.User.User,
+		preferences: Partial<NewsletterPreferences>
+	) {
 		try {
-			const mappedPreferences = _.toPairs(preferences) as [NewsletterKey, boolean][];
+			const mappedPreferences = _.toPairs(preferences) as [
+				NewsletterKey,
+				boolean
+			][];
 
 			const email = _.get(user, 'mail');
 
@@ -46,24 +56,36 @@ export default class CampaignMonitorController {
 
 			const userGroupId = _.get(user, 'profile.userGroupIds[0]');
 			const allUserGroups = await AuthService.getAllUserGroups();
-			const userGroup = _.get(allUserGroups.find(group => group.id === userGroupId), 'label');
+			const userGroup = _.get(
+				allUserGroups.find(group => group.id === userGroupId),
+				'label'
+			);
 
 			const oormerk = _.get(user, 'oormerk'); // Wait for https://meemoo.atlassian.net/browse/DEV-949
+			const isExceptionAccount = _.get(user, 'is_exception');
 			const stamboekNumber = _.get(user, 'profile.stamboek');
-			const educationLevel = _.get(user, 'profile.educationLevels[0]');
+			const educationLevels: string[] = _.get(user, 'profile.educationLevels');
 
-			let school: string;
-			const educationalOrganizationId = _.get(user, 'profile.organizations[0].organization_id');
-			const educationalOrganizationUnitId = _.get(user, 'profile.organizations[0].unit_id');
-			if (educationalOrganizationId) {
-				// Waiting for https://meemoo.atlassian.net/browse/AVO-939
-				const educationalOrganization = await EducationOrganizationsService.getOrganization(educationalOrganizationId, educationalOrganizationUnitId);
-				school = [
-					educationalOrganization.city,
-					educationalOrganization.name,
-					educationalOrganization.units.find(unit => unit.id === educationalOrganizationUnitId),
-				].join('___');
-			}
+			const schoolZipcodes: string[] = [];
+			const schoolIds: string[] = [];
+			const campusIds: string[] = [];
+			const schoolNames: string[] = [];
+			const educationalOrganizations: Avo.EducationOrganization.Organization[] = _.get(user, 'profile.organizations') || [];
+			await promiseUtils.map(educationalOrganizations, async (org) => {
+				const educationalOrganizationId = _.get(org, 'organizationId');
+				const educationalOrganizationUnitId = _.get(org, 'unitId');
+				if (educationalOrganizationId) {
+					// Waiting for https://meemoo.atlassian.net/browse/AVO-939
+					const educationalOrganization = await EducationOrganizationsService.getOrganization(
+						educationalOrganizationId,
+						educationalOrganizationUnitId
+					);
+					schoolZipcodes.push(educationalOrganization.postal_code);
+					schoolNames.push(educationalOrganization.name);
+					schoolIds.push(educationalOrganizationId);
+					campusIds.push(educationalOrganizationUnitId);
+				}
+			});
 
 			const subjects = _.get(user, 'profile.subjects', []).join(', ');
 
@@ -72,18 +94,39 @@ export default class CampaignMonitorController {
 				const subscribed = preference[1];
 
 				if (subscribed) {
-					await CampaignMonitorService.subscribeToNewsletterList(NEWSLETTER_LISTS[key], email, name, {
-						Graad: educationLevel,
-						Lerarenkaart: stamboekNumber,
-						Role: oormerk,
-						School: school,
-					} as CustomFields);
+					const join = (arr: (string | undefined | null)[]) => _.uniq(_.compact(arr)).join(', ');
+					await CampaignMonitorService.subscribeToNewsletterList(
+						NEWSLETTER_LISTS[key],
+						email,
+						name,
+						{
+							oormerk,
+							gebruikersgroep: userGroup,
+							stamboeknummer: stamboekNumber,
+							is_uitzondering: isExceptionAccount ? 'true' : 'false',
+							firstname: firstName,
+							lastname: lastName,
+							graad: join(educationLevels),
+							vakken: subjects,
+							school_postcodes: join(schoolZipcodes),
+							school_ids: join(schoolIds),
+							school_campus_ids: join(campusIds),
+							school_namen: join(schoolNames),
+						} as CustomFields
+					);
 				} else {
-					await CampaignMonitorService.unsubscribeFromNewsletterList(NEWSLETTER_LISTS[key], email);
+					await CampaignMonitorService.unsubscribeFromNewsletterList(
+						NEWSLETTER_LISTS[key],
+						email
+					);
 				}
 			});
 		} catch (err) {
-			throw new InternalServerError('Failed to update newsletter preferences', err, { user, preferences });
+			throw new InternalServerError(
+				'Failed to update newsletter preferences',
+				err,
+				{ user, preferences }
+			);
 		}
 	}
 }
