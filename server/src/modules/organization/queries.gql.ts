@@ -13,3 +13,13 @@ export const DELETE_ORGANIZATIONS = `
 		}
 	}
 `;
+
+export const GET_ORGANIZATIONS = `
+	query getOrganisation($id: String!) {
+		shared_organisations(where: {or_id: {_eq: $id}}) {
+			or_id
+			name
+			logo_url
+		}
+	}
+`;
