@@ -1,4 +1,12 @@
-import { Context, GET, Path, POST, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
+import {
+	Context,
+	GET,
+	Path,
+	POST,
+	PreProcessor,
+	QueryParam,
+	ServiceContext,
+} from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -19,8 +27,14 @@ export default class ContentPagesRoute {
 	async getContentPageByPath(@QueryParam('path') path: string): Promise<Avo.ContentPage.Page> {
 		let content: Avo.ContentPage.Page = null;
 		try {
-			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(this.context.request);
-			content = await ContentPageController.getContentPageByPath(path, user, this.context.request);
+			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(
+				this.context.request
+			);
+			content = await ContentPageController.getContentPageByPath(
+				path,
+				user,
+				this.context.request
+			);
 		} catch (err) {
 			logger.error(new InternalServerError('Failed to get content page', err));
 			throw new InternalServerError('Failed to get content page', null, { path });
@@ -46,19 +60,28 @@ export default class ContentPagesRoute {
 	async resolveMediaGridBlocks(body: {
 		searchQuery: string | undefined;
 		searchQueryLimit: string | undefined;
-		mediaItems: {
-			mediaItem: {
-				type: 'ITEM' | 'COLLECTION' | 'BUNDLE',
-				value: string
-			}
-		}[] | undefined;
+		mediaItems:
+			| {
+					mediaItem: {
+						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+						value: string;
+					};
+			  }[]
+			| undefined;
 	}): Promise<any[]> {
 		try {
 			const user = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 			if (!user.profile.permissions.includes('SEARCH')) {
-				throw new UnauthorizedError('You do not have the required permission for this route');
+				throw new UnauthorizedError(
+					'You do not have the required permission for this route'
+				);
 			}
-			return await ContentPageController.resolveMediaTileItems(body.searchQuery, body.searchQueryLimit, body.mediaItems);
+			return await ContentPageController.resolveMediaTileItems(
+				body.searchQuery,
+				body.searchQueryLimit,
+				body.mediaItems,
+				this.context.request
+			);
 		} catch (err) {
 			throw new NotFoundError(
 				'Something went wrong while resolving the media grid blocks',
