@@ -54,8 +54,15 @@ export const GET_ITEM_TILE_BY_ID = `
 		obj: app_item_meta(where: { external_id: { _eq: $id } }) {
 			created_at
 			duration
+			browse_path
 			thumbnail_path
 			title
+			description
+			issued
+			organisation {
+				name
+				logo_url
+			}
 			type {
 				label
 				id
@@ -82,6 +89,9 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 			organisation {
 				name
 				logo_url
+			}
+			type {
+				label
 			}
 		}
 	}
