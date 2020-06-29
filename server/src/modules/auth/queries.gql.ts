@@ -295,3 +295,11 @@ export const UPDATE_USER_LAST_ACCESS_DATE = `
 		}
 	}
 `;
+
+export const UPDATE_AVO_USER = `
+	mutation updateUser($uid: uuid!, $user: shared_users_set_input!) {
+		update_shared_users(where: {uid: {_eq: $uid}}, _set: $user) {
+			affected_rows
+		}
+	}
+`;

@@ -98,19 +98,13 @@ export default class ProfileController {
 		}
 
 		// Remove usergroup if not lesgever secundair nor student lesgever secudair
-		if (
-			!educationLevels.includes('Secundair onderwijs') &&
-			userGroupIds.includes(3)
-		) {
+		if (!educationLevels.includes('Secundair onderwijs') && userGroupIds.includes(3)) {
 			await AuthService.removeUserGroupsFromProfile([3], profileId);
 		}
 		if (userGroupIds.includes(2) && userGroupIds.includes(3)) {
 			await AuthService.removeUserGroupsFromProfile([2], profileId);
 		}
-		if (
-			!educationLevels.includes('Secundair onderwijs') &&
-			userGroupIds.includes(5)
-		) {
+		if (!educationLevels.includes('Secundair onderwijs') && userGroupIds.includes(5)) {
 			await AuthService.removeUserGroupsFromProfile([5], profileId);
 		}
 		if (userGroupIds.includes(23) && userGroupIds.includes(5)) {
