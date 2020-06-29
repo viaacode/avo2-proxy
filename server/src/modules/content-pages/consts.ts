@@ -20,3 +20,5 @@ export const MEDIA_PLAYER_BLOCKS: { [blockType: string]: MediaPlayerPathInfo } =
 		setOrganisationPath: 'variables.componentState.mediaOrganisation',
 	},
 };
+
+export const DEFAULT_AUDIO_STILL = '/images/audio-still.svg';

@@ -42,7 +42,10 @@ export default class ContentPageService {
 			);
 
 			const itemOrCollection = _.get(response, 'data.obj[0]', null);
-			// const count = _.get(response, 'data.count[0]', 0); // TODO fix counts
+			if (itemOrCollection) {
+				itemOrCollection.count =
+					_.get(response, 'data.view_counts_aggregate.aggregate.sum.count') || 0;
+			}
 
 			return itemOrCollection;
 		} catch (err) {

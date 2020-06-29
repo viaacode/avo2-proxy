@@ -11,7 +11,7 @@ import OrganizationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';
 
-import { MEDIA_PLAYER_BLOCKS } from './consts';
+import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
 import { ResolvedItemOrCollection } from './types';
 
@@ -20,11 +20,9 @@ export enum SpecialPermissionGroups {
 	loggedInUsers = -2,
 }
 
-export interface MediaItemResponse {
-	// TODO move to typings repo
-	tileData: Partial<Avo.Collection.Collection | Avo.Item.Item>;
+export type MediaItemResponse = Partial<Avo.Collection.Collection | Avo.Item.Item> & {
 	count: number;
-}
+};
 
 export default class ContentPageController {
 	public static async getContentPageByPath(
@@ -177,11 +175,23 @@ export default class ContentPageController {
 								(itemInfo as any)[props[0]] &&
 								!_.get(mediaPlayerBlock, (blockInfo as any)[props[1]])
 							) {
-								_.set(
-									mediaPlayerBlock,
-									(blockInfo as any)[props[1]],
-									(itemInfo as any)[props[0]]
-								);
+								if (
+									props[0] === 'thumbnail_path' &&
+									itemInfo.type.label === 'audio'
+								) {
+									// Replace poster for audio items with default still
+									_.set(
+										mediaPlayerBlock,
+										(blockInfo as any)[props[1]],
+										DEFAULT_AUDIO_STILL
+									);
+								} else {
+									_.set(
+										mediaPlayerBlock,
+										(blockInfo as any)[props[1]],
+										(itemInfo as any)[props[0]]
+									);
+								}
 							}
 						});
 					}
@@ -237,16 +247,34 @@ export default class ContentPageController {
 				results = await promiseUtils.mapLimit(
 					nonEmptyMediaItems,
 					10,
-					async (item: {
+					async (itemInfo: {
 						mediaItem: {
 							type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
 							value: string;
 						};
 					}) => {
-						return await ContentPageService.fetchCollectionOrItem(
-							item.mediaItem.type === 'BUNDLE' ? 'COLLECTION' : item.mediaItem.type,
-							item.mediaItem.value
+						const result: MediaItemResponse | null = await ContentPageService.fetchCollectionOrItem(
+							itemInfo.mediaItem.type === 'BUNDLE'
+								? 'COLLECTION'
+								: itemInfo.mediaItem.type,
+							itemInfo.mediaItem.value
 						);
+						if (result) {
+							// Replace audio thumbnail
+							if (_.get(result, 'type.label') === 'audio') {
+								result.thumbnail_path = DEFAULT_AUDIO_STILL;
+							}
+
+							// Set video play url
+							if ((result as any).browse_path) {
+								(result as any).src = await this.getPlayableUrlByBrowsePathSilent(
+									(result as any).browse_path,
+									request
+								);
+								delete (result as any).browse_path; // Do not expose browse_path to the world
+							}
+						}
+						return result;
 					}
 				);
 			}
@@ -268,6 +296,7 @@ export default class ContentPageController {
 		const isItem =
 			searchResult.administrative_type === 'video' ||
 			searchResult.administrative_type === 'audio';
+		const isAudio = searchResult.administrative_type === 'audio';
 
 		if (isItem) {
 			const item = {
@@ -283,7 +312,7 @@ export default class ContentPageController {
 				lom_languages: searchResult.lom_languages,
 				lom_typical_age_range: searchResult.lom_typical_age_range,
 				issued: searchResult.dcterms_issued,
-				thumbnail_path: searchResult.thumbnail_path,
+				thumbnail_path: isAudio ? DEFAULT_AUDIO_STILL : searchResult.thumbnail_path,
 				org_id: searchResult.original_cp_id,
 				organisation: {
 					name: searchResult.original_cp,
@@ -301,20 +330,10 @@ export default class ContentPageController {
 					},
 				},
 			} as Partial<Avo.Item.Item> & { src?: string };
-			try {
-				item.src = isItem
-					? (await PlayerTicketController.getPlayableUrl(
-							searchResult.external_id,
-							await PlayerTicketRoute.getIp(request),
-							request.header('Referer') || 'http://localhost:8080/',
-							8 * 60 * 60 * 1000
-					  )) || null
-					: null;
-			} catch (err) {
-				logger.error(
-					new CustomError('Failed to set video source for item', err, {
-						external_id: searchResult.external_id,
-					})
+			if (isItem) {
+				item.src = await this.getPlayableUrlByExternalIdSilent(
+					searchResult.external_id,
+					request
 				);
 			}
 			try {
@@ -369,5 +388,51 @@ export default class ContentPageController {
 				},
 			},
 		} as Partial<Avo.Collection.Collection>;
+	}
+
+	private static async getPlayableUrlByExternalIdSilent(
+		externalId: string,
+		request: Request
+	): Promise<string | null> {
+		try {
+			return (
+				(await PlayerTicketController.getPlayableUrl(
+					externalId,
+					await PlayerTicketRoute.getIp(request),
+					request.header('Referer') || 'http://localhost:8080/',
+					8 * 60 * 60 * 1000
+				)) || null
+			);
+		} catch (err) {
+			logger.error(
+				new CustomError('Failed to get playable url for item', err, {
+					externalId,
+				})
+			);
+			return null;
+		}
+	}
+
+	private static async getPlayableUrlByBrowsePathSilent(
+		browsePath: string,
+		request: Request
+	): Promise<string | null> {
+		try {
+			return (
+				(await PlayerTicketController.getPlayableUrlFromBrowsePath(
+					browsePath,
+					await PlayerTicketRoute.getIp(request),
+					request.header('Referer') || 'http://localhost:8080/',
+					8 * 60 * 60 * 1000
+				)) || null
+			);
+		} catch (err) {
+			logger.error(
+				new CustomError('Failed to get playable url for item', err, {
+					browsePath,
+				})
+			);
+			return null;
+		}
 	}
 }
