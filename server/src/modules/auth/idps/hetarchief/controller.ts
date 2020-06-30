@@ -49,7 +49,7 @@ export default class HetArchiefController {
 			}
 
 			// Create avo user object
-			const ldapUser: BasicIdpUserInfo = this.parseLdapObject(ldapUserInfo);
+			const ldapUser: BasicIdpUserInfo = HetArchiefController.parseLdapObject(ldapUserInfo);
 			const existingUser = await AuthService.getAvoUserInfoByEmail(ldapUser.mail);
 			if (existingUser) {
 				throw new InternalServerError(
@@ -64,7 +64,7 @@ export default class HetArchiefController {
 			const userUuid = await AuthController.createUser(ldapUser);
 
 			// Create avo profile object
-			await this.createProfile(ldapUserInfo, userUuid, stamboekNumber);
+			await HetArchiefController.createProfile(ldapUserInfo, userUuid, stamboekNumber);
 
 			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
 			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
@@ -175,7 +175,9 @@ export default class HetArchiefController {
 		let avoUserInfo = avoUser;
 
 		if (!avoUserInfo) {
-			avoUserInfo = await this.getAvoUserInfoFromDatabaseByLdapUuid(ldapUserInfo.id);
+			avoUserInfo = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
+				ldapUserInfo.id
+			);
 			if (!avoUserInfo) {
 				throw new InternalServerError(
 					'Failed to find matching avo user to the provided ldap uuid',
