@@ -22,26 +22,29 @@ export default class EventLoggingRoute {
 		if (!clientEvents) {
 			throw new BadRequestError('body must contain the event you want to log');
 		}
-		const clientEventArray: ClientEvent[] = _.isArray(clientEvents) ? clientEvents : [clientEvents];
+		const clientEventArray: ClientEvent[] = _.isArray(clientEvents)
+			? clientEvents
+			: [clientEvents];
 		EventLoggingController.insertEvents(
 			clientEventArray,
 			EventLoggingRoute.getIp(this.context),
-			EventLoggingRoute.getViaaRequestId(this.context),
-		).then(() => {
-			logger.info('event inserted');
-		}).catch((err) => {
-			const error = new InternalServerError('Failed during insert event route', err, {});
-			logger.error(error);
-			throw error;
-		});
+			EventLoggingRoute.getViaaRequestId(this.context)
+		)
+			.then(() => {
+				logger.info('event inserted');
+			})
+			.catch(err => {
+				const error = new InternalServerError('Failed during insert event route', err, {});
+				logger.error(error);
+			});
 		return; // Return before event is inserted, since we do not want to hold up the client if the event fails to be inserted
 	}
 
 	private static getIp(context: ServiceContext): string | null {
-		return context.request.headers['x-real-ip'] as string || null;
+		return (context.request.headers['x-real-ip'] as string) || null;
 	}
 
 	private static getViaaRequestId(context: ServiceContext): string | null {
-		return context.request.headers['x-viaa-request-id'] as string || null;
+		return (context.request.headers['x-viaa-request-id'] as string) || null;
 	}
 }

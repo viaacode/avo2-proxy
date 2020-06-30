@@ -5,10 +5,10 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import DataService from '../../../data/service';
 import AuthController from '../../controller';
+import { getUserByIdpId } from '../../helpers/get-user-by-idp-id';
 import { IdpHelper } from '../../idp-helper';
-import { GET_PROFILE_IDS_BY_USER_UID, GET_USER_BY_IDP_ID } from '../../queries.gql';
+import { GET_PROFILE_IDS_BY_USER_UID } from '../../queries.gql';
 import { AuthService } from '../../service';
-import { IdpType } from '../../types';
 import { BasicIdpUserInfo } from '../hetarchief/controller';
 
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
@@ -28,7 +28,7 @@ export default class SmartschoolController extends IdpHelper {
 			// Pupil
 			if (smartschoolUserInfo.leerling) { // if leerling is true (not false or undefined)
 				// logged in user is a student
-				let userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
+				let userUid: string | null = await getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
 
 				if (!userUid) {
 					// Create avo user through graphql
@@ -52,7 +52,7 @@ export default class SmartschoolController extends IdpHelper {
 
 			// Teacher
 			if (smartschoolUserInfo.basisrol === 'leerkracht') {
-				const userUid: string | null = await this.getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
+				const userUid: string | null = await getUserByIdpId('SMARTSCHOOL', smartschoolUserInfo.userID);
 				let avoUser: Avo.User.User | null;
 				if (userUid) {
 					avoUser = await AuthService.getAvoUserInfoById(userUid);
@@ -116,14 +116,6 @@ export default class SmartschoolController extends IdpHelper {
 			alias: userUid,
 		};
 		return AuthController.createProfile(profile);
-	}
-
-	private static async getUserByIdpId(idpType: IdpType, idpId: string): Promise<string | null> {
-		const response = await DataService.execute(GET_USER_BY_IDP_ID, {
-			idpType,
-			idpId,
-		});
-		return _.get(response, 'data.shared_users[0].uid', null);
 	}
 
 	private static async getProfileIdsByUserUid(userUid: string): Promise<string[]> {
