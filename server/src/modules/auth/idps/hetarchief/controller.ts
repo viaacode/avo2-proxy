@@ -148,8 +148,8 @@ export default class HetArchiefController {
 		return {
 			first_name: _.get(ldapObject, 'attributes.givenName[0]'),
 			last_name: _.get(ldapObject, 'attributes.sn[0]'),
-			email: _.get(ldapObject, 'attributes.mail[0]'),
-			display_name: _.get(ldapObject, 'attributes.displayName[0]'),
+			email: _.get(ldapObject, 'attributes.mail'),
+			display_name: _.get(ldapObject, 'attributes.displayName'),
 			unit: {
 				ou_id: _.get(ldapObject, 'attributes.ou[0]'),
 			},
