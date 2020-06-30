@@ -9,6 +9,7 @@ import { ClientEducationOrganization } from '../education-organizations/route';
 import EducationOrganizationsService, {
 	LdapEducationOrganization,
 } from '../education-organizations/service';
+import ProfileController from '../profile/controller';
 
 import {
 	GET_USER_GROUPS,
@@ -20,7 +21,6 @@ import {
 	UPDATE_USER_LAST_ACCESS_DATE,
 } from './queries.gql';
 import { SharedUser, UserGroup } from './types';
-import ProfileController from '../profile/controller';
 
 export class AuthService {
 	public static async getAvoUserInfoByEmail(email: string): Promise<Avo.User.User> {
