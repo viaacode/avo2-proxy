@@ -14,11 +14,7 @@ import PlayerTicketRoute from '../player-ticket/route';
 import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
 import { ResolvedItemOrCollection } from './types';
-
-export enum SpecialPermissionGroups {
-	loggedOutUsers = -1,
-	loggedInUsers = -2,
-}
+import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 
 export type MediaItemResponse = Partial<Avo.Collection.Collection | Avo.Item.Item> & {
 	count: number;
@@ -68,14 +64,7 @@ export default class ContentPageController {
 			}
 
 			// Check if content page is accessible for the user who requested the content page
-			if (
-				!_.intersection(contentPage.user_group_ids, [
-					..._.get(user, 'profile.userGroupIds', []),
-					user
-						? SpecialPermissionGroups.loggedInUsers
-						: SpecialPermissionGroups.loggedOutUsers,
-				]).length
-			) {
+			if (!_.intersection(contentPage.user_group_ids, getUserGroupIds(user)).length) {
 				return null;
 			}
 
@@ -91,6 +80,24 @@ export default class ContentPageController {
 		} catch (err) {
 			throw new ExternalServerError('Failed to get content page', err);
 		}
+	}
+
+	public static async getContentPagesForOverview(
+		withBlock: boolean,
+		contentType: string,
+		labelIds: number[],
+		offset: number,
+		limit: number,
+		user: Avo.User.User
+	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+		return ContentPageService.fetchContentPages(
+			withBlock,
+			getUserGroupIds(user),
+			contentType,
+			labelIds,
+			offset,
+			limit
+		);
 	}
 
 	private static async resolveMediaTileItemsInPage(

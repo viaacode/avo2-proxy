@@ -16,6 +16,7 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
+import { ContentPageOverviewParams } from './types';
 
 @Path('/content-pages')
 export default class ContentPagesRoute {
@@ -47,6 +48,28 @@ export default class ContentPagesRoute {
 			null,
 			{ path }
 		);
+	}
+
+	@Path('/overview')
+	@POST
+	async getContentPagesForOverview(
+		body: ContentPageOverviewParams
+	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+		try {
+			return ContentPageController.getContentPagesForOverview(
+				body.withBlock,
+				body.contentType,
+				body.labelIds,
+				body.offset,
+				body.limit,
+				IdpHelper.getAvoUserInfoFromSession(this.context.request)
+			);
+		} catch (err) {
+			logger.error(new InternalServerError('Failed to get content page for overview', err));
+			throw new InternalServerError('Failed to get content page for overview', null, {
+				body,
+			});
+		}
 	}
 
 	/**
