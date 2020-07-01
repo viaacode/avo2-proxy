@@ -1,9 +1,7 @@
 import { IncomingHttpHeaders } from 'http';
-import _ from 'lodash';
+import { compact, get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
-
-import { logger } from '../../shared/helpers/logger';
 
 import DataService from './service';
 
@@ -14,15 +12,27 @@ export default class DataController {
 		// TODO check if trace id header is correct
 		const traceId = allHeaders['x-viaa-trace-id-header'] as string | undefined;
 		const headers: { [headerName: string]: string } = {};
+
 		if (traceId) {
 			headers['x-hasura-trace-id'] = traceId;
 		}
 
 		// Execute the graphql query
-		let response = await DataService.execute(query, variables, headers);
-		response = this.filterAppMetaData(response, user);
-		response = this.filterAssignments(response, user);
-		return response;
+		const response = await DataService.execute(query, variables, headers);
+
+		return this.filterResponse(response, user);
+	}
+
+	private static filterResponse(response: any, user: Avo.User.User | null) {
+		let filteredResponse = { ...response };
+
+		if (user.profile.permissions.includes('VIEW_ANY_UNPUBLISHED_ITEMS')) {
+			filteredResponse = this.filterAppMetaData(response);
+		}
+
+		filteredResponse = this.filterAssignments(response, user);
+
+		return filteredResponse;
 	}
 
 	/**
@@ -30,28 +40,36 @@ export default class DataController {
 	 * @param response response from graphql
 	 * @param user
 	 */
-	private static filterAppMetaData(response: any, user: Avo.User.User | null): { items: any[], errors: string[] } {
+	private static filterAppMetaData(response: any): { items: any[], errors: string[] } {
 		// TODO re-enable once the frontend doesn't use browse_path and thumbnail_path anymore
-		// const items = _.get(response, 'data.app_item_meta');
-		// if (items && items.length) {
-		// 	const errors: string[] = [];
-		// 	response.data.app_item_meta = _.compact((items || []).map((item: any) => {
-		// 		delete item.browse_path;
-		// 		delete item.thumbnail_path;
-		// 		if (item.is_deleted) {
-		// 			errors.push('DELETED');
-		// 			return null;
-		// 		}
-		// 		return item;
-		// 	}));
-		// 	if (errors && errors.length) {
-		// 		response.errors = errors.map((error: string) => {
-		// 			return {
-		// 				message: error,
-		// 			};
-		// 		});
-		// 	}
-		// }
+		const items: Avo.Item.Item[] = get(response, 'data.app_item_meta');
+
+		if (items && items.length) {
+			const errors: string[] = [];
+
+			response.data.app_item_meta = compact((items || []).map((item: Avo.Item.Item) => {
+				if (item.is_deleted) {
+					errors.push('DELETED');
+					return null;
+				}
+
+				if (!item.is_published) {
+					errors.push('DEPUBLISHED');
+					return null;
+				}
+
+				return item;
+			}));
+
+			if (errors && errors.length) {
+				response.errors = errors.map((error: string) => {
+					return {
+						message: error,
+					};
+				});
+			}
+		}
+
 		return response;
 	}
 
@@ -61,10 +79,11 @@ export default class DataController {
 	 * @param user
 	 */
 	private static filterAssignments(response: any, user: Avo.User.User | null): { assignments: any[], errors: string[] } {
-		const assignments = _.get(response, 'data.assignments');
+		const assignments = get(response, 'data.assignments');
+
 		if (assignments && assignments.length) {
 			const errors: string[] = [];
-			response.data.assignments = _.compact((assignments || []).map((assignment: Partial<Avo.Assignment.Assignment>) => {
+			response.data.assignments = compact((assignments || []).map((assignment: Partial<Avo.Assignment.Assignment>) => {
 				const isOwner = assignment.owner_profile_id && user && user.profile && user.uid && assignment.owner_profile_id === user.profile.id;
 
 				if (assignment.is_deleted) {

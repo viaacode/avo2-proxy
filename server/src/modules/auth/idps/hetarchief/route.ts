@@ -5,10 +5,10 @@ import {
 	GET,
 	Path,
 	POST,
+	PreProcessor,
 	QueryParam,
 	Return,
 	ServiceContext,
-	PreProcessor,
 } from 'typescript-rest';
 
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
@@ -26,8 +26,8 @@ import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';
 
 import HetArchiefController from './controller';
+import { UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
-import { LdapPerson, UpdateUserBody } from './hetarchief.types';
 
 interface RelayState {
 	returnToUrl: string;
@@ -263,13 +263,13 @@ export default class HetArchiefRoute {
 		try {
 			const serverRedirectUrl = `${
 				process.env.HOST
-			}/auth/hetarchief/verify-email-callback?${queryString.stringify({
-				returnToUrl,
-				stamboekNumber: encrypt(stamboekNumber),
-			})}`;
+				}/auth/hetarchief/verify-email-callback?${queryString.stringify({
+					returnToUrl,
+					stamboekNumber: encrypt(stamboekNumber),
+				})}`;
 			return new Return.MovedTemporarily<void>(
 				`${process.env.SSUM_REGISTRATION_PAGE ||
-					process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
+				process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
 					redirect_to: serverRedirectUrl,
 					app_name: process.env.SAML_SP_ENTITY_ID,
 					stamboek: stamboekNumber,
@@ -303,10 +303,10 @@ export default class HetArchiefRoute {
 			// TODO get saml login data straight from registration form callback => so we can skip this login form step
 			const serverRedirectUrl = `${
 				process.env.HOST
-			}/auth/hetarchief/register-callback?${queryString.stringify({
-				returnToUrl,
-				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
-			})}`;
+				}/auth/hetarchief/register-callback?${queryString.stringify({
+					returnToUrl,
+					stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
+				})}`;
 			const url = `${process.env.HOST}/auth/hetarchief/login?${queryString.stringify({
 				returnToUrl: serverRedirectUrl,
 			})}`;

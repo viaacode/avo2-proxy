@@ -4,12 +4,11 @@ import { BadRequestError, ClientError, InternalServerError } from '../../shared/
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
+import { AuthService } from '../auth/service';
 
 import { templateIds } from './const';
 import CampaignMonitorController from './controller';
 import { EmailInfo } from './types';
-import HetArchiefService from '../auth/idps/hetarchief/service';
-import { AuthService } from '../auth/service';
 
 @Path('/campaign-monitor')
 export default class CampaignMonitorRoute {
