@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { CustomError, ExternalServerError } from '../../shared/helpers/error';
+import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 import SearchController from '../search/controller';
 
@@ -10,6 +10,8 @@ import { MediaItemResponse } from './controller';
 import {
 	GET_COLLECTION_TILE_BY_ID,
 	GET_CONTENT_PAGE_BY_PATH,
+	GET_CONTENT_PAGES,
+	GET_CONTENT_PAGES_WITH_BLOCKS,
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
 } from './queries.gql';
@@ -86,5 +88,68 @@ export default class ContentPageService {
 				filters,
 			});
 		}
+	}
+
+	private static getLabelFilter(labelIds: number[]): any[] {
+		if (labelIds.length) {
+			// The user selected some block labels at the top of the page overview component
+			return [
+				{
+					content_content_labels: {
+						content_label: { id: { _in: labelIds } },
+					},
+				},
+			];
+		}
+		return [];
+	}
+
+	public static async fetchContentPages(
+		withBlock: boolean,
+		userGroupIds: number[],
+		contentType: string,
+		labelIds: number[],
+		offset: number,
+		limit: number
+	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+		const now = new Date().toISOString();
+		const response = await DataService.execute(
+			withBlock ? GET_CONTENT_PAGES_WITH_BLOCKS : GET_CONTENT_PAGES,
+			{
+				offset,
+				limit,
+				where: {
+					_and: [
+						{
+							// Get content pages with the selected content type
+							content_type: { _eq: contentType },
+						},
+						{
+							// Get pages that are visible to the current user
+							_or: userGroupIds.map(userGroupId => ({
+								user_group_ids: { _contains: userGroupId },
+							})),
+						},
+						...this.getLabelFilter(labelIds),
+						// publish state
+						{
+							_or: [
+								{ is_public: { _eq: true } },
+								{ publish_at: { _eq: null }, depublish_at: { _gte: now } },
+								{ publish_at: { _lte: now }, depublish_at: { _eq: null } },
+								{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
+							],
+						},
+					],
+				},
+			}
+		);
+		if (response.errors) {
+			throw new InternalServerError('GraphQL has errors', null, { response });
+		}
+		return {
+			pages: _.get(response, 'data.app_content') || [],
+			count: _.get(response, 'data.app_content_aggregate.aggregate.count', 0),
+		};
 	}
 }

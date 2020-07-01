@@ -7,6 +7,7 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import OrganizationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';
@@ -14,11 +15,6 @@ import PlayerTicketRoute from '../player-ticket/route';
 import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
 import { ResolvedItemOrCollection } from './types';
-
-export enum SpecialPermissionGroups {
-	loggedOutUsers = -1,
-	loggedInUsers = -2,
-}
 
 export type MediaItemResponse = Partial<Avo.Collection.Collection | Avo.Item.Item> & {
 	count: number;
@@ -68,14 +64,7 @@ export default class ContentPageController {
 			}
 
 			// Check if content page is accessible for the user who requested the content page
-			if (
-				!_.intersection(contentPage.user_group_ids, [
-					..._.get(user, 'profile.userGroupIds', []),
-					user
-						? SpecialPermissionGroups.loggedInUsers
-						: SpecialPermissionGroups.loggedOutUsers,
-				]).length
-			) {
+			if (!_.intersection(contentPage.user_group_ids, getUserGroupIds(user)).length) {
 				return null;
 			}
 
@@ -91,6 +80,24 @@ export default class ContentPageController {
 		} catch (err) {
 			throw new ExternalServerError('Failed to get content page', err);
 		}
+	}
+
+	public static async getContentPagesForOverview(
+		withBlock: boolean,
+		contentType: string,
+		labelIds: number[],
+		offset: number,
+		limit: number,
+		user: Avo.User.User
+	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+		return ContentPageService.fetchContentPages(
+			withBlock,
+			getUserGroupIds(user),
+			contentType,
+			labelIds,
+			offset,
+			limit
+		);
 	}
 
 	private static async resolveMediaTileItemsInPage(
@@ -212,11 +219,11 @@ export default class ContentPageController {
 		searchQueryLimit: string | undefined,
 		mediaItems:
 			| {
-					mediaItem: {
-						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-						value: string;
-					};
-			  }[]
+				mediaItem: {
+					type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+					value: string;
+				};
+			}[]
 			| undefined,
 		request: Request
 	): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {

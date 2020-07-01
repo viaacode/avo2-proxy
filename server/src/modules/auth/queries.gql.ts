@@ -14,6 +14,11 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 				updated_at
 				user_id
 				company_id
+				organisation {
+					logo_url
+					name
+					or_id
+				}
 				profile_user_groups {
 					groups {
 						id
@@ -72,6 +77,11 @@ export const GET_USER_INFO_BY_ID = `
 				updated_at
 				user_id
 				company_id
+				organisation {
+					logo_url
+					name
+					or_id
+				}
 				profile_user_groups {
 					groups {
 						id
@@ -131,6 +141,11 @@ export const GET_USER_BY_LDAP_UUID = `
 					updated_at
 					user_id
 					company_id
+					organisation {
+						logo_url
+						name
+						or_id
+					}
 					profile_user_groups {
 						groups {
 							id

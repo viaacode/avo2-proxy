@@ -20,17 +20,17 @@ export default class DataController {
 		// Execute the graphql query
 		const response = await DataService.execute(query, variables, headers);
 
-		return this.filterResponse(response, user);
+		return DataController.filterResponse(response, user);
 	}
 
 	private static filterResponse(response: any, user: Avo.User.User | null) {
 		let filteredResponse = { ...response };
 
 		if (!user.profile.permissions.includes('VIEW_ANY_UNPUBLISHED_ITEMS')) {
-			filteredResponse = this.filterAppMetaData(response);
+			filteredResponse = DataController.filterAppMetaData(response);
 		}
 
-		filteredResponse = this.filterAssignments(response, user);
+		filteredResponse = DataController.filterAssignments(response, user);
 
 		return filteredResponse;
 	}

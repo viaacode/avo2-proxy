@@ -1,10 +1,13 @@
 import AWS, { AWSError, S3 } from 'aws-sdk';
 import axios from 'axios';
+import * as fs from 'fs-extra';
 import _ from 'lodash';
+import cron from 'node-cron';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
-import { BadRequestError, CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
-import { logger } from '../../shared/helpers/logger';
+import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
+import { tempFolder } from '../core/middleware/global';
 
 interface AssetTokenResponse {
 	token: string;
@@ -29,6 +32,28 @@ checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
 export default class AssetService {
 	private static token: AssetTokenResponse | null = null;
 	private static s3: S3 | null;
+
+	public static async initialize() {
+		try {
+			logIfNotTestEnv('Registering cron job to clean temp assets...');
+			// Register a cron job to empty the temp folder every night
+			if (process.env.NODE_ENV !== 'test') {
+				/* istanbul ignore next */
+				cron.schedule('0 0 04 * * *', async () => {
+					await fs.emptyDir(tempFolder);
+				}).start();
+			}
+			logIfNotTestEnv('Registering cron job to clean temp assets... done');
+		} catch (err) {
+			logIfNotTestEnv('Registering cron job to clean temp assets... error');
+			/* istanbul ignore next */
+			logger.error(
+				new InternalServerError('Failed to empty temp folder', err, {
+					tempFolderPath: tempFolder,
+				})
+			);
+		}
+	}
 
 	/**
 	 * Returns an s3 client object which contains an up-to-date token to communicate with the s3 server
@@ -55,18 +80,23 @@ export default class AssetService {
 			const tokenExpiry = new Date(_.get(AssetService, 'token.expiration')).getTime();
 			const now = new Date().getTime();
 			const fiveMinutes = 5 * 60 * 1000;
-			if (!AssetService.token || tokenExpiry - fiveMinutes < now) { // Take 5 minutes margin, to ensure we get a new token well before is expires
+			if (!AssetService.token || tokenExpiry - fiveMinutes < now) {
+				// Take 5 minutes margin, to ensure we get a new token well before is expires
 				try {
-					const response = await axios.post(process.env.ASSET_SERVER_TOKEN_ENDPOINT, undefined, {
-						headers: {
-							'cache-control': 'no-cache',
-							'X-User-Secret-Key-Meta': process.env.ASSET_SERVER_TOKEN_SECRET,
-						},
-						auth: {
-							username: process.env.ASSET_SERVER_TOKEN_USERNAME,
-							password: process.env.ASSET_SERVER_TOKEN_PASSWORD,
-						},
-					});
+					const response = await axios.post(
+						process.env.ASSET_SERVER_TOKEN_ENDPOINT,
+						undefined,
+						{
+							headers: {
+								'cache-control': 'no-cache',
+								'X-User-Secret-Key-Meta': process.env.ASSET_SERVER_TOKEN_SECRET,
+							},
+							auth: {
+								username: process.env.ASSET_SERVER_TOKEN_USERNAME,
+								password: process.env.ASSET_SERVER_TOKEN_PASSWORD,
+							},
+						}
+					);
 					AssetService.token = response.data;
 
 					AssetService.s3 = new AWS.S3({
@@ -76,7 +106,11 @@ export default class AssetService {
 						s3BucketEndpoint: true,
 					});
 				} catch (err) {
-					throw new ExternalServerError('Failed to get new s3 token for the asset service', err, {});
+					throw new ExternalServerError(
+						'Failed to get new s3 token for the asset service',
+						err,
+						{}
+					);
 				}
 			}
 
@@ -89,34 +123,39 @@ export default class AssetService {
 	/**
 	 * Upload file to the asset service and return the url
 	 */
-	public static upload(key: string, base64String: string, mimeType: string): Promise<string> {
+	public static upload(
+		key: string,
+		file: Express.Multer.File,
+		mimeType: string
+	): Promise<string> {
 		return new Promise<string>(async (resolve, reject) => {
 			try {
 				checkRequiredEnvs(REQUIRED_ASSET_SERVER_VARIABLES);
 
-				const base64Code = (base64String.split(';base64,').pop() || '').trim();
-				if (!base64Code) {
-					throw new BadRequestError('Failed to upload file because the base64 code was invalid', null);
-				}
-				const buffer = new Buffer(base64Code, 'base64');
 				const s3Client: S3 = await this.getS3Client();
-				s3Client.putObject({
-					Key: key,
-					Body: buffer,
-					ACL: 'public-read',
-					ContentType: mimeType,
-					Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
-				}, (err: AWSError) => {
-					if (err) {
-						const error = new ExternalServerError(
-							'Failed to upload asset to the s3 asset service',
-							err);
-						logger.error(error);
-						reject(error);
-					} else {
-						resolve(`${process.env.ASSET_SERVER_ENDPOINT}/${process.env.ASSET_SERVER_BUCKET_NAME}/${key}`);
+				s3Client.putObject(
+					{
+						Key: key,
+						Body: await fs.readFile(file.path),
+						ACL: 'public-read',
+						ContentType: mimeType,
+						Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
+					},
+					(err: AWSError) => {
+						if (err) {
+							const error = new ExternalServerError(
+								'Failed to upload asset to the s3 asset service',
+								err
+							);
+							logger.error(error);
+							reject(error);
+						} else {
+							resolve(
+								`${process.env.ASSET_SERVER_ENDPOINT}/${process.env.ASSET_SERVER_BUCKET_NAME}/${key}`
+							);
+						}
 					}
-				});
+				);
 			} catch (err) {
 				const error = new InternalServerError(
 					'Failed to upload asset to the asset service',
@@ -124,8 +163,8 @@ export default class AssetService {
 					{
 						key,
 						mimeType,
-						startOfFile: base64String.substring(0, 50),
-					});
+					}
+				);
 				logger.error(error);
 				reject(error);
 			}
@@ -136,23 +175,27 @@ export default class AssetService {
 		return new Promise<void>(async (resolve, reject) => {
 			try {
 				const s3Client: S3 = await this.getS3Client();
-				s3Client.deleteObject({
-					Key: url.split(`/${process.env.ASSET_SERVER_BUCKET_NAME}/`).pop(),
-					Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
-				}, (err: AWSError) => {
-					if (err) {
-						const error = new ExternalServerError(
-							'Failed to delete asset from the s3 asset service',
-							err,
-							{
-								url,
-							});
-						logger.error(error);
-						reject(error);
-					} else {
-						resolve();
+				s3Client.deleteObject(
+					{
+						Key: url.split(`/${process.env.ASSET_SERVER_BUCKET_NAME}/`).pop(),
+						Bucket: process.env.ASSET_SERVER_BUCKET_NAME,
+					},
+					(err: AWSError) => {
+						if (err) {
+							const error = new ExternalServerError(
+								'Failed to delete asset from the s3 asset service',
+								err,
+								{
+									url,
+								}
+							);
+							logger.error(error);
+							reject(error);
+						} else {
+							resolve();
+						}
 					}
-				});
+				);
 			} catch (err) {
 				reject(err);
 			}

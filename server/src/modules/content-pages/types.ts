@@ -13,3 +13,11 @@ export interface MediaPlayerPathInfo {
 export type ResolvedItemOrCollection = Partial<Avo.Item.Item | Avo.Collection.Collection> & {
 	src?: string;
 };
+
+export interface ContentPageOverviewParams {
+	withBlock: boolean;
+	contentType: string;
+	labelIds: number[];
+	offset: number;
+	limit: number;
+}

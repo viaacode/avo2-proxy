@@ -15,13 +15,16 @@ const AVO_USER_INFO_PATH = 'session.avoUserInfo';
 const IDP_TYPE_PATH = 'session.idpType';
 
 export class IdpHelper {
-
 	public static getIdpUserInfoFromSession(request: Request): any | null {
 		const idpType = IdpHelper.getIdpTypeFromSession(request);
 		return _.get(request, `${IDP_USER_INFO_PATH}.${idpType}`, null);
 	}
 
-	public static setIdpUserInfoOnSession(request: Express.Request, idpUserInfo: any | null, idpType: IdpType | null): void {
+	public static setIdpUserInfoOnSession(
+		request: Express.Request,
+		idpUserInfo: any | null,
+		idpType: IdpType | null
+	): void {
 		if (request.session) {
 			_.set(request, `${IDP_USER_INFO_PATH}.${idpType}`, idpUserInfo);
 			_.set(request, IDP_TYPE_PATH, idpUserInfo ? idpType : null); // clear the idpType if idpUserInfo is null
@@ -29,14 +32,16 @@ export class IdpHelper {
 			throw new InternalServerError(
 				'Failed to store idp user info / ipd type because no session was found on the request object',
 				null,
-				{ idpUserInfo },
+				{ idpUserInfo }
 			);
 		}
 	}
 
 	public static clearAllIdpUserInfosFromSession(request: Express.Request) {
 		const idpTypes: IdpType[] = ['HETARCHIEF', 'SMARTSCHOOL', 'KLASCEMENT'];
-		idpTypes.forEach((idpType: IdpType) => this.setIdpUserInfoOnSession(request, null, idpType));
+		idpTypes.forEach((idpType: IdpType) => {
+			this.setIdpUserInfoOnSession(request, null, idpType);
+		});
 	}
 
 	public static getAvoUserInfoFromSession(request: Request): Avo.User.User | null {
@@ -55,13 +60,18 @@ export class IdpHelper {
 		// Refresh avo user info from database
 		const avoDbUser: Avo.User.User = await AuthService.getAvoUserInfoById(avoUser.uid);
 		if (!avoDbUser) {
-			throw new ServerError('Failed to find avo user in the database', null, { userUid: avoUser.uid });
+			throw new ServerError('Failed to find avo user in the database', null, {
+				userUid: avoUser.uid,
+			});
 		}
 
 		return avoDbUser;
 	}
 
-	public static setAvoUserInfoOnSession(request: Express.Request, user: Avo.User.User | null): void {
+	public static setAvoUserInfoOnSession(
+		request: Express.Request,
+		user: Avo.User.User | null
+	): void {
 		try {
 			if (request.session) {
 				_.set(request, AVO_USER_INFO_PATH, user);
@@ -69,7 +79,7 @@ export class IdpHelper {
 				throw new InternalServerError(
 					'Failed to store avo user info because no session was found on the request object',
 					null,
-					{ user },
+					{ user }
 				);
 			}
 		} catch (err) {
@@ -102,13 +112,15 @@ export class IdpHelper {
 				idp_user_id: idpUserId,
 				local_user_id: localUserId,
 			};
-			const getResponse = await DataService.execute(GET_IDP_MAP, { idpType, idpUserId, localUserId });
+			const getResponse = await DataService.execute(GET_IDP_MAP, {
+				idpType,
+				idpUserId,
+				localUserId,
+			});
 			if (!getResponse) {
-				throw new InternalServerError(
-					'Failed to get idp map entry from database',
-					null,
-					{ getResponse }
-				);
+				throw new InternalServerError('Failed to get idp map entry from database', null, {
+					getResponse,
+				});
 			}
 
 			const entry = _.get(getResponse, 'data.users_idp_map[0]');
@@ -125,12 +137,12 @@ export class IdpHelper {
 				);
 			}
 		} catch (err) {
-				throw new CustomError(
-					'Failed to link user to idp',
-					err,
-					{ idpType, idpUserId, localUserId, query: [GET_IDP_MAP, INSERT_IDP_MAP] }
-				);
+			throw new CustomError('Failed to link user to idp', err, {
+				idpType,
+				idpUserId,
+				localUserId,
+				query: [GET_IDP_MAP, INSERT_IDP_MAP],
+			});
 		}
 	}
-
 }
