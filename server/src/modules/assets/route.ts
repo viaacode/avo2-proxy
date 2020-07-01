@@ -1,18 +1,7 @@
 import _ from 'lodash';
-import {
-	Context,
-	DELETE,
-	Path,
-	POST,
-	PreProcessor,
-	ServiceContext,
-} from 'typescript-rest';
+import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
-import {
-	BadRequestError,
-	ClientError,
-	InternalServerError,
-} from '../../shared/helpers/error';
+import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
@@ -45,15 +34,8 @@ export default class AssetRoute {
 	@Path('upload')
 	@POST
 	@PreProcessor(isAuthenticatedRouteGuard)
-	async uploadAsset(
-		assetInfo: UploadAssetInfo
-	): Promise<{ url: string } | BadRequestError> {
-		if (
-			!assetInfo ||
-			!assetInfo.filename ||
-			!assetInfo.content ||
-			!assetInfo.type
-		) {
+	async uploadAsset(assetInfo: UploadAssetInfo): Promise<{ url: string } | BadRequestError> {
+		if (!assetInfo || !assetInfo.filename || !assetInfo.type) {
 			throw new BadRequestError(
 				'the body must contain the filename, content and type (' +
 					"'BUNDLE_COVER','COLLECTION_COVER','CONTENT_PAGE_IMAGE','PROFILE_AVATAR','ITEM_SUBTITLE'"
@@ -62,20 +44,19 @@ export default class AssetRoute {
 
 		try {
 			return {
-				url: await AssetController.upload(assetInfo),
+				url: await AssetController.upload(
+					assetInfo,
+					this.context.request.files as Express.Multer.File[]
+				),
 			};
 		} catch (err) {
 			if (err instanceof ClientError) {
 				throw new ClientError('Failed to upload file', err, {});
 			}
-			const error = new InternalServerError(
-				'Failed to upload file to asset server',
-				err,
-				{
-					...assetInfo,
-					content: _.get(assetInfo, 'content', '').substring(0, 50),
-				}
-			);
+			const error = new InternalServerError('Failed to upload file to asset server', err, {
+				...assetInfo,
+				content: _.get(assetInfo, 'content', '').substring(0, 50),
+			});
 			logger.error(error);
 			throw error;
 		}
@@ -87,9 +68,7 @@ export default class AssetRoute {
 	@Path('delete')
 	@DELETE
 	@PreProcessor(isAuthenticatedRouteGuard)
-	async deleteAsset(body: {
-		url: string;
-	}): Promise<{ status: 'deleted' } | BadRequestError> {
+	async deleteAsset(body: { url: string }): Promise<{ status: 'deleted' } | BadRequestError> {
 		if (!body || !body.url) {
 			throw new BadRequestError(
 				'the body must contain the url of the to-be-deleted asset  {url: string}'
@@ -100,11 +79,7 @@ export default class AssetRoute {
 			await AssetController.delete(body.url);
 			return { status: 'deleted' };
 		} catch (err) {
-			const error = new InternalServerError(
-				'Failed to delete asset file',
-				err,
-				{ body }
-			);
+			const error = new InternalServerError('Failed to delete asset file', err, { body });
 			logger.error(error);
 			throw error;
 		}

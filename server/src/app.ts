@@ -1,10 +1,4 @@
-import {
-	Application,
-	default as express,
-	NextFunction,
-	Request,
-	Response,
-} from 'express';
+import { Application, default as express, NextFunction, Request, Response } from 'express';
 import * as http from 'http';
 import { AddressInfo } from 'net';
 import { Server } from 'typescript-rest';
@@ -46,6 +40,7 @@ import StatusRoute from './modules/status/route';
 import VideoStillsRoute from './modules/video-stills/route';
 import ZendeskRoute from './modules/zendesk/route';
 import ZendeskService from './modules/zendesk/service';
+import AssetService from './modules/assets/service';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -57,11 +52,7 @@ export class App {
 	public server: http.Server;
 
 	constructor(start: boolean = true) {
-		Validator.validate(
-			process.env,
-			corePresets.env,
-			'Invalid environment variables'
-		);
+		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
 		// One time initialization of objects needed for operation of the api
 		OrganizationService.initialize();
@@ -69,6 +60,7 @@ export class App {
 		SmartschoolService.initialize();
 		KlascementService.initialize();
 		ZendeskService.initialize();
+		AssetService.initialize();
 
 		this.loadMiddleware();
 		this.loadModules();
@@ -88,7 +80,7 @@ export class App {
 
 			logIfNotTestEnv(
 				`Server running on ${this.config.state.env} environment at port ${
-				(this.server.address() as AddressInfo).port
+					(this.server.address() as AddressInfo).port
 				}`
 			);
 		});
@@ -113,18 +105,12 @@ export class App {
 		 * Temp route rewrite to change /auth to /auth/hetarchief, so we can keep all the idp providers uniform
 		 */
 		this.app.use((req: Request, res: Response, next: NextFunction) => {
-			req.url = req.url.replace(
-				/^\/auth\/login($|\?)/,
-				'/auth/hetarchief/login$1'
-			);
+			req.url = req.url.replace(/^\/auth\/login($|\?)/, '/auth/hetarchief/login$1');
 			req.url = req.url.replace(
 				/^\/auth\/login-callback($|\?)/,
 				'/auth/hetarchief/login-callback$1'
 			);
-			req.url = req.url.replace(
-				/^\/auth\/logout($|\?)/,
-				'/auth/hetarchief/logout$1'
-			);
+			req.url = req.url.replace(/^\/auth\/logout($|\?)/, '/auth/hetarchief/logout$1');
 			req.url = req.url.replace(
 				/^\/auth\/logout-callback($|\?)/,
 				'/auth/hetarchief/logout-callback$1'
