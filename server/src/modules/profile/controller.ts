@@ -35,8 +35,16 @@ export default class ProfileController {
 	): Promise<void> {
 		try {
 			const completeVars: UpdateProfileValues = {
-				educationLevels: (profile as any).contexts || [],
-				subjects: (profile as any).classifications || [],
+				educationLevels: (profile.educationLevels || ([] as string[])).map(
+					(eduLevel: string) => ({
+						profile_id: profile.id,
+						key: eduLevel,
+					})
+				),
+				subjects: (profile.subjects || ([] as string[])).map(subject => ({
+					profile_id: profile.id,
+					key: subject,
+				})),
 				organizations: ((profile as any).organizations || []).map(
 					(org: Avo.EducationOrganization.Organization) => ({
 						profile_id: profile.id,

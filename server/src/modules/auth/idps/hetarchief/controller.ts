@@ -156,7 +156,7 @@ export default class HetArchiefController {
 			organization: {
 				or_id: _.get(ldapObject, 'attributes.o[0]'),
 			},
-			employee_nr: _.get(ldapObject, 'attributes.employeeNumber[0]'),
+			employee_nr: _.get(ldapObject, 'attributes.employeeNumber'),
 			edu_typename: _.get(ldapObject, 'attributes.x-be-viaa-eduTypeName'),
 			edu_levelname: _.get(ldapObject, 'attributes.x-be-viaa-eduLevelName'),
 			id: _.get(ldapObject, 'attributes.entryUUID[0]'),
@@ -188,19 +188,16 @@ export default class HetArchiefController {
 		}
 
 		const newAvoUser = _.cloneDeep(avoUserInfo);
-		newAvoUser.mail = ldapUserInfo.email[0] || newAvoUser.mail;
-		newAvoUser.first_name = ldapUserInfo.first_name;
-		newAvoUser.last_name = ldapUserInfo.last_name;
-		newAvoUser.profile.stamboek = ldapUserInfo.employee_nr[0] || newAvoUser.profile.stamboek;
-		newAvoUser.profile.alias = newAvoUser.profile.alias || ldapUserInfo.display_name[0];
-		(newAvoUser.profile as any).contexts = (
-			ldapUserInfo.edu_levelname ||
-			newAvoUser.profile.educationLevels ||
-			[]
-		).map(eduLevel => ({
-			profile_id: newAvoUser.profile.id,
-			key: eduLevel,
-		}));
+		newAvoUser.mail = _.get(ldapUserInfo, 'email[0]') || newAvoUser.mail;
+		newAvoUser.first_name = _.get(ldapUserInfo, 'first_name');
+		newAvoUser.last_name = _.get(ldapUserInfo, 'last_name');
+		newAvoUser.profile.stamboek =
+			_.get(ldapUserInfo, 'employee_nr[0]') || newAvoUser.profile.stamboek;
+		newAvoUser.profile.alias =
+			newAvoUser.profile.alias || _.get(ldapUserInfo, 'display_name[0]');
+		newAvoUser.profile.educationLevels =
+			_.get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
+		newAvoUser.profile.subjects = newAvoUser.profile.subjects || [];
 
 		if (!ldapUserInfo.apps.find(app => app.name === 'avo')) {
 			(newAvoUser as any).is_blocked = true; // TODO remove cast after update to typings 2.20.0
