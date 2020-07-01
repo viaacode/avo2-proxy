@@ -39,7 +39,7 @@ export default class AssetController {
 		const key = `${uploadAssetInfo.type}/${_.kebabCase(parsedFilename.name)}-${getUuid()}${
 			parsedFilename.ext
 		}`;
-		if (!this.isValidFileType(files[0])) {
+		if (!AssetController.isValidFileType(files[0])) {
 			throw new BadRequestError('Invalid file extension');
 		}
 
