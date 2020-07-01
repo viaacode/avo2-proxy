@@ -26,7 +26,7 @@ export default class DataController {
 	private static filterResponse(response: any, user: Avo.User.User | null) {
 		let filteredResponse = { ...response };
 
-		if (user.profile.permissions.includes('VIEW_ANY_UNPUBLISHED_ITEMS')) {
+		if (!user.profile.permissions.includes('VIEW_ANY_UNPUBLISHED_ITEMS')) {
 			filteredResponse = this.filterAppMetaData(response);
 		}
 
