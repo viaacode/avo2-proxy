@@ -18,28 +18,32 @@ const sessionConfig: session.SessionOptions = {
 	secret: process.env.COOKIES_SECRET || '',
 };
 
+let redisStore: any;
+let redisClient: any;
+
 if (process.env.NODE_ENV !== 'local') {
 	// Use the redis database as session storage
-	checkRequiredEnvs([
-		'COOKIES_SECRET',
-		'REDIS_CONNECTION_STRING',
-	]);
+	checkRequiredEnvs(['COOKIES_SECRET', 'REDIS_CONNECTION_STRING']);
 
-	const redisStore = connectRedis(session);
-	const redisClient = redis.createClient({
+	redisStore = connectRedis(session);
+	redisClient = redis.createClient({
 		url: process.env.REDIS_CONNECTION_STRING,
 	});
+}
 
+export function clearRedis() {
+	redisClient.flushdb((err: Error | null, response?: 'OK') => {
+		if (err) {
+			logger.error(new CustomError('Failed to clear redis session cache', err));
+		}
+		logger.info('clear session cache response: ', response);
+	});
+}
+
+if (process.env.NODE_ENV !== 'local') {
 	// Clear sessions stored in redis every day at 05:00
 	/* istanbul ignore next */
-	cron.schedule('0 0 05 * * *', async () => {
-		redisClient.flushdb((err: Error | null, response?: 'OK') => {
-			if (err) {
-				logger.error(new CustomError('Failed to clear redis session cache', err));
-			}
-			logger.info('clear session cache response: ', response);
-		});
-	}, {
+	cron.schedule('0 0 05 * * *', clearRedis, {
 		scheduled: true,
 		timezone: 'Europe/Brussels',
 	}).start();
