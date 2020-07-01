@@ -1,5 +1,7 @@
 import { Request } from 'express';
 
+import { Avo } from '@viaa/avo2-types';
+
 export interface IdpMap {
 	id: number;
 	local_user_id: string; // uuid
@@ -96,6 +98,7 @@ export interface Profile {
 	updated_at: string;
 	user_id: string;
 	company_id: string | null;
+	organisation: Avo.Organization.Organization | null;
 	groups: {
 		group: {
 			group_user_permission_groups: {
