@@ -185,3 +185,8 @@ export interface IdpInterface {
 	loginPath?: string;
 	getUserId?: (userInfo: any) => string | number;
 }
+
+export enum SpecialPermissionGroups {
+	loggedOutUsers = -1,
+	loggedInUsers = -2,
+}
