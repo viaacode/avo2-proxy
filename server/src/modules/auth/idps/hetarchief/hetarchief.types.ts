@@ -28,6 +28,8 @@ export interface LdapPerson {
 	edu_typename: string[];
 	edu_typecode: string[];
 	edu_levelname: string[];
+	eduExceptionAccount: ['TRUE' | 'FALSE'];
+	businessCategory: string[];
 }
 
 export interface App {

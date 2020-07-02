@@ -26,6 +26,8 @@ export interface UpdateProfileValues {
 	avatar: string | null;
 	bio: string | null;
 	stamboek: string | null;
+	title: string | null;
+	is_exception: boolean;
 }
 
 export default class ProfileController {
@@ -58,6 +60,8 @@ export default class ProfileController {
 				avatar: profile.avatar,
 				bio: (profile as any).bio || null,
 				stamboek: profile.stamboek,
+				title: profile.title,
+				is_exception: (profile as any).is_exception, // TODO remove any after typings v2.21.0
 				...variables, // Override current profile variables with the variables in the parameter
 			};
 			await DataService.execute(DELETE_PROFILE_OBJECTS, {

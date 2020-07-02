@@ -9,12 +9,8 @@ import EducationOrganizationsService from '../education-organizations/service';
 
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
-import {
-	CustomFields,
-	EmailInfo,
-	NewsletterKey,
-	NewsletterPreferences,
-} from './types';
+import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
+import { logger } from '../../shared/helpers/logger';
 
 export default class CampaignMonitorController {
 	/**
@@ -29,7 +25,7 @@ export default class CampaignMonitorController {
 	 * Retrieve email preferences from campaign monitor api
 	 * @param email
 	 */
-	public static async fetchNewsletterPreferences(email: string) {
+	public static async fetchNewsletterPreferences(email: string): Promise<NewsletterPreferences> {
 		return CampaignMonitorService.fetchNewsletterPreferences(email);
 	}
 
@@ -43,10 +39,7 @@ export default class CampaignMonitorController {
 		preferences: Partial<NewsletterPreferences>
 	) {
 		try {
-			const mappedPreferences = _.toPairs(preferences) as [
-				NewsletterKey,
-				boolean
-			][];
+			const mappedPreferences = _.toPairs(preferences) as [NewsletterKey, boolean][];
 
 			const email = _.get(user, 'mail');
 
@@ -61,8 +54,8 @@ export default class CampaignMonitorController {
 				'label'
 			);
 
-			const oormerk = _.get(user, 'oormerk'); // Wait for https://meemoo.atlassian.net/browse/DEV-949
-			const isExceptionAccount = _.get(user, 'is_exception');
+			const oormerk = _.get(user, 'profile.title');
+			const isExceptionAccount = _.get(user, 'profile.is_exception');
 			const stamboekNumber = _.get(user, 'profile.stamboek');
 			const educationLevels: string[] = _.get(user, 'profile.educationLevels');
 
@@ -70,8 +63,9 @@ export default class CampaignMonitorController {
 			const schoolIds: string[] = [];
 			const campusIds: string[] = [];
 			const schoolNames: string[] = [];
-			const educationalOrganizations: Avo.EducationOrganization.Organization[] = _.get(user, 'profile.organizations') || [];
-			await promiseUtils.map(educationalOrganizations, async (org) => {
+			const educationalOrganizations: Avo.EducationOrganization.Organization[] =
+				_.get(user, 'profile.organizations') || [];
+			await promiseUtils.map(educationalOrganizations, async org => {
 				const educationalOrganizationId = _.get(org, 'organizationId');
 				const educationalOrganizationUnitId = _.get(org, 'unitId');
 				if (educationalOrganizationId) {
@@ -89,12 +83,13 @@ export default class CampaignMonitorController {
 
 			const subjects = _.get(user, 'profile.subjects', []).join(', ');
 
-			await promiseUtils.map(mappedPreferences, async (preference) => {
+			await promiseUtils.map(mappedPreferences, async preference => {
 				const key: NewsletterKey = preference[0];
 				const subscribed = preference[1];
 
 				if (subscribed) {
-					const join = (arr: (string | undefined | null)[]) => _.uniq(_.compact(arr)).join(', ');
+					const join = (arr: (string | undefined | null)[]) =>
+						_.uniq(_.compact(arr)).join(', ');
 					await CampaignMonitorService.subscribeToNewsletterList(
 						NEWSLETTER_LISTS[key],
 						email,
@@ -122,10 +117,27 @@ export default class CampaignMonitorController {
 				}
 			});
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to update newsletter preferences',
-				err,
-				{ user, preferences }
+			throw new InternalServerError('Failed to update newsletter preferences', err, {
+				user,
+				preferences,
+			});
+		}
+	}
+
+	public static async refreshNewsletterPreferences(avoUser: Avo.User.User): Promise<void> {
+		try {
+			const preferences: NewsletterPreferences = await CampaignMonitorController.fetchNewsletterPreferences(
+				avoUser.mail
+			);
+			preferences.allActiveUsers = true;
+			await CampaignMonitorController.updateNewsletterPreferences(avoUser, preferences);
+		} catch (err) {
+			logger.error(
+				new InternalServerError(
+					'Failed to refresh newsletter preferences after user update',
+					err,
+					{ avoUser }
+				)
 			);
 		}
 	}

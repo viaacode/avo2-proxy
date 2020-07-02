@@ -18,6 +18,7 @@ import { AuthService } from '../../service';
 import { LdapUser, UserGroup } from '../../types';
 
 import { LdapPerson } from './hetarchief.types';
+import CampaignMonitorController from '../../../campaign-monitor/controller';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
@@ -164,6 +165,8 @@ export default class HetArchiefController {
 				name: app,
 			})),
 			organizational_status: get(ldapObject, 'attributes.organizationalStatus'),
+			businessCategory: get(ldapObject, 'attributes.businessCategory'),
+			eduExceptionAccount: get(ldapObject, 'attributes.x-be-viaa-eduExceptionAccount'),
 		};
 	}
 
@@ -193,11 +196,13 @@ export default class HetArchiefController {
 		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
 		newAvoUser.profile.stamboek =
 			get(ldapUserInfo, 'employee_nr[0]') || newAvoUser.profile.stamboek;
-		newAvoUser.profile.alias =
-			newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
+		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels =
 			get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
 		newAvoUser.profile.subjects = newAvoUser.profile.subjects || [];
+		(newAvoUser.profile as any).title = get(ldapUserInfo, 'businessCategory[0]') || null;
+		(newAvoUser.profile as any).is_exception =
+			get(ldapUserInfo, 'eduExceptionAccount[0]') === 'TRUE';
 
 		if (!ldapUserInfo.apps.find(app => app.name === 'avo')) {
 			(newAvoUser as any).is_blocked = true; // TODO remove cast after update to typings 2.20.0
@@ -237,6 +242,9 @@ export default class HetArchiefController {
 				},
 				newAvoUser
 			)) || isUpdated;
+
+		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
+		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser);
 
 		return isUpdated;
 	}
