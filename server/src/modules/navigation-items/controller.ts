@@ -4,11 +4,11 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError } from '../../shared/helpers/error';
+import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import { IdpHelper } from '../auth/idp-helper';
 import DataService from '../data/service';
 
 import { GET_NAVIGATION_ITEMS } from './queries.gql';
-import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 
 interface GetNavElementsResponse {
 	errors?: any;
@@ -20,12 +20,12 @@ interface GetNavElementsResponse {
 export interface AppContentNavElement {
 	content_path: string;
 	content_type:
-		| 'CONTENT_PAGE'
-		| 'COLLECTION'
-		| 'ITEM'
-		| 'DROPDOWN'
-		| 'INTERNAL_LINK'
-		| 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
+	| 'CONTENT_PAGE'
+	| 'COLLECTION'
+	| 'ITEM'
+	| 'DROPDOWN'
+	| 'INTERNAL_LINK'
+	| 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
 	link_target: string;
 	placement: string;
 	position: number;

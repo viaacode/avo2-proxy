@@ -7,6 +7,7 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import OrganizationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';
@@ -14,7 +15,6 @@ import PlayerTicketRoute from '../player-ticket/route';
 import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
 import { ResolvedItemOrCollection } from './types';
-import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 
 export type MediaItemResponse = Partial<Avo.Collection.Collection | Avo.Item.Item> & {
 	count: number;
@@ -219,11 +219,11 @@ export default class ContentPageController {
 		searchQueryLimit: string | undefined,
 		mediaItems:
 			| {
-					mediaItem: {
-						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-						value: string;
-					};
-			  }[]
+				mediaItem: {
+					type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+					value: string;
+				};
+			}[]
 			| undefined,
 		request: Request
 	): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {

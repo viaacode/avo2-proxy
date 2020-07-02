@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import _ from 'lodash';
+import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -110,7 +110,7 @@ export default class HetArchiefController {
 				throw new BadRequestError('ldapUuid is not defined');
 			}
 			const response = await DataService.execute(GET_USER_BY_LDAP_UUID, { ldapUuid });
-			const avoUser = _.get(response, 'data.users_idp_map[0].local_user');
+			const avoUser = get(response, 'data.users_idp_map[0].local_user');
 			if (!avoUser) {
 				return null;
 			}
@@ -128,7 +128,7 @@ export default class HetArchiefController {
 		stamboekNumber: string
 	): Promise<string> {
 		const profile: Partial<Avo.User.Profile> = {
-			alternative_email: _.get(ldapObject, 'attributes.mail[0]', ''),
+			alternative_email: get(ldapObject, 'attributes.mail[0]', ''),
 			user_id: userUid,
 			stamboek: stamboekNumber,
 		};
@@ -137,33 +137,33 @@ export default class HetArchiefController {
 
 	public static parseLdapObject(ldapObject: LdapUser): BasicIdpUserInfo {
 		return {
-			first_name: _.get(ldapObject, 'attributes.givenName[0]', ''),
-			last_name: _.get(ldapObject, 'attributes.sn[0]', ''),
-			mail: _.get(ldapObject, 'attributes.mail[0]', ''),
-			roles: _.get(ldapObject, 'attributes.organizationalStatus', []),
+			first_name: get(ldapObject, 'attributes.givenName[0]', ''),
+			last_name: get(ldapObject, 'attributes.sn[0]', ''),
+			mail: get(ldapObject, 'attributes.mail[0]', ''),
+			roles: get(ldapObject, 'attributes.organizationalStatus', []),
 		};
 	}
 
 	public static ldapObjectToLdapPerson(ldapObject: LdapUser): Partial<LdapPerson> {
 		return {
-			first_name: _.get(ldapObject, 'attributes.givenName[0]'),
-			last_name: _.get(ldapObject, 'attributes.sn[0]'),
-			email: _.get(ldapObject, 'attributes.mail'),
-			display_name: _.get(ldapObject, 'attributes.displayName'),
+			first_name: get(ldapObject, 'attributes.givenName[0]'),
+			last_name: get(ldapObject, 'attributes.sn[0]'),
+			email: get(ldapObject, 'attributes.mail'),
+			display_name: get(ldapObject, 'attributes.displayName'),
 			unit: {
-				ou_id: _.get(ldapObject, 'attributes.ou[0]'),
+				ou_id: get(ldapObject, 'attributes.ou[0]'),
 			},
 			organization: {
-				or_id: _.get(ldapObject, 'attributes.o[0]'),
+				or_id: get(ldapObject, 'attributes.o[0]'),
 			},
-			employee_nr: _.get(ldapObject, 'attributes.employeeNumber'),
-			edu_typename: _.get(ldapObject, 'attributes.x-be-viaa-eduTypeName'),
-			edu_levelname: _.get(ldapObject, 'attributes.x-be-viaa-eduLevelName'),
-			id: _.get(ldapObject, 'attributes.entryUUID[0]'),
-			apps: (_.get(ldapObject, 'attributes.apps') || []).map((app: string) => ({
+			employee_nr: get(ldapObject, 'attributes.employeeNumber'),
+			edu_typename: get(ldapObject, 'attributes.x-be-viaa-eduTypeName'),
+			edu_levelname: get(ldapObject, 'attributes.x-be-viaa-eduLevelName'),
+			id: get(ldapObject, 'attributes.entryUUID[0]'),
+			apps: (get(ldapObject, 'attributes.apps') || []).map((app: string) => ({
 				name: app,
 			})),
-			organizational_status: _.get(ldapObject, 'attributes.organizationalStatus'),
+			organizational_status: get(ldapObject, 'attributes.organizationalStatus'),
 		};
 	}
 
@@ -187,16 +187,16 @@ export default class HetArchiefController {
 			}
 		}
 
-		const newAvoUser = _.cloneDeep(avoUserInfo);
-		newAvoUser.mail = _.get(ldapUserInfo, 'email[0]') || newAvoUser.mail;
-		newAvoUser.first_name = _.get(ldapUserInfo, 'first_name');
-		newAvoUser.last_name = _.get(ldapUserInfo, 'last_name');
+		const newAvoUser = cloneDeep(avoUserInfo);
+		newAvoUser.mail = get(ldapUserInfo, 'email[0]') || newAvoUser.mail;
+		newAvoUser.first_name = get(ldapUserInfo, 'first_name');
+		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
 		newAvoUser.profile.stamboek =
-			_.get(ldapUserInfo, 'employee_nr[0]') || newAvoUser.profile.stamboek;
+			get(ldapUserInfo, 'employee_nr[0]') || newAvoUser.profile.stamboek;
 		newAvoUser.profile.alias =
-			newAvoUser.profile.alias || _.get(ldapUserInfo, 'display_name[0]');
+			newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels =
-			_.get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
+			get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
 		newAvoUser.profile.subjects = newAvoUser.profile.subjects || [];
 
 		if (!ldapUserInfo.apps.find(app => app.name === 'avo')) {
@@ -204,7 +204,7 @@ export default class HetArchiefController {
 		}
 
 		if (
-			_.get(ldapUserInfo, 'organization.or_id') &&
+			get(ldapUserInfo, 'organization.or_id') &&
 			!newAvoUser.profile.organizations.find((org: any) => {
 				return (
 					org.organization_id === ldapUserInfo.organization.or_id &&
@@ -215,13 +215,13 @@ export default class HetArchiefController {
 			// Update schools if ldap school is not found in avo list
 			newAvoUser.profile.organizations = [
 				{
-					organizationId: _.get(ldapUserInfo, 'organization.or_id'),
-					unitId: _.get(ldapUserInfo, 'unit.ou_id') || null,
+					organizationId: get(ldapUserInfo, 'organization.or_id'),
+					unitId: get(ldapUserInfo, 'unit.ou_id') || null,
 				},
 			] as any[];
 		}
 
-		if (!_.isEqual(newAvoUser, avoUserInfo)) {
+		if (!isEqual(newAvoUser, avoUserInfo)) {
 			// Something changes => save to database
 			isUpdated = true;
 			await AuthService.updateAvoUserInfo(newAvoUser);
@@ -233,7 +233,7 @@ export default class HetArchiefController {
 					first_name: newAvoUser.first_name,
 					last_name: newAvoUser.last_name,
 					mail: newAvoUser.mail,
-					roles: (_.get(ldapUserInfo, 'organizational_status') || []) as string[],
+					roles: (get(ldapUserInfo, 'organizational_status') || []) as string[],
 				},
 				newAvoUser
 			)) || isUpdated;
@@ -264,7 +264,7 @@ export default class HetArchiefController {
 		const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map(role =>
 			allUserGroups.find(ug => ug.ldap_role === role)
 		);
-		const ldapUserGroups: UserGroup[] = _.compact(ldapUserGroupsRaw);
+		const ldapUserGroups: UserGroup[] = compact(ldapUserGroupsRaw);
 
 		if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
 			logger.error(
@@ -283,7 +283,7 @@ export default class HetArchiefController {
 		)[] = avoUser.profile.userGroupIds.map(avoUserGroupId =>
 			allUserGroups.find(ug => ug.id === avoUserGroupId)
 		);
-		const avoUserGroups: UserGroup[] = _.compact(avoUserGroupRaw);
+		const avoUserGroups: UserGroup[] = compact(avoUserGroupRaw);
 
 		if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
 			logger.error(
@@ -304,13 +304,13 @@ export default class HetArchiefController {
 			.map(ug => ug.id);
 
 		// Update user groups:
-		const ldapUserGroupIds = _.uniq(ldapUserGroups.map(ug => ug.id));
-		const avoUserGroupIds = _.uniq(avoUserGroupsFiltered.map(ug => ug.id));
+		const ldapUserGroupIds = uniq(ldapUserGroups.map(ug => ug.id));
+		const avoUserGroupIds = uniq(avoUserGroupsFiltered.map(ug => ug.id));
 
-		const addedUserGroupIds = _.without(ldapUserGroupIds, ...avoUserGroupIds);
-		const deletedUserGroupIds = _.without(avoUserGroupIds, ...ldapUserGroupIds);
+		const addedUserGroupIds = without(ldapUserGroupIds, ...avoUserGroupIds);
+		const deletedUserGroupIds = without(avoUserGroupIds, ...ldapUserGroupIds);
 
-		const profileId = _.get(avoUser, 'profile.id');
+		const profileId = get(avoUser, 'profile.id');
 		if (!profileId) {
 			throw new CustomError(
 				'Failed to update user groups because the profile does not have an id',
@@ -326,9 +326,9 @@ export default class HetArchiefController {
 		}
 
 		await ProfileController.updateUserGroupsSecondaryEducation(
-			_.uniq([...ldapUserGroupIds, ...avoUserGroupIdsOther]),
+			uniq([...ldapUserGroupIds, ...avoUserGroupIdsOther]),
 			profileId,
-			_.get(avoUser, 'profile.educationLevels', [])
+			get(avoUser, 'profile.educationLevels', [])
 		);
 
 		return !!addedUserGroupIds.length || !!deletedUserGroupIds.length;
