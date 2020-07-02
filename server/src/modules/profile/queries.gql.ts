@@ -13,7 +13,7 @@ export const DELETE_PROFILE_OBJECTS = `
 `;
 
 export const UPDATE_PROFILE_INFO = `
-	mutation InsertProfileObject(
+	mutation insertProfileObject(
 		$educationLevels: [users_profile_contexts_insert_input!]!
 		$subjects: [users_profile_classifications_insert_input!]!
 		$organizations: [users_profile_organizations_insert_input!]!
@@ -24,6 +24,8 @@ export const UPDATE_PROFILE_INFO = `
 		$avatar: String
 		$bio: String
 		$stamboek: String
+		$is_exception: Boolean!
+		$title: String
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
 			affected_rows
@@ -43,6 +45,8 @@ export const UPDATE_PROFILE_INFO = `
 				bio: $bio
 				stamboek: $stamboek
 				company_id: $company_id
+				title: $title
+				is_exception: $is_exception
 			}
 		) {
 			affected_rows

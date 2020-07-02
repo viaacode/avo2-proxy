@@ -15,18 +15,14 @@ import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
-import {
-	checkApiKeyRouteGuard,
-	isAuthenticatedRouteGuard,
-	isLoggedIn,
-} from '../../../../shared/middleware/is-authenticated';
+import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
 import StamboekController from '../../../stamboek-validate/controller';
 import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';
 
 import HetArchiefController from './controller';
-import { UpdateUserBody } from './hetarchief.types';
+import { LdapPerson, UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
 
 interface RelayState {
