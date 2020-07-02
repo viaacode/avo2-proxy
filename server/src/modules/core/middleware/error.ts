@@ -1,6 +1,5 @@
 import cors from 'cors';
-import _ from 'lodash';
-import * as util from 'util';
+import { get } from 'lodash';
 
 import { logger } from '../../../shared/helpers/logger';
 import { IInternalServerError, INext, IRequest, IResponse } from '../../../shared/shared.types';
@@ -17,9 +16,7 @@ export class ErrorMiddleware {
 			return next(err);
 		}
 		res.set('Content-Type', 'application/json');
-		res.status(_.get(err, 'statusCode', 500));
-
-		logger.error(util.inspect(err));
+		res.status(get(err, 'statusCode', 500));
 
 		cors({
 			origin: (origin, callback) => {
@@ -31,6 +28,10 @@ export class ErrorMiddleware {
 			methods: 'GET, POST, OPTIONS, PUT, DELETE',
 		})(req, res, next);
 
-		res.send(JSON.stringify(err, null, 2));
+		const errorJson = JSON.stringify(err, null, 2);
+
+		logger.error(errorJson);
+
+		res.send(errorJson);
 	}
 }
