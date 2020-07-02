@@ -4,13 +4,13 @@ import * as _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import { AuthService } from '../auth/service';
 import EducationOrganizationsService from '../education-organizations/service';
 
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
 import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
-import { logger } from '../../shared/helpers/logger';
 
 export default class CampaignMonitorController {
 	/**
@@ -55,7 +55,7 @@ export default class CampaignMonitorController {
 			);
 
 			const oormerk = _.get(user, 'profile.title');
-			const isExceptionAccount = _.get(user, 'profile.is_exception');
+			const isExceptionAccount = _.get(user, 'profile.is_exception') || false;
 			const stamboekNumber = _.get(user, 'profile.stamboek');
 			const educationLevels: string[] = _.get(user, 'profile.educationLevels');
 

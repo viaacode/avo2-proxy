@@ -61,7 +61,7 @@ export default class ProfileController {
 				bio: profile.bio || null,
 				stamboek: profile.stamboek,
 				title: profile.title,
-				is_exception: profile.is_exception,
+				is_exception: profile.is_exception || false,
 				...variables, // Override current profile variables with the variables in the parameter
 			};
 			await DataService.execute(DELETE_PROFILE_OBJECTS, {
