@@ -11,6 +11,7 @@ import EducationOrganizationsService from '../education-organizations/service';
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
 import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
+import { omit, compact, fromPairs, map } from 'lodash';
 
 export default class CampaignMonitorController {
 	/**
@@ -129,8 +130,25 @@ export default class CampaignMonitorController {
 			const preferences: NewsletterPreferences = await CampaignMonitorController.fetchNewsletterPreferences(
 				avoUser.mail
 			);
-			preferences.allActiveUsers = true;
-			await CampaignMonitorController.updateNewsletterPreferences(avoUser, preferences);
+
+			await CampaignMonitorController.updateNewsletterPreferences(
+				avoUser,
+				// Remove entries where the value is false
+				// Set the value of allActiveUsers to true
+				fromPairs(
+					compact(
+						map(preferences, (value, key) => {
+							if (key === 'allActiveUsers') {
+								return ['allActiveUsers', true];
+							}
+							if (!value) {
+								return null;
+							}
+							return [key, value];
+						})
+					)
+				)
+			);
 		} catch (err) {
 			logger.error(
 				new InternalServerError(
