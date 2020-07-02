@@ -58,7 +58,8 @@ export default class AuthController {
 			};
 		}
 		logger.info('check login: user is not authenticated');
-		return { message: 'LOGGED_OUT' } as any; // Remove after update typings to v2.20.0
+
+		return { message: 'LOGGED_OUT' };
 	}
 
 	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(
@@ -220,9 +221,9 @@ export default class AuthController {
 		// Let the user login to smartschool, then redirect to this url
 		const serverRedirectUrl = `${
 			process.env.HOST
-		}/auth/link-account-callback?${queryString.stringify({
-			returnToUrl,
-		})}`;
+			}/auth/link-account-callback?${queryString.stringify({
+				returnToUrl,
+			})}`;
 		return new Return.MovedTemporarily(
 			`${process.env.HOST}/${idpLoginPath}?${queryString.stringify({
 				returnToUrl: serverRedirectUrl,
