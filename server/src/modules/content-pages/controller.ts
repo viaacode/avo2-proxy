@@ -8,7 +8,7 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
-import OrganizationService from '../organization/service';
+import OrganisationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';
 
@@ -219,11 +219,11 @@ export default class ContentPageController {
 		searchQueryLimit: string | undefined,
 		mediaItems:
 			| {
-				mediaItem: {
-					type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-					value: string;
-				};
-			}[]
+					mediaItem: {
+						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+						value: string;
+					};
+			  }[]
 			| undefined,
 		request: Request
 	): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {
@@ -345,7 +345,7 @@ export default class ContentPageController {
 			}
 			try {
 				// TODO cache logos for quicker access
-				const org = await OrganizationService.fetchOrganization(
+				const org = await OrganisationService.fetchOrganization(
 					searchResult.original_cp_id
 				);
 				item.organisation.logo_url = _.get(org, 'logo_url') || null;

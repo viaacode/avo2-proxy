@@ -30,7 +30,7 @@ import EventLoggingRoute from './modules/event-logging/route';
 import InteractiveTourRoute from './modules/interactive-tours/route';
 import KlaarRoute from './modules/klaar/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
-import OrganizationService from './modules/organization/service';
+import OrganisationService from './modules/organization/service';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import ProfileRoute from './modules/profile/route';
 import SearchRoute from './modules/search/route';
@@ -39,6 +39,7 @@ import StamboekRoute from './modules/stamboek-validate/route';
 import StatusRoute from './modules/status/route';
 import VideoStillsRoute from './modules/video-stills/route';
 import ZendeskRoute from './modules/zendesk/route';
+import OrganisationsRoute from './modules/organization/route';
 import ZendeskService from './modules/zendesk/service';
 import AssetService from './modules/assets/service';
 
@@ -55,7 +56,7 @@ export class App {
 		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
 		// One time initialization of objects needed for operation of the api
-		OrganizationService.initialize();
+		OrganisationService.initialize();
 		HetArchiefService.initialize();
 		SmartschoolService.initialize();
 		KlascementService.initialize();
@@ -152,6 +153,7 @@ export class App {
 			KlaarRoute,
 			TranslationsRoute,
 			InteractiveTourRoute,
+			OrganisationsRoute,
 
 			FallbackRoute
 		);
