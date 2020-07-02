@@ -14,6 +14,11 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 				updated_at
 				user_id
 				company_id
+				organisation {
+					logo_url
+					name
+					or_id
+				}
 				profile_user_groups {
 					groups {
 						id
@@ -72,6 +77,11 @@ export const GET_USER_INFO_BY_ID = `
 				updated_at
 				user_id
 				company_id
+				organisation {
+					logo_url
+					name
+					or_id
+				}
 				profile_user_groups {
 					groups {
 						id
@@ -131,6 +141,11 @@ export const GET_USER_BY_LDAP_UUID = `
 					updated_at
 					user_id
 					company_id
+					organisation {
+						logo_url
+						name
+						or_id
+					}
 					profile_user_groups {
 						groups {
 							id
@@ -291,6 +306,14 @@ export const GET_NOTIFICATION = `
 export const UPDATE_USER_LAST_ACCESS_DATE = `
 	mutation updateUserLastAccessDate($userUid: uuid!, $date: timestamptz) {
 		update_shared_users(where: {uid: {_eq: $userUid}}, _set: {last_access_at: $date}) {
+			affected_rows
+		}
+	}
+`;
+
+export const UPDATE_AVO_USER = `
+	mutation updateUser($uid: uuid!, $user: shared_users_set_input!) {
+		update_shared_users(where: {uid: {_eq: $uid}}, _set: $user) {
 			affected_rows
 		}
 	}

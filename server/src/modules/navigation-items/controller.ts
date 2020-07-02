@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError } from '../../shared/helpers/error';
+import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import { IdpHelper } from '../auth/idp-helper';
 import DataService from '../data/service';
 
@@ -18,7 +19,13 @@ interface GetNavElementsResponse {
 
 export interface AppContentNavElement {
 	content_path: string;
-	content_type: 'CONTENT_PAGE' | 'COLLECTION' | 'ITEM' | 'DROPDOWN' | 'INTERNAL_LINK' | 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
+	content_type:
+	| 'CONTENT_PAGE'
+	| 'COLLECTION'
+	| 'ITEM'
+	| 'DROPDOWN'
+	| 'INTERNAL_LINK'
+	| 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
 	link_target: string;
 	placement: string;
 	position: number;
@@ -30,11 +37,6 @@ export interface AppContentNavElement {
 	description: string;
 	created_at: string;
 	content_id: any;
-}
-
-export enum SpecialPermissionGroups {
-	loggedOutUsers = -1,
-	loggedInUsers = -2,
 }
 
 export type NavItemMap = { [navBarName: string]: AppContentNavElement[] };
@@ -50,16 +52,24 @@ export default class NavigationItemsController {
 	public static async getNavigationItems(request: Request): Promise<NavItemMap> {
 		try {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(request);
-			const groups = [...(_.get(user, 'profile.userGroupIds', [])), !!user ? SpecialPermissionGroups.loggedInUsers : SpecialPermissionGroups.loggedOutUsers];
-			const response: GetNavElementsResponse = await DataService.execute(GET_NAVIGATION_ITEMS);
+			const groups = getUserGroupIds(user);
+			const response: GetNavElementsResponse = await DataService.execute(
+				GET_NAVIGATION_ITEMS
+			);
 
 			if (response.errors) {
-				throw new ExternalServerError('Query from graphql returned errors', null, { response });
+				throw new ExternalServerError('Query from graphql returned errors', null, {
+					response,
+				});
 			}
 
-			const navItems: AppContentNavElement[] = _.get(response, 'data.app_content_nav_elements', []);
+			const navItems: AppContentNavElement[] = _.get(
+				response,
+				'data.app_content_nav_elements',
+				[]
+			);
 			const visibleItems: AppContentNavElement[] = [];
-			navItems.forEach((navItem) => {
+			navItems.forEach(navItem => {
 				if (navItem.user_group_ids && navItem.user_group_ids.length) {
 					// If the page doesn't have any groups specified, it isn't visible for anyone
 					if (_.intersection(groups, navItem.user_group_ids).length) {

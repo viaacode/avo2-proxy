@@ -1,13 +1,9 @@
-import _ from 'lodash';
-
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
-import DataService from '../../../data/service';
+import { getUserByIdpId } from '../../helpers/get-user-by-idp-id';
 import { IdpHelper } from '../../idp-helper';
-import { GET_USER_BY_IDP_ID } from '../../queries.gql';
 import { AuthService } from '../../service';
-import { IdpType } from '../../types';
 
 import KlascementService, { KlascementToken, KlascementUserInfo } from './service';
 
@@ -20,7 +16,7 @@ export default class KlascementController extends IdpHelper {
 			// Get user info
 			const klascementUserInfo: KlascementUserInfo = await this.getKlascementUserInfo(code);
 
-			const userUid: string | null = await this.getUserByIdpId('KLASCEMENT', klascementUserInfo.id);
+			const userUid: string | null = await getUserByIdpId('KLASCEMENT', klascementUserInfo.id);
 			let avoUser: Avo.User.User | null;
 			if (userUid) {
 				avoUser = await AuthService.getAvoUserInfoById(userUid);
@@ -52,13 +48,5 @@ export default class KlascementController extends IdpHelper {
 		} catch (err) {
 			throw new CustomError('Failed to get klascement user info', err, { code });
 		}
-	}
-
-	private static async getUserByIdpId(idpType: IdpType, idpId: string): Promise<string | null> {
-		const response = await DataService.execute(GET_USER_BY_IDP_ID, {
-			idpType,
-			idpId,
-		});
-		return _.get(response, 'data.shared_users[0].uid', null);
 	}
 }
