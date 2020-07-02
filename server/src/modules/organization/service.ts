@@ -1,22 +1,22 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
-import cron from 'node-cron';
+// import cron from 'node-cron';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
-import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
+// import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 
 import { DELETE_ORGANIZATIONS, GET_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
 
-interface OrganizationResponse {
+interface OrganisationResponse {
 	status: string;
 	description: string;
-	data: OrganizationInfo[];
+	data: OrganisationInfo[];
 }
 
-export interface OrganizationContactInfo {
+export interface OrganisationContactInfo {
 	phone?: string;
 	website?: string;
 	email?: string;
@@ -24,62 +24,64 @@ export interface OrganizationContactInfo {
 	form_url?: string;
 }
 
-export interface OrganizationInfo {
+export interface OrganisationInfo {
 	or_id: string;
 	cp_name: string;
 	category?: string;
 	sector?: string;
 	cp_name_catpro?: string;
 	description?: string;
-	contact_information: OrganizationContactInfo;
+	contact_information: OrganisationContactInfo;
 	accountmanager?: string;
 }
 
-export interface ParsedOrganization {
+export interface ParsedOrganisation {
 	or_id: string;
 	name: string;
 	logo_url: string | null;
 	description: string | null;
 	website: string | null;
-	data: OrganizationInfo;
+	data: OrganisationInfo;
 }
 
-export default class OrganizationService {
+export default class OrganisationService {
 	public static async initialize() {
-		try {
-			logIfNotTestEnv('caching organizations...');
-
-			await OrganizationService.updateOrganizationsCache();
-
-			// Register a cron job to refresh the organizations every night
-			if (process.env.NODE_ENV !== 'test') {
-				/* istanbul ignore next */
-				cron.schedule('0 0 04 * * *', async () => {
-					await OrganizationService.initialize();
-				}).start();
-			}
-
-			logIfNotTestEnv('caching organizations... done');
-		} catch (err) {
-			logIfNotTestEnv('caching organizations... error');
-
-			/* istanbul ignore next */
-			logger.error(
-				new InternalServerError(
-					'Failed to fill initial organizations cache or schedule cron job to renew the cache',
-					err
-				)
-			);
-		}
+		// TODO re-enable after https://meemoo.atlassian.net/browse/DEV-1041
+		// For now you can manually trigger a refresh of the cache using /organisations/update-cache with the proxy api key
+		// try {
+		// 	logIfNotTestEnv('caching organizations...');
+		//
+		// 	await OrganisationService.updateOrganisationsCache();
+		//
+		// 	// Register a cron job to refresh the organizations every night
+		// 	if (process.env.NODE_ENV !== 'test') {
+		// 		/* istanbul ignore next */
+		// 		cron.schedule('0 0 04 * * *', async () => {
+		// 			await OrganisationService.initialize();
+		// 		}).start();
+		// 	}
+		//
+		// 	logIfNotTestEnv('caching organizations... done');
+		// } catch (err) {
+		// 	logIfNotTestEnv('caching organizations... error');
+		//
+		// 	/* istanbul ignore next */
+		// 	logger.error(
+		// 		new InternalServerError(
+		// 			'Failed to fill initial organizations cache or schedule cron job to renew the cache',
+		// 			err
+		// 		)
+		// 	);
+		// }
 	}
 
-	private static async updateOrganizationsCache() {
+	public static async updateOrganisationsCache() {
 		let url;
 
 		try {
 			url = process.env.ORGANIZATIONS_API_URL;
 
-			const orgResponse: AxiosResponse<OrganizationResponse> = await axios({
+			const orgResponse: AxiosResponse<OrganisationResponse> = await axios({
 				url,
 				method: 'get',
 				headers: {
@@ -93,8 +95,8 @@ export default class OrganizationService {
 				orgResponse.status < 400 &&
 				orgResponse.data.data.length > 50
 			) {
-				await OrganizationService.emptyOrganizations();
-				await OrganizationService.insertOrganizations(orgResponse.data.data);
+				await OrganisationService.emptyOrganizations();
+				await OrganisationService.insertOrganizations(orgResponse.data.data);
 			} else {
 				/* istanbul ignore next */
 				throw new InternalServerError(
@@ -117,9 +119,9 @@ export default class OrganizationService {
 		}
 	}
 
-	private static async insertOrganizations(organizations: OrganizationInfo[]): Promise<void> {
-		const parsedOrganizations: ParsedOrganization[] = organizations.map(
-			(organization: OrganizationInfo) => ({
+	private static async insertOrganizations(organizations: OrganisationInfo[]): Promise<void> {
+		const parsedOrganizations: ParsedOrganisation[] = organizations.map(
+			(organization: OrganisationInfo) => ({
 				or_id: organization.or_id,
 				name: organization.cp_name,
 				website: organization.contact_information.website,
