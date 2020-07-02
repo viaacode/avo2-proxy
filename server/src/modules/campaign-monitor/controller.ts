@@ -55,7 +55,7 @@ export default class CampaignMonitorController {
 			);
 
 			const oormerk = _.get(user, 'profile.title');
-			const isExceptionAccount = _.get(user, 'profile.is_exception');
+			const isExceptionAccount = _.get(user, 'profile.is_exception') || false;
 			const stamboekNumber = _.get(user, 'profile.stamboek');
 			const educationLevels: string[] = _.get(user, 'profile.educationLevels');
 
