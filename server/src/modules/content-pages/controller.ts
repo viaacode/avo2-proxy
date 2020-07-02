@@ -381,7 +381,7 @@ export default class ContentPageController {
 			series: searchResult.dc_titles_serie,
 			type: {
 				label: searchResult.administrative_type,
-			} as any, // TODO update to Avo.Core.MediaType after update to typings v2.14.0
+			} as Avo.Core.MediaType,
 			collection_fragments_aggregate: {
 				aggregate: {
 					count: 0, // TODO get value into elasticsearch

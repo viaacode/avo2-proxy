@@ -23,7 +23,7 @@ export const READABLE_TO_ELASTIC_FILTER_NAMES: { [prop in Avo.Search.FilterProp]
 	serie: 'dc_titles_serie',
 	provider: 'original_cp',
 	collectionLabel: 'collection_labels',
-} as any; // TODO remove cast	after update to typings 2.14.0
+};
 
 export const NEEDS_FILTER_SUFFIX: { [prop in Avo.Search.FilterProp]: boolean } = {
 	query: false,
@@ -37,7 +37,7 @@ export const NEEDS_FILTER_SUFFIX: { [prop in Avo.Search.FilterProp]: boolean } =
 	serie: true,
 	provider: true,
 	collectionLabel: true,
-} as any; // TODO remove cast	after update to typings 2.14.0
+};
 
 export type AggProps =
 	| 'type'
@@ -59,7 +59,7 @@ export const AGGS_PROPERTIES: Avo.Search.FilterProp[] = [
 	'subject',
 	'serie',
 	'provider',
-	'collectionLabel' as any, // TODO remove cast	after update to typings 2.14.0
+	'collectionLabel',
 ];
 
 export const ELASTIC_TO_READABLE_FILTER_NAMES = _.invert(READABLE_TO_ELASTIC_FILTER_NAMES);

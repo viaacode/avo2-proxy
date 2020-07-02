@@ -9,6 +9,7 @@ import {
 	InternalServerError,
 } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
+import CampaignMonitorController from '../../../campaign-monitor/controller';
 import DataService from '../../../data/service';
 import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
@@ -18,7 +19,6 @@ import { AuthService } from '../../service';
 import { LdapUser, UserGroup } from '../../types';
 
 import { LdapPerson } from './hetarchief.types';
-import CampaignMonitorController from '../../../campaign-monitor/controller';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
@@ -205,7 +205,7 @@ export default class HetArchiefController {
 			get(ldapUserInfo, 'eduExceptionAccount[0]') === 'TRUE';
 
 		if (!ldapUserInfo.apps.find(app => app.name === 'avo')) {
-			(newAvoUser as any).is_blocked = true; // TODO remove cast after update to typings 2.20.0
+			newAvoUser.is_blocked = true;
 		}
 
 		if (
