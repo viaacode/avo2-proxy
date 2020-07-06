@@ -40,6 +40,7 @@ import VideoStillsRoute from './modules/video-stills/route';
 import ZendeskRoute from './modules/zendesk/route';
 import OrganisationsRoute from './modules/organization/route';
 import CollectionsRoute from './modules/collections/collections.route';
+import SitemapRoutes from './modules/sitemap/sitemap.route';
 import AssetService from './modules/assets/service';
 import OrganisationService from './modules/organization/service';
 import ZendeskService from './modules/zendesk/service';
@@ -156,6 +157,7 @@ export class App {
 			InteractiveTourRoute,
 			OrganisationsRoute,
 			CollectionsRoute,
+			SitemapRoutes,
 
 			FallbackRoute
 		);

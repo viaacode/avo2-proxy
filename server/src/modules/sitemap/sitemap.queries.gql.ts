@@ -155,13 +155,3 @@ export const GET_COLLECTIONS_BY_AVO1_ID = `
 		}
 	}
 `;
-
-export const GET_PUBLIC_COLLECTIONS = `
-	query getPublicCollections {
-		app_collections(where: {is_public: {_eq: true}}) {
-			id
-			updated_at
-			type_id
-		}
-	}
-`;
