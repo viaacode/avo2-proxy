@@ -3,12 +3,10 @@ import _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { InternalServerError } from '../../shared/helpers/error';
+import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-import {
-	ELASTIC_TO_READABLE_FILTER_NAMES,
-} from './constants';
+import { ELASTIC_TO_READABLE_FILTER_NAMES } from './constants';
 
 interface ElasticsearchResponse {
 	took: number;
@@ -50,7 +48,7 @@ type AggregationMultiBucket = {
 type AggregationSingleBucket = {
 	doc_count_error_upper_bound: number;
 	sum_other_doc_count: number;
-	buckets: { key: string, doc_count: number }[];
+	buckets: { key: string; doc_count: number }[];
 };
 
 interface SimpleBucket {
@@ -65,7 +63,7 @@ export default class SearchService {
 
 	private static async getAuthTokenFromNetwork(): Promise<string> {
 		let url: string | undefined;
-		let data: { username: string, password: string } | undefined;
+		let data: { username: string; password: string } | undefined;
 		try {
 			// Fetch new token
 			url = process.env.ELASTICSEARCH_AUTH_SERVER_URL as string;
@@ -80,31 +78,35 @@ export default class SearchService {
 			});
 			return authTokenResponse.data.authorization_token;
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to get JWT token from auth server',
-				err,
-				{ url, data });
+			throw new InternalServerError('Failed to get JWT token from auth server', err, {
+				url,
+				data,
+			});
 		}
 	}
 
 	private static async getAuthToken(): Promise<string> {
-		if (SearchService.tokenPromise) {
-			// Token call in progress, return the same promise that is in progress
-			return SearchService.tokenPromise;
-		}
+		try {
+			if (SearchService.tokenPromise) {
+				// Token call in progress, return the same promise that is in progress
+				return SearchService.tokenPromise;
+			}
 
-		if (!SearchService.authToken || SearchService.authTokenExpire < new Date()) {
-			// We need to get a token the first time the search api is called or
-			// when the token in the cache is expired
-			SearchService.tokenPromise = SearchService.getAuthTokenFromNetwork();
-			SearchService.authToken = await SearchService.tokenPromise;
-			SearchService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
-			SearchService.tokenPromise = null;
+			if (!SearchService.authToken || SearchService.authTokenExpire < new Date()) {
+				// We need to get a token the first time the search api is called or
+				// when the token in the cache is expired
+				SearchService.tokenPromise = SearchService.getAuthTokenFromNetwork();
+				SearchService.authToken = await SearchService.tokenPromise;
+				SearchService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
+				SearchService.tokenPromise = null;
+				return SearchService.authToken;
+			}
+			// Return cached token
 			return SearchService.authToken;
+		} catch (err) {
+			SearchService.tokenPromise = null;
+			throw new ExternalServerError('Failed to get token for elasticsearch', err);
 		}
-		// Return cached token
-		return SearchService.authToken;
-
 	}
 
 	public static async search(searchQueryObject: any, index: string): Promise<Avo.Search.Search> {
@@ -115,7 +117,24 @@ export default class SearchService {
 		try {
 			url = process.env.ELASTICSEARCH_URL;
 			url = url.replace('/avo-search/', `/avo-search/${index}/`);
-			const token: string = await SearchService.getAuthToken();
+
+			let token: string;
+			try {
+				token = await SearchService.getAuthToken();
+			} catch (err) {
+				logger.error(
+					new ExternalServerError('Failed to get token for elasticsearch, attempt 1', err)
+				);
+				try {
+					token = await SearchService.getAuthToken();
+				} catch (err) {
+					throw new ExternalServerError(
+						'Failed to get token for elasticsearch, attempt 2',
+						err
+					);
+				}
+			}
+
 			logger.info(`---------- query:\n${url}\n${JSON.stringify(searchQueryObject)}`);
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
@@ -131,35 +150,31 @@ export default class SearchService {
 				// Return search results
 				return {
 					count: _.get(esResponse, 'data.hits.total'),
-					results: _.map(_.get(esResponse, 'data.hits.hits'), (result): Avo.Search.ResultItem => {
-						return {
-							...result._source,
-							id: result._source.external_id,
-						} as Avo.Search.ResultItem;
-					}),
+					results: _.map(
+						_.get(esResponse, 'data.hits.hits'),
+						(result): Avo.Search.ResultItem => {
+							return {
+								...result._source,
+								id: result._source.external_id,
+							} as Avo.Search.ResultItem;
+						}
+					),
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
 			}
-			throw new InternalServerError(
-				'Request to elasticsearch was unsuccessful',
-				null,
-				{
-					url,
-					searchQueryObject,
-					method: 'post',
-					status: esResponse.status,
-					statusText: esResponse.statusText,
-				});
-
+			throw new InternalServerError('Request to elasticsearch was unsuccessful', null, {
+				url,
+				searchQueryObject,
+				method: 'post',
+				status: esResponse.status,
+				statusText: esResponse.statusText,
+			});
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to make request to elasticsearch',
-				err,
-				{
-					url,
-					searchQueryObject,
-					method: 'post',
-				});
+			throw new InternalServerError('Failed to make request to elasticsearch', err, {
+				url,
+				searchQueryObject,
+				method: 'post',
+			});
 		}
 	}
 
@@ -237,37 +252,46 @@ export default class SearchService {
 	 */
 	public static simplifyAggregations(aggregations: Aggregations): Avo.Search.FilterOptions {
 		const simpleAggs: Avo.Search.FilterOptions = {};
-		_.forEach(aggregations, (value: AggregationMultiBucket | AggregationSingleBucket, prop: string) => {
-			const cleanProp = prop.replace(/\.filter$/, '');
-			if (!ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]) {
-				logger.error(`elasticsearch filter name not found for ${cleanProp}`);
+		_.forEach(
+			aggregations,
+			(value: AggregationMultiBucket | AggregationSingleBucket, prop: string) => {
+				const cleanProp = prop.replace(/\.filter$/, '');
+				if (!ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]) {
+					logger.error(`elasticsearch filter name not found for ${cleanProp}`);
+				}
+				if (_.isPlainObject(value.buckets)) {
+					// range bucket object (eg: fragment_duration_seconds)
+					const rangeBuckets = value.buckets as {
+						[bucketName: string]: {
+							from?: number;
+							to?: number;
+							doc_count: number;
+						};
+					};
+					simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = _.map(
+						rangeBuckets,
+						(bucketValue, bucketName): SimpleBucket => {
+							return {
+								option_name: bucketName,
+								option_count: bucketValue.doc_count,
+							};
+						}
+					) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
+				} else {
+					// regular bucket array (eg: administrative_type)
+					const regularBuckets = value.buckets as { key: string; doc_count: number }[];
+					simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = _.map(
+						regularBuckets,
+						(bucketValue): SimpleBucket => {
+							return {
+								option_name: bucketValue.key,
+								option_count: bucketValue.doc_count,
+							};
+						}
+					) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
+				}
 			}
-			if (_.isPlainObject(value.buckets)) {
-				// range bucket object (eg: fragment_duration_seconds)
-				const rangeBuckets = value.buckets as {
-					[bucketName: string]: {
-						from?: number;
-						to?: number;
-						doc_count: number;
-					};
-				};
-				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = (_.map(rangeBuckets, (bucketValue, bucketName): SimpleBucket => {
-					return {
-						option_name: bucketName,
-						option_count: bucketValue.doc_count,
-					};
-				})) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
-			} else {
-				// regular bucket array (eg: administrative_type)
-				const regularBuckets = value.buckets as { key: string, doc_count: number }[];
-				simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = (_.map(regularBuckets, (bucketValue): SimpleBucket => {
-					return {
-						option_name: bucketValue.key,
-						option_count: bucketValue.doc_count,
-					};
-				})) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
-			}
-		});
+		);
 		return simpleAggs;
 	}
 }
