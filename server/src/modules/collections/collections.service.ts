@@ -29,7 +29,10 @@ export default class CollectionsService {
 	): Promise<Avo.Collection.Collection | null> {
 		try {
 			// retrieve collection or bundle by id
-			const collectionOrBundle = await this.fetchCollectionOrBundleById(collectionId, type);
+			const collectionOrBundle = await CollectionsService.fetchCollectionOrBundleById(
+				collectionId,
+				type
+			);
 
 			// handle empty response
 			if (!collectionOrBundle) {
