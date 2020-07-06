@@ -45,10 +45,12 @@ type AggregationMultiBucket = {
 	};
 };
 
+type Bucket = { key: string; doc_count: number };
+
 type AggregationSingleBucket = {
 	doc_count_error_upper_bound: number;
 	sum_other_doc_count: number;
-	buckets: { key: string; doc_count: number }[];
+	buckets: Bucket[];
 };
 
 interface SimpleBucket {
@@ -279,7 +281,7 @@ export default class SearchService {
 					) as SimpleBucket[]; // Issue with lodash typings: https://stackoverflow.com/questions/44467778
 				} else {
 					// regular bucket array (eg: administrative_type)
-					const regularBuckets = value.buckets as { key: string; doc_count: number }[];
+					const regularBuckets = value.buckets as Bucket[];
 					simpleAggs[ELASTIC_TO_READABLE_FILTER_NAMES[cleanProp]] = _.map(
 						regularBuckets,
 						(bucketValue): SimpleBucket => {
