@@ -65,6 +65,7 @@ export const GET_COLLECTION_BY_ID = `
 			is_public
 			external_id
 			depublish_at
+			published_at
 			created_at
 			lom_classification
 			lom_context

@@ -23,6 +23,7 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 				}
 			}
 			publish_at
+			published_at
 			title
 			updated_at
 			user_group_ids

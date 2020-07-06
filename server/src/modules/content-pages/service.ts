@@ -17,7 +17,7 @@ import {
 } from './queries.gql';
 
 export default class ContentPageService {
-	public static async getContentBlockByPath(path: string): Promise<Avo.ContentPage.Page | null> {
+	public static async getContentPageByPath(path: string): Promise<Avo.ContentPage.Page | null> {
 		try {
 			const response = await DataService.execute(GET_CONTENT_PAGE_BY_PATH, {
 				path,
