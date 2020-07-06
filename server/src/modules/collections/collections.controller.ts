@@ -3,11 +3,19 @@ import { Avo } from '@viaa/avo2-types';
 import CollectionsService from './collections.service';
 
 export default class CollectionsController {
-	public static async fetchCollectionOrBundleWithItemsById(
+	public static async fetchCollectionWithItemsById(
 		id: string,
-		type: 'collection' | 'bundle'
+		type: 'collection' | 'bundle',
+		avoUser: Avo.User.User
 	): Promise<Avo.Collection.Collection | null> {
-		return CollectionsService.fetchCollectionOrBundleWithItemsById(id, type);
+		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
+			id,
+			type
+		);
+		if (!collection.is_public && collection.owner_profile_id !== avoUser.profile.id) {
+			return null;
+		}
+		return collection;
 	}
 
 	public static async fetchItemExternalIdByMediamosaId(id: string): Promise<string | null> {

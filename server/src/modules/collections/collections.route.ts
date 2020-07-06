@@ -1,4 +1,4 @@
-import { GET, Path, QueryParam } from 'typescript-rest';
+import { GET, Path, QueryParam, Context, ServiceContext } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -6,9 +6,13 @@ import { InternalServerError, NotFoundError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 import CollectionsController from './collections.controller';
+import { IdpHelper } from '../auth/idp-helper';
 
 @Path('/collections')
 export default class CollectionsRoute {
+	@Context
+	context: ServiceContext;
+
 	@Path('/fetch-with-items-by-id')
 	@GET
 	async fetchCollectionOrBundleWithItemsById(
@@ -17,7 +21,12 @@ export default class CollectionsRoute {
 	): Promise<Avo.Collection.Collection | null> {
 		let collection: Avo.Collection.Collection | null = null;
 		try {
-			collection = await CollectionsController.fetchCollectionOrBundleWithItemsById(id, type);
+			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			collection = await CollectionsController.fetchCollectionWithItemsById(
+				id,
+				type,
+				avoUser
+			);
 		} catch (err) {
 			logger.error(new InternalServerError('Failed to get collection', err));
 			throw new InternalServerError('Failed to get collection', null, { id, type });
