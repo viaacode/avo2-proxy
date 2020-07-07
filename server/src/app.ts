@@ -10,6 +10,9 @@ import { Validator } from './shared/helpers/validation';
 
 // tslint:disable
 // Routes
+import { presets as corePresets } from './modules/core/helpers/presets';
+import { ErrorMiddleware } from './modules/core/middleware/error';
+import { GlobalMiddleware } from './modules/core/middleware/global';
 import AssetRoute from './modules/assets/route';
 import HetArchiefRoute from './modules/auth/idps/hetarchief/route';
 import HetArchiefService from './modules/auth/idps/hetarchief/service';
@@ -20,9 +23,6 @@ import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/route';
 import ContentPagesRoute from './modules/content-pages/route';
-import { presets as corePresets } from './modules/core/helpers/presets';
-import { ErrorMiddleware } from './modules/core/middleware/error';
-import { GlobalMiddleware } from './modules/core/middleware/global';
 import DataRoute from './modules/data/route';
 import EducationLevelsRoute from './modules/education-levels/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
@@ -30,7 +30,6 @@ import EventLoggingRoute from './modules/event-logging/route';
 import InteractiveTourRoute from './modules/interactive-tours/route';
 import KlaarRoute from './modules/klaar/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
-import OrganisationService from './modules/organization/service';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import ProfileRoute from './modules/profile/route';
 import SearchRoute from './modules/search/route';
@@ -40,8 +39,11 @@ import StatusRoute from './modules/status/route';
 import VideoStillsRoute from './modules/video-stills/route';
 import ZendeskRoute from './modules/zendesk/route';
 import OrganisationsRoute from './modules/organization/route';
-import ZendeskService from './modules/zendesk/service';
+import CollectionsRoute from './modules/collections/collections.route';
+import SitemapRoutes from './modules/sitemap/sitemap.route';
 import AssetService from './modules/assets/service';
+import OrganisationService from './modules/organization/service';
+import ZendeskService from './modules/zendesk/service';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -154,6 +156,8 @@ export class App {
 			TranslationsRoute,
 			InteractiveTourRoute,
 			OrganisationsRoute,
+			CollectionsRoute,
+			SitemapRoutes,
 
 			FallbackRoute
 		);

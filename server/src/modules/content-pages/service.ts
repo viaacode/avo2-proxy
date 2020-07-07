@@ -1,8 +1,9 @@
-import _ from 'lodash';
+import { get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { SpecialPermissionGroups } from '../auth/types';
 import DataService from '../data/service';
 import SearchController from '../search/controller';
 
@@ -14,15 +15,16 @@ import {
 	GET_CONTENT_PAGES_WITH_BLOCKS,
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
+	GET_PUBLIC_CONTENT_PAGES,
 } from './queries.gql';
 
 export default class ContentPageService {
-	public static async getContentBlockByPath(path: string): Promise<Avo.ContentPage.Page | null> {
+	public static async getContentPageByPath(path: string): Promise<Avo.ContentPage.Page | null> {
 		try {
 			const response = await DataService.execute(GET_CONTENT_PAGE_BY_PATH, {
 				path,
 			});
-			const contentPage: Avo.ContentPage.Page | undefined = _.get(
+			const contentPage: Avo.ContentPage.Page | undefined = get(
 				response,
 				'data.app_content[0]'
 			);
@@ -43,10 +45,10 @@ export default class ContentPageService {
 				{ id }
 			);
 
-			const itemOrCollection = _.get(response, 'data.obj[0]', null);
+			const itemOrCollection = get(response, 'data.obj[0]', null);
 			if (itemOrCollection) {
 				itemOrCollection.count =
-					_.get(response, 'data.view_counts_aggregate.aggregate.sum.count') || 0;
+					get(response, 'data.view_counts_aggregate.aggregate.sum.count') || 0;
 			}
 
 			return itemOrCollection;
@@ -61,7 +63,7 @@ export default class ContentPageService {
 		try {
 			const response = await DataService.execute(GET_ITEM_BY_EXTERNAL_ID, { externalId });
 
-			return _.get(response, 'data.app_item_meta[0]', null);
+			return get(response, 'data.app_item_meta[0]', null);
 		} catch (err) {
 			throw new CustomError('Failed to fetch item by external id', err, { externalId });
 		}
@@ -148,8 +150,43 @@ export default class ContentPageService {
 			throw new InternalServerError('GraphQL has errors', null, { response });
 		}
 		return {
-			pages: _.get(response, 'data.app_content') || [],
-			count: _.get(response, 'data.app_content_aggregate.aggregate.count', 0),
+			pages: get(response, 'data.app_content') || [],
+			count: get(response, 'data.app_content_aggregate.aggregate.count', 0),
 		};
+	}
+
+	public static async fetchPublicContentPages(): Promise<
+		{
+			path: string;
+			updated_at: string;
+		}[]
+	> {
+		try {
+			const now = new Date().toISOString();
+			const response = await DataService.execute(GET_PUBLIC_CONTENT_PAGES, {
+				where: {
+					_and: [
+						{
+							user_group_ids: { _contains: SpecialPermissionGroups.loggedOutUsers },
+						},
+						// publish state
+						{
+							_or: [
+								{ is_public: { _eq: true } },
+								{ publish_at: { _eq: null }, depublish_at: { _gte: now } },
+								{ publish_at: { _lte: now }, depublish_at: { _eq: null } },
+								{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
+							],
+						},
+					],
+				},
+			});
+			if (response.errors) {
+				throw new InternalServerError('GraphQL has errors', null, { response });
+			}
+			return get(response, 'data.app_content') || [];
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch all public content pages');
+		}
 	}
 }
