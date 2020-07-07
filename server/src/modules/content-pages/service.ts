@@ -3,6 +3,7 @@ import { get } from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { SpecialPermissionGroups } from '../auth/types';
 import DataService from '../data/service';
 import SearchController from '../search/controller';
 
@@ -14,10 +15,8 @@ import {
 	GET_CONTENT_PAGES_WITH_BLOCKS,
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
-	GET_PUBLIC_CONTENT_PAGE_PATHS,
 	GET_PUBLIC_CONTENT_PAGES,
 } from './queries.gql';
-import { SpecialPermissionGroups } from '../auth/types';
 
 export default class ContentPageService {
 	public static async getContentPageByPath(path: string): Promise<Avo.ContentPage.Page | null> {
