@@ -11,11 +11,10 @@ import {
 	GET_COLLECTIONS_BY_IDS,
 	GET_EXTERNAL_ID_BY_MEDIAMOSA_ID,
 	GET_ITEMS_BY_IDS,
-	GET_PUBLIC_COLLECTIONS,
 } from './collections.queries.gql';
 import { ContentTypeNumber } from './collections.types';
 
-export default class CollectionsService {
+export default class SitemapService {
 	/**
 	 * Retrieve collection or bundle and underlying items or collections by id.
 	 *
@@ -30,7 +29,7 @@ export default class CollectionsService {
 	): Promise<Avo.Collection.Collection | null> {
 		try {
 			// retrieve collection or bundle by id
-			const collectionOrBundle = await CollectionsService.fetchCollectionOrBundleById(
+			const collectionOrBundle = await SitemapService.fetchCollectionOrBundleById(
 				collectionId,
 				type
 			);
@@ -188,28 +187,6 @@ export default class CollectionsService {
 			throw new CustomError('Failed to get collection or bundle uuid by their avo1 id', err, {
 				avo1Id,
 				query: GET_COLLECTIONS_BY_AVO1_ID,
-			});
-		}
-	}
-
-	public static async fetchPublicCollectionUuids(): Promise<
-		{
-			id: string;
-			updated_at: string;
-			type_id: 3 | 4;
-		}[]
-	> {
-		try {
-			const response = await DataService.execute(GET_PUBLIC_COLLECTIONS);
-
-			if (response.errors) {
-				throw new CustomError('Response contains graphql errors', null, { response });
-			}
-
-			return get(response, 'data.app_collections') || [];
-		} catch (err) {
-			throw new CustomError('Failed to get public collection', err, {
-				query: GET_PUBLIC_COLLECTIONS,
 			});
 		}
 	}
