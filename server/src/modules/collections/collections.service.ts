@@ -9,6 +9,7 @@ import {
 	GET_COLLECTION_BY_ID,
 	GET_COLLECTIONS_BY_AVO1_ID,
 	GET_COLLECTIONS_BY_IDS,
+	GET_COLLECTIONS_LINKED_TO_ASSIGNMENT,
 	GET_EXTERNAL_ID_BY_MEDIAMOSA_ID,
 	GET_ITEMS_BY_IDS,
 	GET_PUBLIC_COLLECTIONS,
@@ -210,6 +211,29 @@ export default class CollectionsService {
 		} catch (err) {
 			throw new CustomError('Failed to get public collection', err, {
 				query: GET_PUBLIC_COLLECTIONS,
+			});
+		}
+	}
+
+	public static async isCollectionLinkedToAssignment(
+		collectionUuid: string,
+		assignmentId: number
+	): Promise<boolean> {
+		try {
+			const response = await DataService.execute(GET_COLLECTIONS_LINKED_TO_ASSIGNMENT, {
+				collectionUuid,
+				assignmentId,
+			});
+
+			if (response.errors) {
+				throw new CustomError('Response contains graphql errors', null, { response });
+			}
+
+			return !!get(response, 'data.app_assignments[0]');
+		} catch (err) {
+			throw new CustomError('Failed to check isCollectionLinkedToAssignment', err, {
+				collectionUuid,
+				query: GET_COLLECTIONS_LINKED_TO_ASSIGNMENT,
 			});
 		}
 	}
