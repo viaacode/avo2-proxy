@@ -28,7 +28,17 @@ export class ErrorMiddleware {
 			methods: 'GET, POST, OPTIONS, PUT, DELETE',
 		})(req, res, next);
 
-		const errorJson = JSON.stringify(err, null, 2);
+		let errorJson = JSON.stringify(err, null, 2);
+		if (errorJson === '{}' && err) {
+			errorJson = JSON.stringify(
+				{
+					message: (err as any).message,
+					stack: (err as any).stack,
+				},
+				null,
+				2
+			);
+		}
 
 		logger.error(errorJson);
 

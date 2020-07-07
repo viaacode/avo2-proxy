@@ -29,7 +29,7 @@ export default class ContentPageController {
 		try {
 			const contentPage:
 				| Avo.ContentPage.Page
-				| undefined = await ContentPageService.getContentBlockByPath(path);
+				| undefined = await ContentPageService.getContentPageByPath(path);
 
 			const permissions = _.get(user, 'profile.permissions', []);
 			const profileId = _.get(user, 'profile.id', []);

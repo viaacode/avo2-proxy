@@ -23,6 +23,7 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 				}
 			}
 			publish_at
+			published_at
 			title
 			updated_at
 			user_group_ids
@@ -228,6 +229,17 @@ export const GET_CONTENT_PAGES = `
 			aggregate {
 				count
 			}
+		}
+	}
+`;
+
+export const GET_PUBLIC_CONTENT_PAGES = `
+	query getContent(
+		$where: app_content_bool_exp
+	) {
+		app_content(where: $where) {
+			path
+			updated_at
 		}
 	}
 `;
