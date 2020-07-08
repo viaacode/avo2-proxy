@@ -1,5 +1,6 @@
 import * as promiseUtils from 'blend-promise-utils';
 import * as _ from 'lodash';
+import { compact, fromPairs, map } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -11,7 +12,6 @@ import EducationOrganizationsService from '../education-organizations/service';
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
 import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
-import { omit, compact, fromPairs, map } from 'lodash';
 
 export default class CampaignMonitorController {
 	/**
