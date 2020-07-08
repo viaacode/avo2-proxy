@@ -21,20 +21,16 @@ export interface PlayerTicket {
 	};
 }
 
-checkRequiredEnvs([
-	'TICKET_SERVICE_CERT',
-	'TICKET_SERVICE_KEY',
-	'TICKET_SERVICE_PASSPHRASE',
-]);
+checkRequiredEnvs(['TICKET_SERVICE_CERT', 'TICKET_SERVICE_KEY', 'TICKET_SERVICE_PASSPHRASE']);
 
 export default class PlayerTicketService {
 	private static certEnv = Buffer.from(
 		(process.env.TICKET_SERVICE_CERT as string).replace(/\\n/g, '\n'),
-		'utf8',
+		'utf8'
 	);
 	private static keyEnv = Buffer.from(
 		(process.env.TICKET_SERVICE_KEY as string).replace(/\\n/g, '\n'),
-		'utf8',
+		'utf8'
 	);
 	private static httpsAgent = new https.Agent({
 		rejectUnauthorized: false,
@@ -51,14 +47,17 @@ export default class PlayerTicketService {
 	 * @param referer
 	 * @param expire
 	 */
-	public static async getPlayerTicket(objectName: string, clientIp: string, referer: string, expire: number): Promise<PlayerTicket> {
+	public static async getPlayerTicket(
+		objectName: string,
+		clientIp: string,
+		referer: string,
+		expire: number
+	): Promise<PlayerTicket> {
 		try {
 			if (!process.env.TICKET_SERVICE_URL) {
-				throw new InternalServerError(
-					'TICKET_SERVICE_URL env variable is not set',
-					null,
-					{ url: process.env.TICKET_SERVICE_URL }
-				);
+				throw new InternalServerError('TICKET_SERVICE_URL env variable is not set', null, {
+					url: process.env.TICKET_SERVICE_URL,
+				});
 			}
 
 			const data = {
@@ -67,22 +66,17 @@ export default class PlayerTicketService {
 				client: clientIp,
 			};
 
-			logger.info({
-				data,
-				url: `${process.env.TICKET_SERVICE_URL}/${objectName}`,
-				method: 'get',
-			});
-
-			const response: AxiosResponse<any> = await axios(`${process.env.TICKET_SERVICE_URL}/${objectName}`, {
-				data,
-				method: 'get',
-				httpsAgent: this.httpsAgent,
-			});
+			const response: AxiosResponse<any> = await axios(
+				`${process.env.TICKET_SERVICE_URL}/${objectName}`,
+				{
+					data,
+					method: 'get',
+					httpsAgent: this.httpsAgent,
+				}
+			);
 
 			return response.data;
 		} catch (err) {
-			logger.info('FAILED IN TICKET SERVICE', util.inspect(err));
-
 			throw new InternalServerError(
 				'Failed to get player-token from player-token service',
 				err,
@@ -90,7 +84,8 @@ export default class PlayerTicketService {
 					clientIp,
 					referer,
 					expire,
-				});
+				}
+			);
 		}
 	}
 }

@@ -3,10 +3,12 @@ import * as _ from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { InternalServerError } from '../../shared/helpers/error';
+import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { AuthService } from '../auth/service';
-import EducationOrganizationsService from '../education-organizations/service';
+import EducationOrganizationsService, {
+	LdapEducationOrganization,
+} from '../education-organizations/service';
 
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
@@ -71,14 +73,23 @@ export default class CampaignMonitorController {
 				const educationalOrganizationUnitId = _.get(org, 'unitId');
 				if (educationalOrganizationId) {
 					// Waiting for https://meemoo.atlassian.net/browse/AVO-939
-					const educationalOrganization = await EducationOrganizationsService.getOrganization(
+					const educationalOrganization: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
 						educationalOrganizationId,
 						educationalOrganizationUnitId
 					);
-					schoolZipcodes.push(educationalOrganization.postal_code);
-					schoolNames.push(educationalOrganization.name);
-					schoolIds.push(educationalOrganizationId);
-					campusIds.push(educationalOrganizationUnitId);
+					if (educationalOrganization) {
+						schoolZipcodes.push(educationalOrganization.postal_code);
+						schoolNames.push(educationalOrganization.name);
+						schoolIds.push(educationalOrganizationId);
+						campusIds.push(educationalOrganizationUnitId);
+					} else {
+						logger.error(
+							new ExternalServerError('Failed to find organisation by id', null, {
+								educationalOrganizationId,
+								educationalOrganizationUnitId,
+							})
+						);
+					}
 				}
 			});
 
