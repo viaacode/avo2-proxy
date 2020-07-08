@@ -143,8 +143,7 @@ export default class OrganisationService {
 	static async fetchOrganization(id: string): Promise<Avo.Organization.Organization | null> {
 		try {
 			const response = await DataService.execute(GET_ORGANIZATIONS, { id });
-			const org = _.get(response, 'data.shared_organisations[0]') || null;
-			return org;
+			return _.get(response, 'data.shared_organisations[0]') || null;
 		} catch (err) {
 			throw new InternalServerError('Failed to fetch organization', err, {
 				id,

@@ -1,5 +1,5 @@
 import * as promiseUtils from 'blend-promise-utils';
-import _ from 'lodash';
+import { cloneDeep, compact, get, uniq } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -33,7 +33,7 @@ export class AuthService {
 					{ email, errors: response.errors }
 				);
 			}
-			const user: SharedUser = _.get(response, 'data.users[0]', null);
+			const user: SharedUser = get(response, 'data.users[0]', null);
 			return this.simplifyUserObject(user);
 		} catch (err) {
 			throw new InternalServerError(
@@ -54,7 +54,7 @@ export class AuthService {
 					{ userId, errors: response.errors }
 				);
 			}
-			const user: SharedUser = _.get(response, 'data.users[0]', null);
+			const user: SharedUser = get(response, 'data.users[0]', null);
 			return this.simplifyUserObject(user);
 		} catch (err) {
 			throw new InternalServerError('Failed to get user info from graphql by user uid', err, {
@@ -72,12 +72,12 @@ export class AuthService {
 			(user as any).profile = user.profiles[0] || ({} as Avo.User.Profile);
 			const permissions = new Set<string>();
 			const userGroupIds: number[] = [];
-			_.get(user, 'profiles[0].profile_user_groups', []).forEach((profileUserGroup: any) => {
-				_.get(profileUserGroup, 'groups', []).forEach((userGroup: any) => {
+			get(user, 'profiles[0].profile_user_groups', []).forEach((profileUserGroup: any) => {
+				get(profileUserGroup, 'groups', []).forEach((userGroup: any) => {
 					userGroupIds.push(userGroup.id);
-					_.get(userGroup, 'group_user_permission_groups', []).forEach(
+					get(userGroup, 'group_user_permission_groups', []).forEach(
 						(permissionGroup: any) => {
-							_.get(
+							get(
 								permissionGroup,
 								'permission_group.permission_group_user_permissions',
 								[]
@@ -90,24 +90,20 @@ export class AuthService {
 			});
 			(user as any).profile.userGroupIds = userGroupIds;
 			(user as any).profile.permissions = Array.from(permissions);
-			(user as any).idpmaps = _.uniq((user.idpmaps || []).map(obj => obj.idp));
+			(user as any).idpmaps = uniq((user.idpmaps || []).map(obj => obj.idp));
 			delete user.profiles;
 			delete (user as any).profile.profile_user_groups;
 
 			// Simplify linked objects
-			(user as any).profile.educationLevels = (_.get(
-				user,
-				'profile.profile_contexts',
-				[]
-			) as { key: string }[]).map(context => context.key);
-			(user as any).profile.subjects = (_.get(
-				user,
-				'profile.profile_classifications',
-				[]
-			) as { key: string }[]).map(classification => classification.key);
-			(user as any).profile.organizations = _.compact(
+			(user as any).profile.educationLevels = (get(user, 'profile.profile_contexts', []) as {
+				key: string;
+			}[]).map(context => context.key);
+			(user as any).profile.subjects = (get(user, 'profile.profile_classifications', []) as {
+				key: string;
+			}[]).map(classification => classification.key);
+			(user as any).profile.organizations = compact(
 				await promiseUtils.mapLimit(
-					_.get(user, 'profile.profile_organizations', []),
+					get(user, 'profile.profile_organizations', []),
 					5,
 					async (org): Promise<ClientEducationOrganization> => {
 						const ldapOrg: LdapEducationOrganization = await EducationOrganizationsService.getOrganization(
@@ -117,7 +113,7 @@ export class AuthService {
 						if (!ldapOrg) {
 							return null;
 						}
-						const unitAddress = _.get(
+						const unitAddress = get(
 							(ldapOrg.units || []).find(unit => unit.id === org.unit_id),
 							'address',
 							null
@@ -201,7 +197,7 @@ export class AuthService {
 				throw new CustomError('Response contains errors', null, { response });
 			}
 
-			return _.get(response, 'data.users_groups', []);
+			return get(response, 'data.users_groups', []);
 		} catch (err) {
 			throw new CustomError('Failed to get user groups from the database', err, {
 				query: GET_USER_GROUPS,
@@ -211,7 +207,7 @@ export class AuthService {
 
 	static async updateAvoUserInfo(avoUser: Avo.User.User): Promise<void> {
 		try {
-			const updatedUser = _.cloneDeep(avoUser);
+			const updatedUser = cloneDeep(avoUser);
 			delete updatedUser.uid;
 			delete updatedUser.profile;
 			delete updatedUser.idpmaps;
