@@ -135,6 +135,11 @@ export const GET_COLLECTIONS_BY_IDS = `
 			}
 			title
 			avo1_id
+			collection_fragments_aggregate {
+				aggregate {
+					count
+				}
+			}
 		}
 	}
 `;
