@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import _ from 'lodash';
+import { get, uniqBy } from 'lodash';
 // import cron from 'node-cron';
 
 import { Avo } from '@viaa/avo2-types';
@@ -133,7 +133,7 @@ export default class OrganisationService {
 
 		try {
 			return await DataService.execute(INSERT_ORGANIZATIONS, {
-				organizations: _.uniqBy(parsedOrganizations, 'or_id'),
+				organizations: uniqBy(parsedOrganizations, 'or_id'),
 			});
 		} catch (err) {
 			throw new InternalServerError('Failed to insert organizations', err);
@@ -143,7 +143,7 @@ export default class OrganisationService {
 	static async fetchOrganization(id: string): Promise<Avo.Organization.Organization | null> {
 		try {
 			const response = await DataService.execute(GET_ORGANIZATIONS, { id });
-			return _.get(response, 'data.shared_organisations[0]') || null;
+			return get(response, 'data.shared_organisations[0]') || null;
 		} catch (err) {
 			throw new InternalServerError('Failed to fetch organization', err, {
 				id,
