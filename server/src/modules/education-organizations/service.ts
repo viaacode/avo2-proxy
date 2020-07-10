@@ -30,11 +30,7 @@ export interface Unit {
 	postal_code: string;
 }
 
-checkRequiredEnvs([
-	'LDAP_API_ENDPOINT',
-	'LDAP_API_USERNAME',
-	'LDAP_API_PASSWORD',
-]);
+checkRequiredEnvs(['LDAP_API_ENDPOINT', 'LDAP_API_USERNAME', 'LDAP_API_PASSWORD']);
 
 export default class EducationOrganizationsService {
 	/**
@@ -42,13 +38,16 @@ export default class EducationOrganizationsService {
 	 * @param cityName
 	 * @param zipCode
 	 */
-	public static async getOrganizations(cityName: string | null, zipCode: string | null): Promise<LdapEducationOrganization[]> {
+	public static async getOrganizations(
+		cityName: string | null,
+		zipCode: string | null
+	): Promise<LdapEducationOrganization[]> {
 		let url: string;
 		try {
 			if (!cityName && !zipCode) {
 				return [];
 			}
-			url = `${process.env.LDAP_API_ENDPOINT}/organizations?size=200&sideload=units`;
+			url = `${process.env.LDAP_API_ENDPOINT}/organizations?size=500&sideload=units`;
 			if (zipCode) {
 				url += `&postal_code=${zipCode}`;
 			} else {
@@ -69,13 +68,17 @@ export default class EducationOrganizationsService {
 				{
 					url,
 					zipCode,
-				});
+				}
+			);
 			logger.error(error);
 			throw error;
 		}
 	}
 
-	public static async getOrganization(organizationId: string, unitId: string): Promise<LdapEducationOrganization | null> {
+	public static async getOrganization(
+		organizationId: string,
+		unitId: string
+	): Promise<LdapEducationOrganization | null> {
 		let url: string;
 		try {
 			url = `${process.env.LDAP_API_ENDPOINT}/organizations?${querystring.stringify({
@@ -98,7 +101,8 @@ export default class EducationOrganizationsService {
 					url,
 					organizationId,
 					unitId,
-				});
+				}
+			);
 			logger.error(error);
 			throw error;
 		}
