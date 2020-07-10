@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
@@ -137,7 +136,9 @@ export default class HetArchiefController {
 			first_name: get(ldapObject, 'attributes.givenName[0]', ''),
 			last_name: get(ldapObject, 'attributes.sn[0]', ''),
 			mail: get(ldapObject, 'attributes.mail[0]', ''),
-			roles: get(ldapObject, 'attributes.organizationalStatus', []),
+			roles: (get(ldapObject, 'attributes.organizationalStatus') || []).map((role: string) =>
+				role.toLowerCase()
+			),
 		};
 	}
 
@@ -160,7 +161,9 @@ export default class HetArchiefController {
 			apps: (get(ldapObject, 'attributes.apps') || []).map((app: string) => ({
 				name: app,
 			})),
-			organizational_status: get(ldapObject, 'attributes.organizationalStatus'),
+			organizational_status: (
+				get(ldapObject, 'attributes.organizationalStatus') || []
+			).map((status: string) => status.toLowerCase()),
 			business_category: get(ldapObject, 'attributes.businessCategory'),
 			exception_account: get(ldapObject, 'attributes.x-be-viaa-eduExceptionAccount'),
 		};
@@ -180,7 +183,7 @@ export default class HetArchiefController {
 			if (!avoUserInfo) {
 				// No avo user exists yet and this call isn't part of a registration flow
 				// Check if ldap user has the avo group
-				if (!!(ldapUserInfo.apps || []).find(app => app.name === 'avo')) {
+				if (!!(ldapUserInfo.apps || []).find((app) => app.name === 'avo')) {
 					// Create the avo user for this ldap account
 					avoUserInfo = await HetArchiefController.createUserAndProfile(
 						ldapUserInfo,
@@ -211,7 +214,7 @@ export default class HetArchiefController {
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
-		if (!ldapUserInfo.apps.find(app => app.name === 'avo')) {
+		if (!ldapUserInfo.apps.find((app) => app.name === 'avo')) {
 			newAvoUser.is_blocked = true;
 		}
 
@@ -276,8 +279,8 @@ export default class HetArchiefController {
 	): Promise<boolean> {
 		const allUserGroups = await AuthService.getAllUserGroups();
 
-		const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map(role =>
-			allUserGroups.find(ug => ug.ldap_role === role)
+		const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map((role) =>
+			allUserGroups.find((ug) => ug.ldap_role === role)
 		);
 		const ldapUserGroups: UserGroup[] = compact(ldapUserGroupsRaw);
 
@@ -295,8 +298,8 @@ export default class HetArchiefController {
 		const avoUserGroupRaw: (
 			| UserGroup
 			| undefined
-		)[] = avoUser.profile.userGroupIds.map(avoUserGroupId =>
-			allUserGroups.find(ug => ug.id === avoUserGroupId)
+		)[] = avoUser.profile.userGroupIds.map((avoUserGroupId) =>
+			allUserGroups.find((ug) => ug.id === avoUserGroupId)
 		);
 		const avoUserGroups: UserGroup[] = compact(avoUserGroupRaw);
 
@@ -313,14 +316,14 @@ export default class HetArchiefController {
 
 		// Remove the user groups that are managed by avo without a corresponding role in ldap
 		// eg: lesgever secundair, student lesgever secundair
-		const avoUserGroupsFiltered = avoUserGroups.filter(ug => ug.ldap_role !== null);
+		const avoUserGroupsFiltered = avoUserGroups.filter((ug) => ug.ldap_role !== null);
 		const avoUserGroupIdsOther = avoUserGroups
-			.filter(ug => ug.ldap_role === null)
-			.map(ug => ug.id);
+			.filter((ug) => ug.ldap_role === null)
+			.map((ug) => ug.id);
 
 		// Update user groups:
-		const ldapUserGroupIds = uniq(ldapUserGroups.map(ug => ug.id));
-		const avoUserGroupIds = uniq(avoUserGroupsFiltered.map(ug => ug.id));
+		const ldapUserGroupIds = uniq(ldapUserGroups.map((ug) => ug.id));
+		const avoUserGroupIds = uniq(avoUserGroupsFiltered.map((ug) => ug.id));
 
 		const addedUserGroupIds = without(ldapUserGroupIds, ...avoUserGroupIds);
 		const deletedUserGroupIds = without(avoUserGroupIds, ...ldapUserGroupIds);

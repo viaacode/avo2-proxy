@@ -7,8 +7,10 @@ import { logger } from '../../shared/helpers/logger';
 
 import {
 	AggProps,
-	AGGS_PROPERTIES, MAX_COUNT_SEARCH_RESULTS,
-	MAX_NUMBER_SEARCH_RESULTS, NEEDS_FILTER_SUFFIX,
+	AGGS_PROPERTIES,
+	MAX_COUNT_SEARCH_RESULTS,
+	MAX_NUMBER_SEARCH_RESULTS,
+	NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from './constants';
@@ -42,7 +44,11 @@ export default class QueryBuilder {
 			queryObject.from = _.clamp(searchRequest.from || 0, 0, max);
 
 			// Provide the ordering to the query object
-			_.set(queryObject, 'sort', this.buildSortArray(searchRequest.orderProperty, searchRequest.orderDirection));
+			_.set(
+				queryObject,
+				'sort',
+				this.buildSortArray(searchRequest.orderProperty, searchRequest.orderDirection)
+			);
 
 			// Add the filters and search terms to the query object
 			_.set(queryObject, 'query', this.buildFilterObject(searchRequest.filters));
@@ -58,13 +64,9 @@ export default class QueryBuilder {
 
 			return queryObject;
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to build query object',
-				err,
-				{
-					...searchRequest,
-				},
-			);
+			throw new InternalServerError('Failed to build query object', err, {
+				...searchRequest,
+			});
 		}
 	}
 
@@ -87,13 +89,20 @@ export default class QueryBuilder {
 	 */
 	private static buildSortArray(
 		orderProperty: Avo.Search.OrderProperty | undefined = 'relevance',
-		orderDirection: Avo.Search.OrderDirection | undefined = 'desc') {
+		orderDirection: Avo.Search.OrderDirection | undefined = 'desc'
+	) {
 		const mappedOrderProperty = this.orderMappings[orderProperty];
 		const sortArray: any[] = [];
 		if (mappedOrderProperty !== '_score') {
 			let sortItem: any;
 			if (mappedOrderProperty === 'dcterms_issued') {
-				sortItem = { dcterms_issued: { order: orderDirection, unmapped_type: 'date', missing: '_last' } };
+				sortItem = {
+					dcterms_issued: {
+						order: orderDirection,
+						unmapped_type: 'date',
+						missing: '_last',
+					},
+				};
 			} else {
 				sortItem = {
 					[mappedOrderProperty]: {
@@ -107,7 +116,9 @@ export default class QueryBuilder {
 			sortArray.push('_score');
 			// TODO re-enable after https://meemoo.atlassian.net/browse/DEV-735
 			// If score is equal, sort them by broadcast date
-			sortArray.push({ dcterms_issued: { order: orderDirection, unmapped_type: 'date', missing: '_last' } });
+			sortArray.push({
+				dcterms_issued: { order: orderDirection, unmapped_type: 'date', missing: '_last' },
+			});
 		}
 		return sortArray;
 	}
@@ -118,10 +129,14 @@ export default class QueryBuilder {
 	 * @param readableKey
 	 * @param values
 	 */
-	private static generateOrFilter(elasticKey: string, readableKey: string, values: string[]): any {
+	private static generateOrFilter(
+		elasticKey: string,
+		readableKey: Avo.Search.FilterProp,
+		values: string[]
+	): any {
 		return {
 			terms: {
-				[elasticKey + this.suffix(readableKey as Avo.Search.FilterProp)]: values,
+				[elasticKey + this.suffix(readableKey)]: values,
 			},
 		};
 	}
@@ -132,15 +147,21 @@ export default class QueryBuilder {
 	 * @param readableKey
 	 * @param values
 	 */
-	private static generateAndFilter(elasticKey: string, readableKey: string, values: string[]): any {
+	private static generateAndFilter(
+		elasticKey: string,
+		readableKey: Avo.Search.FilterProp,
+		values: string[]
+	): any {
 		return {
 			bool: {
-				should: [values.map(value => ({
-					term: {
-						lom_keywords: value,
-					},
-				}))],
-				minimum_should_match : values.length,
+				should: [
+					values.map(value => ({
+						term: {
+							[elasticKey + this.suffix(readableKey)]: value,
+						},
+					})),
+				],
+				minimum_should_match: values.length,
 			},
 		};
 	}
@@ -162,7 +183,7 @@ export default class QueryBuilder {
 			// Replace {{query}} in the template with the escaped search terms
 			const textQueryObjectArray = _.cloneDeep(textQueryObjectTemplate);
 			const escapedQueryString = stringQuery;
-			_.forEach(textQueryObjectArray, (matchObj) => {
+			_.forEach(textQueryObjectArray, matchObj => {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});
 
@@ -183,7 +204,8 @@ export default class QueryBuilder {
 			}
 
 			// Map frontend filter names to elasticsearch names
-			const elasticKey = READABLE_TO_ELASTIC_FILTER_NAMES[readableKey as Avo.Search.FilterProp];
+			const elasticKey =
+				READABLE_TO_ELASTIC_FILTER_NAMES[readableKey as Avo.Search.FilterProp];
 			if (!elasticKey) {
 				throw new InternalServerError(`Failed to resolve agg property: ${readableKey}`);
 			}
@@ -191,13 +213,28 @@ export default class QueryBuilder {
 				// Array of options
 				// TODO if only one option use "term" instead of "terms" (better efficiency for elasticsearch)
 				if (readableKey === 'keyword') {
-					filterArray.push(this.generateAndFilter(elasticKey, readableKey, value));
+					filterArray.push(
+						this.generateAndFilter(
+							elasticKey,
+							readableKey as Avo.Search.FilterProp,
+							value
+						)
+					);
 				} else {
-					filterArray.push(this.generateOrFilter(elasticKey, readableKey, value));
+					filterArray.push(
+						this.generateOrFilter(
+							elasticKey,
+							readableKey as Avo.Search.FilterProp,
+							value
+						)
+					);
 				}
-			} else if (_.isPlainObject(value) && (!_.isNil(value['gte']) || !_.isNil(value['lte']))) {
+			} else if (
+				_.isPlainObject(value) &&
+				(!_.isNil(value['gte']) || !_.isNil(value['lte']))
+			) {
 				// Date/number interval
-				const intervalValue = value as { gte?: string | number, lte?: string | number };
+				const intervalValue = value as { gte?: string | number; lte?: string | number };
 				filterArray.push({
 					range: {
 						[elasticKey]: {
@@ -207,10 +244,12 @@ export default class QueryBuilder {
 					},
 				});
 			} else {
-				logger.error(new InternalServerError(
-					'Unknown filter during search',
-					null,
-					{ value, key: elasticKey }));
+				logger.error(
+					new InternalServerError('Unknown filter during search', null, {
+						value,
+						key: elasticKey,
+					})
+				);
 				return;
 			}
 		});
@@ -235,16 +274,20 @@ export default class QueryBuilder {
 	 * }
 	 * @param filterOptionSearch
 	 */
-	private static buildAggsObject(filterOptionSearch: Partial<Avo.Search.FilterOption> | undefined): any {
+	private static buildAggsObject(
+		filterOptionSearch: Partial<Avo.Search.FilterOption> | undefined
+	): any {
 		const aggs: any = {};
-		_.forEach(AGGS_PROPERTIES, (aggProperty) => {
+		_.forEach(AGGS_PROPERTIES, aggProperty => {
 			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
 			if (!elasticProperty) {
 				throw new InternalServerError(`Failed to resolve agg property: ${aggProperty}`);
 			}
 			if (filterOptionSearch && (filterOptionSearch as any)[aggProperty]) {
 				// An extra search filter should be applied for these filter options
-				const filterOptionsTerm: string | undefined = (filterOptionSearch as any)[aggProperty as AggProps];
+				const filterOptionsTerm: string | undefined = (filterOptionSearch as any)[
+					aggProperty as AggProps
+				];
 				aggs[elasticProperty] = {
 					filter: {
 						term: {
