@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { get, trimEnd } from 'lodash';
 import * as queryString from 'querystring';
 import {
 	Context,
@@ -12,7 +12,11 @@ import {
 } from 'typescript-rest';
 
 import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
-import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
+import {
+	BadRequestError,
+	CustomError,
+	InternalServerError,
+} from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
 import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
@@ -22,7 +26,7 @@ import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';
 
 import HetArchiefController from './controller';
-import { LdapPerson, UpdateUserBody } from './hetarchief.types';
+import { UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
 
 interface RelayState {
@@ -49,14 +53,18 @@ export default class HetArchiefRoute {
 	@GET
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
-			const returnTo = returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`;
+			const returnTo = returnToUrl || `${trimEnd(process.env.CLIENT_HOST, '/')}/start`;
 			if (isLoggedIn(this.context.request)) {
 				return new Return.MovedTemporarily<void>(returnTo);
 			}
 			const url = await HetArchiefService.createLoginRequestUrl(returnTo);
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during hetarchief auth login route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t(
@@ -79,7 +87,7 @@ export default class HetArchiefRoute {
 		try {
 			const ldapUser: LdapUser = await HetArchiefService.assertSamlResponse(response);
 			logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
-			const info: RelayState = JSON.parse(response.RelayState);
+			const info: RelayState = response.RelayState ? JSON.parse(response.RelayState) : {};
 
 			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
 
@@ -109,20 +117,8 @@ export default class HetArchiefRoute {
 					}
 				}
 
-				if (!avoUser) {
-					// No avo user exists yet and this call isn't part of a registration flow
-					// Check if ldap user has the avo group
-					if ((ldapUser.attributes.apps || []).includes('avo')) {
-						// Create the avo user for this ldap account
-						avoUser = await HetArchiefController.createUserAndProfile(
-							this.context.request,
-							null
-						);
-					}
-				}
-
-				// Add permission groups
-				const isUpdated = await HetArchiefController.updateUser(
+				// Update avo user with ldap fields and user groups
+				const isUpdated = await HetArchiefController.createOrUpdateUser(
 					HetArchiefController.ldapObjectToLdapPerson(ldapUser),
 					avoUser
 				);
@@ -157,7 +153,7 @@ export default class HetArchiefRoute {
 			// Check if user account has access to the avo platform
 			if (
 				!isPartOfRegistrationProcess &&
-				!_.get(ldapUser, 'attributes.apps', []).includes('avo')
+				!get(ldapUser, 'attributes.apps', []).includes('avo')
 			) {
 				return redirectToClientErrorPage(
 					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
@@ -166,9 +162,15 @@ export default class HetArchiefRoute {
 				);
 			}
 
-			return new Return.MovedTemporarily(info.returnToUrl);
+			return new Return.MovedTemporarily(
+				info.returnToUrl || `${process.env.CLIENT_HOST}/start`
+			);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during hetarchief auth login-callback route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-inloggen'),
@@ -209,7 +211,11 @@ export default class HetArchiefRoute {
 			);
 			return new Return.MovedTemporarily<void>(returnToUrl);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during hetarchief auth logout route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t(
@@ -233,9 +239,13 @@ export default class HetArchiefRoute {
 			const info: RelayState = JSON.parse(response.RelayState);
 			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {
-				relayState: response.RelayState,
-			});
+			const error = new InternalServerError(
+				'Failed during hetarchief auth logout-callback route',
+				err,
+				{
+					relayState: response.RelayState,
+				}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
@@ -259,13 +269,13 @@ export default class HetArchiefRoute {
 		try {
 			const serverRedirectUrl = `${
 				process.env.HOST
-				}/auth/hetarchief/verify-email-callback?${queryString.stringify({
-					returnToUrl,
-					stamboekNumber: encrypt(stamboekNumber),
-				})}`;
+			}/auth/hetarchief/verify-email-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: encrypt(stamboekNumber),
+			})}`;
 			return new Return.MovedTemporarily<void>(
 				`${process.env.SSUM_REGISTRATION_PAGE ||
-				process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
+					process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
 					redirect_to: serverRedirectUrl,
 					app_name: process.env.SAML_SP_ENTITY_ID,
 					stamboek: stamboekNumber,
@@ -299,10 +309,10 @@ export default class HetArchiefRoute {
 			// TODO get saml login data straight from registration form callback => so we can skip this login form step
 			const serverRedirectUrl = `${
 				process.env.HOST
-				}/auth/hetarchief/register-callback?${queryString.stringify({
-					returnToUrl,
-					stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
-				})}`;
+			}/auth/hetarchief/register-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
+			})}`;
 			const url = `${process.env.HOST}/auth/hetarchief/login?${queryString.stringify({
 				returnToUrl: serverRedirectUrl,
 			})}`;
@@ -358,7 +368,7 @@ export default class HetArchiefRoute {
 			const stamboekValidateStatus = await StamboekController.validate(stamboekNumber);
 			if (stamboekValidateStatus === 'VALID') {
 				let avoUser = await HetArchiefController.createUserAndProfile(
-					this.context.request,
+					IdpHelper.getIdpUserInfoFromSession(this.context.request),
 					stamboekNumber
 				);
 
@@ -441,8 +451,15 @@ export default class HetArchiefRoute {
 	@POST
 	@PreProcessor(checkApiKeyRouteGuard)
 	async updateUser(body: UpdateUserBody): Promise<any> {
+		if (!get(body, 'data.person')) {
+			throw new BadRequestError(
+				'Body should contain data.person with the ldap info of the person you want to update',
+				null,
+				{ body }
+			);
+		}
 		try {
-			await HetArchiefController.updateUser(body.data.person);
+			await HetArchiefController.createOrUpdateUser(body.data.person, null);
 			return { message: 'user has been updated' };
 		} catch (err) {
 			const error = new InternalServerError(
