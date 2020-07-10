@@ -141,7 +141,9 @@ export default class HetArchiefController {
 			first_name: get(ldapObject, 'attributes.givenName[0]', ''),
 			last_name: get(ldapObject, 'attributes.sn[0]', ''),
 			mail: get(ldapObject, 'attributes.mail[0]', ''),
-			roles: get(ldapObject, 'attributes.organizationalStatus', []),
+			roles: (get(ldapObject, 'attributes.organizationalStatus') || []).map((role: string) =>
+				role.toLowerCase()
+			),
 		};
 	}
 
@@ -164,7 +166,9 @@ export default class HetArchiefController {
 			apps: (get(ldapObject, 'attributes.apps') || []).map((app: string) => ({
 				name: app,
 			})),
-			organizational_status: get(ldapObject, 'attributes.organizationalStatus'),
+			organizational_status: (
+				get(ldapObject, 'attributes.organizationalStatus') || []
+			).map((status: string) => status.toLowerCase()),
 			businessCategory: get(ldapObject, 'attributes.businessCategory'),
 			eduExceptionAccount: get(ldapObject, 'attributes.x-be-viaa-eduExceptionAccount'),
 		};
