@@ -28,6 +28,7 @@ import { LdapUser } from '../../types';
 import HetArchiefController from './controller';
 import { UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 interface RelayState {
 	returnToUrl: string;
@@ -160,6 +161,18 @@ export default class HetArchiefRoute {
 					'lock',
 					['home', 'helpdesk']
 				);
+			}
+
+			if (isRelativeUrl(info.returnToUrl)) {
+				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
+				logger.error(
+					new CustomError(
+						'Received relative redirect url for hetarchief login-callback route',
+						null,
+						{ returnToUrl: info.returnToUrl }
+					)
+				);
+				return new Return.MovedTemporarily(process.env.CLIENT_HOST);
 			}
 
 			return new Return.MovedTemporarily(

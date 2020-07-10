@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
 
-import { InternalServerError } from '../../../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
 import i18n from '../../../../shared/translations/i18n';
@@ -14,6 +14,7 @@ import SmartschoolController, {
 	SmartschoolUserLoginResponse,
 } from './controller';
 import SmartschoolService from './service';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const GET_SMARTSCHOOL_ERROR_MESSAGES = () => ({
@@ -68,7 +69,7 @@ export default class SmartschoolRoute {
 
 			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
 
-			const redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
+			let redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
 			if (redirectUrl.includes(process.env.HOST)) {
 				// User had to login, to link smartschool account to an existing hetarchief or viaa account
 				const linkAccountInfo: LinkAccountInfo = {
@@ -103,6 +104,18 @@ export default class SmartschoolRoute {
 					'SMARTSCHOOL'
 				);
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
+			}
+
+			if (isRelativeUrl(redirectUrl)) {
+				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
+				logger.error(
+					new CustomError(
+						'Received relative redirect url for smartschool login-callback route',
+						null,
+						{ redirectUrl }
+					)
+				);
+				redirectUrl = process.env.CLIENT_HOST;
 			}
 
 			return new Return.MovedTemporarily(redirectUrl);
