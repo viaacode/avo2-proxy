@@ -166,6 +166,22 @@ export default class HetArchiefRoute {
 				);
 			}
 
+			if (
+				!info.returnToUrl.startsWith('http://') &&
+				!info.returnToUrl.startsWith('https://') &&
+				!info.returnToUrl.startsWith('//')
+			) {
+				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
+				logger.error(
+					new CustomError(
+						'Received relative redirect url for hetarchief login-callback route',
+						null,
+						{ returnToUrl: info.returnToUrl }
+					)
+				);
+				return new Return.MovedTemporarily(process.env.CLIENT_HOST);
+			}
+
 			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError('Failed during auth login route', err, {});
@@ -259,13 +275,13 @@ export default class HetArchiefRoute {
 		try {
 			const serverRedirectUrl = `${
 				process.env.HOST
-				}/auth/hetarchief/verify-email-callback?${queryString.stringify({
-					returnToUrl,
-					stamboekNumber: encrypt(stamboekNumber),
-				})}`;
+			}/auth/hetarchief/verify-email-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: encrypt(stamboekNumber),
+			})}`;
 			return new Return.MovedTemporarily<void>(
 				`${process.env.SSUM_REGISTRATION_PAGE ||
-				process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
+					process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
 					redirect_to: serverRedirectUrl,
 					app_name: process.env.SAML_SP_ENTITY_ID,
 					stamboek: stamboekNumber,
@@ -299,10 +315,10 @@ export default class HetArchiefRoute {
 			// TODO get saml login data straight from registration form callback => so we can skip this login form step
 			const serverRedirectUrl = `${
 				process.env.HOST
-				}/auth/hetarchief/register-callback?${queryString.stringify({
-					returnToUrl,
-					stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
-				})}`;
+			}/auth/hetarchief/register-callback?${queryString.stringify({
+				returnToUrl,
+				stamboekNumber: (encryptedStamboekNumber || '').split('?')[0], // TODO remove once ssum correctly adds "?announce_account_confirmation=true" query param
+			})}`;
 			const url = `${process.env.HOST}/auth/hetarchief/login?${queryString.stringify({
 				returnToUrl: serverRedirectUrl,
 			})}`;
