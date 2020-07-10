@@ -1,5 +1,5 @@
 import * as promiseUtils from 'blend-promise-utils';
-import * as _ from 'lodash';
+import { compact, fromPairs, get, map, toPairs, uniq } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -13,7 +13,6 @@ import EducationOrganizationsService, {
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
 import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
-import { omit, compact, fromPairs, map } from 'lodash';
 
 export default class CampaignMonitorController {
 	/**
@@ -42,35 +41,35 @@ export default class CampaignMonitorController {
 		preferences: Partial<NewsletterPreferences>
 	) {
 		try {
-			const mappedPreferences = _.toPairs(preferences) as [NewsletterKey, boolean][];
+			const mappedPreferences = toPairs(preferences) as [NewsletterKey, boolean][];
 
-			const email = _.get(user, 'mail');
+			const email = get(user, 'mail');
 
-			const firstName = _.get(user, 'first_name');
-			const lastName = _.get(user, 'last_name');
+			const firstName = get(user, 'first_name');
+			const lastName = get(user, 'last_name');
 			const name = [firstName, lastName].join(' ').trim();
 
-			const userGroupId = _.get(user, 'profile.userGroupIds[0]');
+			const userGroupId = get(user, 'profile.userGroupIds[0]');
 			const allUserGroups = await AuthService.getAllUserGroups();
-			const userGroup = _.get(
-				allUserGroups.find(group => group.id === userGroupId),
+			const userGroup = get(
+				allUserGroups.find((group) => group.id === userGroupId),
 				'label'
 			);
 
-			const oormerk = _.get(user, 'profile.title');
-			const isExceptionAccount = _.get(user, 'profile.is_exception') || false;
-			const stamboekNumber = _.get(user, 'profile.stamboek');
-			const educationLevels: string[] = _.get(user, 'profile.educationLevels');
+			const oormerk = get(user, 'profile.title');
+			const isExceptionAccount = get(user, 'profile.is_exception') || false;
+			const stamboekNumber = get(user, 'profile.stamboek');
+			const educationLevels: string[] = get(user, 'profile.educationLevels');
 
 			const schoolZipcodes: string[] = [];
 			const schoolIds: string[] = [];
 			const campusIds: string[] = [];
 			const schoolNames: string[] = [];
 			const educationalOrganizations: Avo.EducationOrganization.Organization[] =
-				_.get(user, 'profile.organizations') || [];
-			await promiseUtils.map(educationalOrganizations, async org => {
-				const educationalOrganizationId = _.get(org, 'organizationId');
-				const educationalOrganizationUnitId = _.get(org, 'unitId');
+				get(user, 'profile.organizations') || [];
+			await promiseUtils.map(educationalOrganizations, async (org) => {
+				const educationalOrganizationId = get(org, 'organizationId');
+				const educationalOrganizationUnitId = get(org, 'unitId');
 				if (educationalOrganizationId) {
 					// Waiting for https://meemoo.atlassian.net/browse/AVO-939
 					const educationalOrganization: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
@@ -93,15 +92,15 @@ export default class CampaignMonitorController {
 				}
 			});
 
-			const subjects = _.get(user, 'profile.subjects', []).join(', ');
+			const subjects = get(user, 'profile.subjects', []).join(', ');
 
-			await promiseUtils.map(mappedPreferences, async preference => {
+			await promiseUtils.map(mappedPreferences, async (preference) => {
 				const key: NewsletterKey = preference[0];
 				const subscribed = preference[1];
 
 				if (subscribed) {
 					const join = (arr: (string | undefined | null)[]) =>
-						_.uniq(_.compact(arr)).join(', ');
+						uniq(compact(arr)).join(', ');
 					await CampaignMonitorService.subscribeToNewsletterList(
 						NEWSLETTER_LISTS[key],
 						email,

@@ -42,7 +42,11 @@ export default class SmartschoolRoute {
 			const url = SmartschoolService.getRedirectUrlForCode();
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during smartschool auth login route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t(
@@ -116,7 +120,11 @@ export default class SmartschoolRoute {
 
 			return new Return.MovedTemporarily(redirectUrl);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during smartschool auth login-callback route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t(

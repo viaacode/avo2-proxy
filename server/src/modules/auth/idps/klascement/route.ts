@@ -35,7 +35,11 @@ export default class KlascementRoute {
 			const url = KlascementService.getRedirectUrlForCode(requestId);
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during klascement auth login route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t(
@@ -98,7 +102,11 @@ export default class KlascementRoute {
 
 			return new Return.MovedTemporarily(redirectUrl);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError(
+				'Failed during klascement auth login-callback route',
+				err,
+				{}
+			);
 			logger.error(error);
 			return redirectToClientErrorPage(
 				i18n.t(

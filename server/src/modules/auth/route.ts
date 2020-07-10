@@ -45,9 +45,9 @@ export default class AuthRoute {
 		try {
 			return await AuthController.getLoginResponse(this.context.request);
 		} catch (err) {
-			const error = new InternalServerError('Failed during auth login route', err, {});
+			const error = new InternalServerError('Failed during check-login route', err, {});
 			logger.error(error);
-			throw error;
+			throw new InternalServerError('Failed during check-login route');
 		}
 	}
 
