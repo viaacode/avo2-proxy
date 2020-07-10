@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import { get, isNil } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -20,7 +20,9 @@ export default class CollectionsController {
 			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
 		if (
 			!isLinkedToAssignment &&
-			!collection.is_public && collection.owner_profile_id !== avoUser.profile.id
+			!collection.is_public &&
+			(!collection.owner_profile_id ||
+				collection.owner_profile_id !== get(avoUser, 'profile.id'))
 		) {
 			return null;
 		}

@@ -23,7 +23,8 @@ export class CustomError {
 	constructor(
 		message: string = 'Something went wrong',
 		innerException: any = null,
-		additionalInfo: any = null) {
+		additionalInfo: any = null
+	) {
 		this.message = message;
 		this.innerException = innerException;
 		this.additionalInfo = additionalInfo;
@@ -33,6 +34,12 @@ export class CustomError {
 			this.stack = innerException.stack;
 		} else {
 			this.stack = new Error().stack || '';
+		}
+		if (innerException && !(innerException instanceof CustomError)) {
+			this.innerException = {
+				message: (innerException as any).message,
+				stack: (innerException as any).stack,
+			};
 		}
 	}
 
@@ -52,9 +59,11 @@ export class CustomValidationError extends CustomError {
 	constructor(err: IValidationError) {
 		super();
 
-		this.details = pathOr([], ['validation', 'details'], err).map((detail: ValidationErrorItem) => ({
-			err: detail.message,
-		}));
+		this.details = pathOr([], ['validation', 'details'], err).map(
+			(detail: ValidationErrorItem) => ({
+				err: detail.message,
+			})
+		);
 	}
 }
 
@@ -121,8 +130,7 @@ export class GoneError extends ClientError {
 	public statusCode: number = 410;
 }
 
-export class ServerError extends CustomError {
-}
+export class ServerError extends CustomError {}
 
 export class InternalServerError extends ServerError {
 	// public message: string = 'Something went wrong';

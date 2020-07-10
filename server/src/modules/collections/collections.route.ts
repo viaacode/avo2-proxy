@@ -1,12 +1,12 @@
-import { GET, Path, QueryParam, Context, ServiceContext } from 'typescript-rest';
+import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError, NotFoundError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import { IdpHelper } from '../auth/idp-helper';
 
 import CollectionsController from './collections.controller';
-import { IdpHelper } from '../auth/idp-helper';
 
 @Path('/collections')
 export default class CollectionsRoute {
