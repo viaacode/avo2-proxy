@@ -11,6 +11,7 @@ import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
 
 import KlascementController, { LoginSuccessResponse } from './controller';
 import KlascementService from './service';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const REQUEST_ID_PATH = 'request.session.requestId';
@@ -83,11 +84,7 @@ export default class KlascementRoute {
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
 			}
 
-			if (
-				!redirectUrl.startsWith('http://') &&
-				!redirectUrl.startsWith('https://') &&
-				!redirectUrl.startsWith('//')
-			) {
+			if (isRelativeUrl(redirectUrl)) {
 				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
 				logger.error(
 					new CustomError(

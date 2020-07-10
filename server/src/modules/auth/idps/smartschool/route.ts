@@ -14,6 +14,7 @@ import SmartschoolController, {
 	SmartschoolUserLoginResponse,
 } from './controller';
 import SmartschoolService from './service';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const GET_SMARTSCHOOL_ERROR_MESSAGES = () => ({
@@ -101,11 +102,7 @@ export default class SmartschoolRoute {
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
 			}
 
-			if (
-				!redirectUrl.startsWith('http://') &&
-				!redirectUrl.startsWith('https://') &&
-				!redirectUrl.startsWith('//')
-			) {
+			if (isRelativeUrl(redirectUrl)) {
 				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
 				logger.error(
 					new CustomError(

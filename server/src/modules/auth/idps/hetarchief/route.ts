@@ -24,6 +24,7 @@ import { LdapUser } from '../../types';
 import HetArchiefController from './controller';
 import { LdapPerson, UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 interface RelayState {
 	returnToUrl: string;
@@ -166,11 +167,7 @@ export default class HetArchiefRoute {
 				);
 			}
 
-			if (
-				!info.returnToUrl.startsWith('http://') &&
-				!info.returnToUrl.startsWith('https://') &&
-				!info.returnToUrl.startsWith('//')
-			) {
+			if (isRelativeUrl(info.returnToUrl)) {
 				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
 				logger.error(
 					new CustomError(
