@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
 import getUuid from 'uuid/v1';
 
-import { InternalServerError } from '../../../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
 import i18n from '../../../../shared/translations/i18n';
@@ -25,7 +25,11 @@ export default class KlascementRoute {
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
 			const requestId = getUuid();
-			_.set(this.context, REDIRECT_URL_PATH, (returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`));
+			_.set(
+				this.context,
+				REDIRECT_URL_PATH,
+				returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`
+			);
 			_.set(this.context, REQUEST_ID_PATH, requestId);
 			const url = KlascementService.getRedirectUrlForCode(requestId);
 			return new Return.MovedTemporarily<void>(url);
@@ -33,7 +37,9 @@ export default class KlascementRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-inloggen-met-klascement'),
+				i18n.t(
+					'modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-inloggen-met-klascement'
+				),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -45,9 +51,11 @@ export default class KlascementRoute {
 	@GET
 	async loginCallback(@QueryParam('code') code: string): Promise<Return.MovedTemporarily<void>> {
 		try {
-			const response: LoginSuccessResponse = await KlascementController.getUserFromKlascementLogin(code);
+			const response: LoginSuccessResponse = await KlascementController.getUserFromKlascementLogin(
+				code
+			);
 
-			const redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
+			let redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
 			if (redirectUrl.includes(process.env.HOST)) {
 				// User had to login, to link klascement account to an existing hetarchief or viaa account
 				const linkAccountInfo: LinkAccountInfo = {
@@ -60,13 +68,35 @@ export default class KlascementRoute {
 				// Check if accounts are linked
 				if (!response.avoUser) {
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/klascement/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-klascement-te-koppelen-in-je-account-instellingen'),
+						i18n.t(
+							'modules/auth/idps/klascement/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-klascement-te-koppelen-in-je-account-instellingen'
+						),
 						'link',
-						['home', 'helpdesk'],
+						['home', 'helpdesk']
 					);
 				}
-				IdpHelper.setIdpUserInfoOnSession(this.context.request, response.klascementUserInfo, 'KLASCEMENT');
+				IdpHelper.setIdpUserInfoOnSession(
+					this.context.request,
+					response.klascementUserInfo,
+					'KLASCEMENT'
+				);
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
+			}
+
+			if (
+				!redirectUrl.startsWith('http://') &&
+				!redirectUrl.startsWith('https://') &&
+				!redirectUrl.startsWith('//')
+			) {
+				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
+				logger.error(
+					new CustomError(
+						'Received relative redirect url for klascement login-callback route',
+						null,
+						{ redirectUrl }
+					)
+				);
+				redirectUrl = process.env.CLIENT_HOST;
 			}
 
 			return new Return.MovedTemporarily(redirectUrl);
@@ -74,7 +104,9 @@ export default class KlascementRoute {
 			const error = new InternalServerError('Failed during auth login route', err, {});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-na-het-inloggen-met-klascement'),
+				i18n.t(
+					'modules/auth/idps/klascement/route___er-ging-iets-mis-na-het-inloggen-met-klascement'
+				),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -89,10 +121,14 @@ export default class KlascementRoute {
 			IdpHelper.logout(this.context.request);
 			return new Return.MovedTemporarily(returnToUrl);
 		} catch (err) {
-			const error = new InternalServerError('Failed during klascement/logout route', err, { returnToUrl });
+			const error = new InternalServerError('Failed during klascement/logout route', err, {
+				returnToUrl,
+			});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-uitloggen-met-klascement'),
+				i18n.t(
+					'modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-uitloggen-met-klascement'
+				),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
