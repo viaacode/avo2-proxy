@@ -52,7 +52,7 @@ export default class CampaignMonitorController {
 			const userGroupId = get(user, 'profile.userGroupIds[0]');
 			const allUserGroups = await AuthService.getAllUserGroups();
 			const userGroup = get(
-				allUserGroups.find((group) => group.id === userGroupId),
+				allUserGroups.find(group => group.id === userGroupId),
 				'label'
 			);
 
@@ -67,7 +67,7 @@ export default class CampaignMonitorController {
 			const schoolNames: string[] = [];
 			const educationalOrganizations: Avo.EducationOrganization.Organization[] =
 				get(user, 'profile.organizations') || [];
-			await promiseUtils.map(educationalOrganizations, async (org) => {
+			await promiseUtils.map(educationalOrganizations, async org => {
 				const educationalOrganizationId = get(org, 'organizationId');
 				const educationalOrganizationUnitId = get(org, 'unitId');
 				if (educationalOrganizationId) {
@@ -92,9 +92,9 @@ export default class CampaignMonitorController {
 				}
 			});
 
-			const subjects = get(user, 'profile.subjects', []).join(', ');
+			const subjects = uniq(get(user, 'profile.subjects') || []).join(', ');
 
-			await promiseUtils.map(mappedPreferences, async (preference) => {
+			await promiseUtils.map(mappedPreferences, async preference => {
 				const key: NewsletterKey = preference[0];
 				const subscribed = preference[1];
 

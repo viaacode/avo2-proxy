@@ -98,9 +98,11 @@ export class AuthService {
 			(user as any).profile.educationLevels = (get(user, 'profile.profile_contexts', []) as {
 				key: string;
 			}[]).map(context => context.key);
-			(user as any).profile.subjects = (get(user, 'profile.profile_classifications', []) as {
-				key: string;
-			}[]).map(classification => classification.key);
+			(user as any).profile.subjects = uniq(
+				(get(user, 'profile.profile_classifications', []) as {
+					key: string;
+				}[]).map(classification => classification.key)
+			);
 			(user as any).profile.organizations = compact(
 				await promiseUtils.mapLimit(
 					get(user, 'profile.profile_organizations', []),
