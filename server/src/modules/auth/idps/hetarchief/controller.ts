@@ -164,7 +164,8 @@ export default class HetArchiefController {
 			organizational_status: (
 				get(ldapObject, 'attributes.organizationalStatus') || []
 			).map((status: string) => status.toLowerCase()),
-			business_category: get(ldapObject, 'attributes.businessCategory'),
+			role: get(ldapObject, 'attributes.role'),
+			sector: get(ldapObject, 'attributes.sector'),
 			exception_account: get(ldapObject, 'attributes.x-be-viaa-eduExceptionAccount'),
 		};
 	}
@@ -210,7 +211,7 @@ export default class HetArchiefController {
 		newAvoUser.profile.educationLevels =
 			get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
 		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
-		(newAvoUser.profile as any).title = get(ldapUserInfo, 'business_category[0]') || null;
+		(newAvoUser.profile as any).title = get(ldapUserInfo, 'sector[0]') || null;
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
