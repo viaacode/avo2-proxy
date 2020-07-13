@@ -3,6 +3,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 		users: shared_users(limit: 1, where: {mail: {_eq: $email}}) {
 			first_name
 			last_name
+			is_blocked
 			profiles {
 				id
 				alias
@@ -66,6 +67,7 @@ export const GET_USER_INFO_BY_ID = `
 		users: shared_users(limit: 1, where: {uid: {_eq: $userId}}) {
 			first_name
 			last_name
+			is_blocked
 			profiles {
 				id
 				alias
@@ -130,6 +132,7 @@ export const GET_USER_BY_LDAP_UUID = `
 			local_user {
 				first_name
 				last_name
+				is_blocked
 				profiles {
 					id
 					alias

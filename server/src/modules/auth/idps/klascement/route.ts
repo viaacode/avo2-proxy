@@ -1,17 +1,17 @@
-import _ from 'lodash';
+import { get, set, trimEnd } from 'lodash';
 import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
 import getUuid from 'uuid/v1';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 import i18n from '../../../../shared/translations/i18n';
 import { IdpHelper } from '../../idp-helper';
 import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
 
 import KlascementController, { LoginSuccessResponse } from './controller';
 import KlascementService from './service';
-import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const REQUEST_ID_PATH = 'request.session.requestId';
@@ -26,12 +26,12 @@ export default class KlascementRoute {
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
 			const requestId = getUuid();
-			_.set(
+			set(
 				this.context,
 				REDIRECT_URL_PATH,
-				returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`
+				returnToUrl || `${trimEnd(process.env.CLIENT_HOST, '/')}/start`
 			);
-			_.set(this.context, REQUEST_ID_PATH, requestId);
+			set(this.context, REQUEST_ID_PATH, requestId);
 			const url = KlascementService.getRedirectUrlForCode(requestId);
 			return new Return.MovedTemporarily<void>(url);
 		} catch (err) {
@@ -60,14 +60,22 @@ export default class KlascementRoute {
 				code
 			);
 
-			let redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
+			if (get(response.avoUser, 'is_blocked')) {
+				return redirectToClientErrorPage(
+					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
+					'lock',
+					['home', 'helpdesk']
+				);
+			}
+
+			let redirectUrl = get(this.context, REDIRECT_URL_PATH);
 			if (redirectUrl.includes(process.env.HOST)) {
 				// User had to login, to link klascement account to an existing hetarchief or viaa account
 				const linkAccountInfo: LinkAccountInfo = {
 					userObject: response.klascementUserInfo,
 					type: 'KLASCEMENT',
 				};
-				_.set(this.context, LINK_ACCOUNT_PATH, linkAccountInfo);
+				set(this.context, LINK_ACCOUNT_PATH, linkAccountInfo);
 			} else {
 				// User is logging in to enter avo using their klascement account
 				// Check if accounts are linked
