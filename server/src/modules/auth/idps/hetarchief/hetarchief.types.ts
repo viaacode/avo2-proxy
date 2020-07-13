@@ -29,7 +29,8 @@ export interface LdapPerson {
 	edu_typecode: string[];
 	edu_levelname: string[];
 	exception_account: ['TRUE' | 'FALSE'];
-	business_category: string[];
+	role: string[]; // company
+	sector: string[]; // business category or also oormerk
 }
 
 export interface App {
