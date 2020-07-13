@@ -131,6 +131,14 @@ export default class HetArchiefRoute {
 					);
 				}
 
+				if (get(avoUser, 'is_blocked')) {
+					return redirectToClientErrorPage(
+						i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
+						'lock',
+						['home', 'helpdesk']
+					);
+				}
+
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
 			} catch (err) {
 				if (JSON.stringify(err).includes('ENOTFOUND')) {

@@ -1,9 +1,10 @@
-import _ from 'lodash';
+import { get, set } from 'lodash';
 import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 import i18n from '../../../../shared/translations/i18n';
 import { IdpHelper } from '../../idp-helper';
 import { LINK_ACCOUNT_PATH, LinkAccountInfo } from '../../route';
@@ -14,7 +15,6 @@ import SmartschoolController, {
 	SmartschoolUserLoginResponse,
 } from './controller';
 import SmartschoolService from './service';
-import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const GET_SMARTSCHOOL_ERROR_MESSAGES = () => ({
@@ -67,16 +67,24 @@ export default class SmartschoolRoute {
 				code
 			);
 
+			if (get(userOrError, 'avoUser.is_blocked')) {
+				return redirectToClientErrorPage(
+					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
+					'lock',
+					['home', 'helpdesk']
+				);
+			}
+
 			const response: LoginSuccessResponse = userOrError as LoginSuccessResponse;
 
-			let redirectUrl = _.get(this.context, REDIRECT_URL_PATH);
+			let redirectUrl = get(this.context, REDIRECT_URL_PATH);
 			if (redirectUrl.includes(process.env.HOST)) {
 				// User had to login, to link smartschool account to an existing hetarchief or viaa account
 				const linkAccountInfo: LinkAccountInfo = {
 					userObject: response.smartschoolUserInfo,
 					type: 'SMARTSCHOOL',
 				};
-				_.set(this.context, LINK_ACCOUNT_PATH, linkAccountInfo);
+				set(this.context, LINK_ACCOUNT_PATH, linkAccountInfo);
 			} else {
 				// User is logging in to enter avo using their smartschool account
 				if ((userOrError as LoginErrorResponse).error) {
