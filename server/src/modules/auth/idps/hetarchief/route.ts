@@ -19,6 +19,7 @@ import {
 } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
+import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
 import StamboekController from '../../../stamboek-validate/controller';
@@ -28,7 +29,6 @@ import { LdapUser } from '../../types';
 import HetArchiefController from './controller';
 import { UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
-import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 
 interface RelayState {
 	returnToUrl: string;
