@@ -238,12 +238,30 @@ export class AuthService {
 
 			const organisationId = get(avoUser, 'profile.organizations[0].organizationId');
 			const unitId = get(avoUser, 'profile.organizations[0].unitId');
-			const educationLevels = get(avoUser, 'profile.educationLevels');
+			const educationLevel = get(avoUser, 'profile.educationLevels[0]');
+
+			// Resolve org id en unit id to uuids since the ldap api uses those
+			let organisationUuid: string;
+			let unitUuid: string;
+
+			if (organisationId) {
+				const orgInfo: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
+					organisationId,
+					unitId
+				);
+				if (orgInfo) {
+					organisationUuid = orgInfo.id;
+					unitUuid = get(
+						orgInfo.units.find(unit => unit.ou_id === unitId),
+						'id'
+					);
+				}
+			}
 
 			const body = {
-				...(organisationId ? { o: organisationId } : {}),
-				...(unitId ? { ou: unitId } : {}),
-				...(educationLevels ? { 'x-be-viaa-eduLevelName': educationLevels } : {}),
+				...(organisationId ? { organization: organisationUuid } : {}),
+				...(unitId ? { unit: unitUuid } : {}),
+				...(educationLevel ? { edu_levelname: educationLevel } : {}),
 			};
 
 			const response: AxiosResponse<{}> = await axios(url, {
