@@ -1,3 +1,4 @@
+import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
 import { cloneDeep, compact, get, uniq } from 'lodash';
 
@@ -229,6 +230,65 @@ export class AuthService {
 			await ProfileController.updateProfile(avoUser.profile, {});
 		} catch (err) {
 			throw new CustomError('Failed to update avo user info', err, { avoUser });
+		}
+	}
+
+	static async updateLdapUserInfo(avoUser: Avo.User.User, ldapEntryUuid: string): Promise<void> {
+		let url: string;
+		try {
+			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapEntryUuid}`;
+
+			const organisationId = get(avoUser, 'profile.organizations[0].organizationId');
+			const unitId = get(avoUser, 'profile.organizations[0].unitId');
+			const educationLevel = get(avoUser, 'profile.educationLevels[0]');
+
+			// Resolve org id en unit id to uuids since the ldap api uses those
+			let organisationUuid: string;
+			let unitUuid: string;
+
+			if (organisationId) {
+				const orgInfo: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
+					organisationId,
+					unitId
+				);
+				if (orgInfo) {
+					organisationUuid = orgInfo.id;
+					unitUuid = get(
+						orgInfo.units.find(unit => unit.ou_id === unitId),
+						'id'
+					);
+				}
+			}
+
+			const body = {
+				...(organisationId ? { organization: organisationUuid } : {}),
+				...(unitId ? { unit: unitUuid } : {}),
+				...(educationLevel ? { edu_levelname: educationLevel } : {}),
+			};
+
+			const response: AxiosResponse<{}> = await axios(url, {
+				method: 'put',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+				data: body,
+			});
+
+			if (response.status < 200 || response.status >= 400) {
+				/* istanbul ignore next */
+				throw new InternalServerError('Status code indicates failure', null, {
+					url,
+					method: 'put',
+					status: response.status,
+					statusText: response.statusText,
+				});
+			}
+		} catch (err) {
+			throw new InternalServerError('Failed to update user info in ldap', err, {
+				url,
+				avoUserId: get(avoUser, 'uid'),
+			});
 		}
 	}
 }
