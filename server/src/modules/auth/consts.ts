@@ -26,3 +26,12 @@ export const IDP_ADAPTERS: { [idpType in IdpType]: IdpInterface } = {
 		getUserId: (idpUserInfo: KlascementUserInfo): string => idpUserInfo.id,
 	},
 };
+
+export enum SpecialUserGroup {
+	Admin = 1,
+	Teacher = 2,
+	TeacherSecondary = 3,
+	Pupil = 4,
+	StudentTeacher = 5,
+	StudentTeacherSecondary = 23,
+}

@@ -1,9 +1,11 @@
-import _ from 'lodash';
+import { first, get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
+import { logger } from '../../../../shared/helpers/logger';
 import DataService from '../../../data/service';
+import { SpecialUserGroup } from '../../consts';
 import AuthController from '../../controller';
 import { getUserByIdpId } from '../../helpers/get-user-by-idp-id';
 import { IdpHelper } from '../../idp-helper';
@@ -12,7 +14,6 @@ import { AuthService } from '../../service';
 import { BasicIdpUserInfo } from '../hetarchief/controller';
 
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
-import { logger } from '../../../../shared/helpers/logger';
 
 export type SmartschoolLoginError = 'FIRST_LINK_ACCOUNT' | 'NO_ACCESS';
 export type LoginErrorResponse = { error: SmartschoolLoginError };
@@ -46,14 +47,14 @@ export default class SmartschoolController extends IdpHelper {
 					userUid = await this.createUser(smartschoolUserInfo);
 				}
 
-				let profileId: string | null = _.first(await this.getProfileIdsByUserUid(userUid));
+				let profileId: string | null = first(await this.getProfileIdsByUserUid(userUid));
 
 				if (!profileId) {
 					// Create avo profile through graphql
 					profileId = await this.createProfile(smartschoolUserInfo, userUid);
 
 					// Add permission groups
-					await AuthService.addUserGroupsToProfile([4], profileId);
+					await AuthService.addUserGroupsToProfile([SpecialUserGroup.Pupil], profileId);
 				}
 
 				const avoUser: Avo.User.User = await AuthService.getAvoUserInfoById(userUid);
@@ -160,7 +161,7 @@ export default class SmartschoolController extends IdpHelper {
 		const response = await DataService.execute(GET_PROFILE_IDS_BY_USER_UID, {
 			userUid,
 		});
-		return _.get(response, 'data.users_profiles', []).map(
+		return get(response, 'data.users_profiles', []).map(
 			(profile: { id: string }) => profile.id
 		);
 	}
