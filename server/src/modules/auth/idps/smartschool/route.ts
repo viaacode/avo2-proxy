@@ -1,4 +1,4 @@
-import { get, set } from 'lodash';
+import { get, set, trimEnd } from 'lodash';
 import { Context, GET, Path, QueryParam, Return, ServiceContext } from 'typescript-rest';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
@@ -34,10 +34,10 @@ export default class SmartschoolRoute {
 	@GET
 	async login(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
-			_.set(
+			set(
 				this.context,
 				REDIRECT_URL_PATH,
-				returnToUrl || `${_.trimEnd(process.env.CLIENT_HOST, '/')}/start`
+				returnToUrl || `${trimEnd(process.env.CLIENT_HOST, '/')}/start`
 			);
 			const url = SmartschoolService.getRedirectUrlForCode();
 			return new Return.MovedTemporarily<void>(url);
