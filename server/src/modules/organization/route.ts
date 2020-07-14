@@ -1,6 +1,6 @@
 import { Path, POST, PreProcessor } from 'typescript-rest';
 
-import { CustomError } from '../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { checkApiKeyRouteGuard } from '../../shared/middleware/is-authenticated';
 
@@ -16,7 +16,9 @@ export default class OrganisationsRoute {
 			await OrganisationService.updateOrganisationsCache();
 			return { message: 'cache has been updated successfully' };
 		} catch (err) {
-			logger.error(new CustomError('Failed to update organisations cache', err));
+			const error = new CustomError('Failed to update organisations cache', err);
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

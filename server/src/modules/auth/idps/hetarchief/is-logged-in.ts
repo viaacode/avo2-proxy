@@ -19,7 +19,9 @@ export default function isLoggedIn(request: Request): boolean {
 		return false;
 	}
 	// Check if the ldap user is expired
-	const ldapExpireOn: number = new Date(_.get(idpUserInfo, 'session_not_on_or_after', 0)).getTime();
+	const ldapExpireOn: number = new Date(
+		_.get(idpUserInfo, 'session_not_on_or_after', 0)
+	).getTime();
 	if (Date.now() > ldapExpireOn) {
 		return false;
 	}
@@ -31,5 +33,11 @@ export default function isLoggedIn(request: Request): boolean {
 
 	// Check if avo user is present on session
 	const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
+
+	// Check if avo user has been blocked
+	if (_.get(avoUserInfo, 'is_blocked')) {
+		return false;
+	}
+
 	return !!avoUserInfo;
 }

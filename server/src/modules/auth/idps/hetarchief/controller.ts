@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
@@ -36,12 +35,10 @@ export default class HetArchiefController {
 	}
 
 	public static async createUserAndProfile(
-		req: Request,
+		ldapUserInfo: Partial<LdapPerson> | null,
 		stamboekNumber: string | null
 	): Promise<Avo.User.User> {
-		let ldapUserInfo: LdapUser | null = null;
 		try {
-			ldapUserInfo = IdpHelper.getIdpUserInfoFromSession(req);
 			if (!ldapUserInfo) {
 				throw new InternalServerError(
 					'Failed to create user because ldap object is undefined',
@@ -50,30 +47,32 @@ export default class HetArchiefController {
 			}
 
 			// Create avo user object
-			const ldapUser: BasicIdpUserInfo = HetArchiefController.parseLdapObject(ldapUserInfo);
-			const existingUser = await AuthService.getAvoUserInfoByEmail(ldapUser.mail);
+			const existingUser = await AuthService.getAvoUserInfoByEmail(ldapUserInfo.email[0]);
 			if (existingUser) {
 				throw new InternalServerError(
 					'Failed to create user because an avo user with this email address already exists',
 					null,
 					{
 						existingUser,
-						newUser: ldapUser,
+						newUser: ldapUserInfo,
 					}
 				);
 			}
-			const userUuid = await AuthController.createUser(ldapUser);
+			const userUuid = await AuthController.createUser({
+				first_name: ldapUserInfo.first_name,
+				last_name: ldapUserInfo.last_name,
+				mail: ldapUserInfo.email[0],
+				roles: ldapUserInfo.organizational_status,
+			});
 
 			// Create avo profile object
 			await HetArchiefController.createProfile(ldapUserInfo, userUuid, stamboekNumber);
 
 			const userInfo: Avo.User.User = await AuthService.getAvoUserInfoById(userUuid);
-			IdpHelper.setAvoUserInfoOnSession(req, userInfo);
 
 			// Check if user is linked to hetarchief idp, if not create a link in the idp_map table
 			if (!(userInfo.idpmaps || []).includes('HETARCHIEF')) {
-				const ldapUuid = ldapUserInfo.attributes.entryUUID[0];
-				if (!ldapUuid) {
+				if (!ldapUserInfo.id) {
 					throw new CustomError(
 						'Failed to link user to hetarchief ldap because ldap user does not have uuid',
 						null,
@@ -83,11 +82,7 @@ export default class HetArchiefController {
 						}
 					);
 				}
-				await IdpHelper.createIdpMap(
-					'HETARCHIEF',
-					ldapUserInfo.attributes.entryUUID[0],
-					userUuid
-				);
+				await IdpHelper.createIdpMap('HETARCHIEF', ldapUserInfo.id, userUuid);
 			}
 
 			return AuthService.getAvoUserInfoById(userUuid);
@@ -124,12 +119,12 @@ export default class HetArchiefController {
 	}
 
 	private static async createProfile(
-		ldapObject: LdapUser,
+		ldapUserInfo: Partial<LdapPerson>,
 		userUid: string,
 		stamboekNumber: string
 	): Promise<string> {
 		const profile: Partial<Avo.User.Profile> = {
-			alternative_email: get(ldapObject, 'attributes.mail[0]', ''),
+			alternative_email: get(ldapUserInfo, 'email[0]', ''),
 			user_id: userUid,
 			stamboek: stamboekNumber,
 		};
@@ -141,7 +136,9 @@ export default class HetArchiefController {
 			first_name: get(ldapObject, 'attributes.givenName[0]', ''),
 			last_name: get(ldapObject, 'attributes.sn[0]', ''),
 			mail: get(ldapObject, 'attributes.mail[0]', ''),
-			roles: get(ldapObject, 'attributes.organizationalStatus', []),
+			roles: (get(ldapObject, 'attributes.organizationalStatus') || []).map((role: string) =>
+				role.toLowerCase()
+			),
 		};
 	}
 
@@ -164,15 +161,18 @@ export default class HetArchiefController {
 			apps: (get(ldapObject, 'attributes.apps') || []).map((app: string) => ({
 				name: app,
 			})),
-			organizational_status: get(ldapObject, 'attributes.organizationalStatus'),
-			businessCategory: get(ldapObject, 'attributes.businessCategory'),
-			eduExceptionAccount: get(ldapObject, 'attributes.x-be-viaa-eduExceptionAccount'),
+			organizational_status: (
+				get(ldapObject, 'attributes.organizationalStatus') || []
+			).map((status: string) => status.toLowerCase()),
+			role: get(ldapObject, 'attributes.role'),
+			sector: get(ldapObject, 'attributes.sector'),
+			exception_account: get(ldapObject, 'attributes.x-be-viaa-eduExceptionAccount'),
 		};
 	}
 
-	public static async updateUser(
+	public static async createOrUpdateUser(
 		ldapUserInfo: Partial<LdapPerson>,
-		avoUser?: Avo.User.User
+		avoUser: Avo.User.User | null
 	): Promise<boolean> {
 		let isUpdated = false;
 		let avoUserInfo = avoUser;
@@ -181,6 +181,17 @@ export default class HetArchiefController {
 			avoUserInfo = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
 				ldapUserInfo.id
 			);
+			if (!avoUserInfo) {
+				// No avo user exists yet and this call isn't part of a registration flow
+				// Check if ldap user has the avo group
+				if (!!(ldapUserInfo.apps || []).find(app => app.name === 'avo')) {
+					// Create the avo user for this ldap account
+					avoUserInfo = await HetArchiefController.createUserAndProfile(
+						ldapUserInfo,
+						null
+					);
+				}
+			}
 			if (!avoUserInfo) {
 				throw new InternalServerError(
 					'Failed to find matching avo user to the provided ldap uuid',
@@ -199,10 +210,10 @@ export default class HetArchiefController {
 		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels =
 			get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
-		newAvoUser.profile.subjects = newAvoUser.profile.subjects || [];
-		(newAvoUser.profile as any).title = get(ldapUserInfo, 'businessCategory[0]') || null;
+		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
+		(newAvoUser.profile as any).title = get(ldapUserInfo, 'sector[0]') || null;
 		(newAvoUser.profile as any).is_exception =
-			get(ldapUserInfo, 'eduExceptionAccount[0]') === 'TRUE';
+			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
 		if (!ldapUserInfo.apps.find(app => app.name === 'avo')) {
 			newAvoUser.is_blocked = true;

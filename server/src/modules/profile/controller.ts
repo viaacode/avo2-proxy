@@ -1,3 +1,5 @@
+import { uniq } from 'lodash';
+
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
@@ -37,13 +39,13 @@ export default class ProfileController {
 	): Promise<void> {
 		try {
 			const completeVars: UpdateProfileValues = {
-				educationLevels: (profile.educationLevels || ([] as string[])).map(
+				educationLevels: uniq(profile.educationLevels || ([] as string[])).map(
 					(eduLevel: string) => ({
 						profile_id: profile.id,
 						key: eduLevel,
 					})
 				),
-				subjects: (profile.subjects || ([] as string[])).map(subject => ({
+				subjects: uniq(profile.subjects || ([] as string[])).map(subject => ({
 					profile_id: profile.id,
 					key: subject,
 				})),
