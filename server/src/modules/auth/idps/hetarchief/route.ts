@@ -90,9 +90,18 @@ export default class HetArchiefRoute {
 			logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
 			const info: RelayState = response.RelayState ? JSON.parse(response.RelayState) : {};
 
-			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
-
 			IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
+
+			// Check if user account has access to the avo platform
+			if (!get(ldapUser, 'attributes.apps', []).includes('avo')) {
+				return redirectToClientErrorPage(
+					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
+					'lock',
+					['home', 'helpdesk']
+				);
+			}
+
+			const isPartOfRegistrationProcess = (info.returnToUrl || '').includes(process.env.HOST);
 
 			if (isPartOfRegistrationProcess) {
 				return new Return.MovedTemporarily(info.returnToUrl);
@@ -156,18 +165,6 @@ export default class HetArchiefRoute {
 					'login callback without avo user object found (this is correct for the registration flow)',
 					err,
 					{ ldapUser }
-				);
-			}
-
-			// Check if user account has access to the avo platform
-			if (
-				!isPartOfRegistrationProcess &&
-				!get(ldapUser, 'attributes.apps', []).includes('avo')
-			) {
-				return redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
-					'lock',
-					['home', 'helpdesk']
 				);
 			}
 
@@ -295,8 +292,7 @@ export default class HetArchiefRoute {
 				stamboekNumber: encrypt(stamboekNumber),
 			})}`;
 			return new Return.MovedTemporarily<void>(
-				`${process.env.SSUM_REGISTRATION_PAGE ||
-					process.env.SUMM_REGISTRATION_PAGE}?${queryString.stringify({
+				`${process.env.SSUM_REGISTRATION_PAGE}?${queryString.stringify({
 					redirect_to: serverRedirectUrl,
 					app_name: process.env.SAML_SP_ENTITY_ID,
 					stamboek: stamboekNumber,
