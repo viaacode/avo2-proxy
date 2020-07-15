@@ -32,6 +32,6 @@ export enum SpecialUserGroup {
 	Teacher = 2,
 	TeacherSecondary = 3,
 	Pupil = 4,
-	StudentTeacher = 5,
-	StudentTeacherSecondary = 23,
+	StudentTeacher = 23,
+	StudentTeacherSecondary = 5,
 }
