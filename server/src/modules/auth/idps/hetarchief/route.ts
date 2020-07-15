@@ -27,7 +27,7 @@ import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';
 
 import HetArchiefController from './controller';
-import { UpdateUserBody } from './hetarchief.types';
+import { LdapPerson, UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
 
 interface RelayState {
@@ -388,8 +388,11 @@ export default class HetArchiefRoute {
 			}
 			const stamboekValidateStatus = await StamboekController.validate(stamboekNumber);
 			if (stamboekValidateStatus === 'VALID') {
+				const ldapPerson: Partial<LdapPerson> = HetArchiefController.ldapObjectToLdapPerson(
+					IdpHelper.getIdpUserInfoFromSession(this.context.request) as LdapUser
+				);
 				let avoUser = await HetArchiefController.createUserAndProfile(
-					IdpHelper.getIdpUserInfoFromSession(this.context.request),
+					ldapPerson,
 					stamboekNumber
 				);
 
