@@ -211,7 +211,7 @@ export default class HetArchiefController {
 		newAvoUser.profile.educationLevels =
 			get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
 		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
-		(newAvoUser.profile as any).title = get(ldapUserInfo, 'sector[0]') || null;
+		(newAvoUser.profile as any).title = get(ldapUserInfo, 'role[0]') || null;
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
