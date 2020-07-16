@@ -3,6 +3,7 @@ import { get, isNil } from 'lodash';
 import { Avo } from '@viaa/avo2-types';
 
 import CollectionsService from './collections.service';
+import { PermissionName } from '../../shared/permissions';
 
 export default class CollectionsController {
 	public static async fetchCollectionWithItemsById(
@@ -18,15 +19,42 @@ export default class CollectionsController {
 		const isLinkedToAssignment = isNil(assignmentId)
 			? false
 			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
-		if (
-			!isLinkedToAssignment &&
-			!collection.is_public &&
-			(!collection.owner_profile_id ||
-				collection.owner_profile_id !== get(avoUser, 'profile.id'))
-		) {
-			return null;
+		if (isLinkedToAssignment) {
+			return collection;
 		}
-		return collection;
+		// is owner
+		if (
+			collection.owner_profile_id &&
+			collection.owner_profile_id === get(avoUser, 'profile.id')
+		) {
+			return collection;
+		}
+		if (
+			type === 'bundle' &&
+			((collection.is_public &&
+				avoUser.profile.permissions.includes(PermissionName.VIEW_ANY_PUBLISHED_BUNDLES)) ||
+				(!collection.is_public &&
+					avoUser.profile.permissions.includes(
+						PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
+					)))
+		) {
+			return collection;
+		}
+		if (
+			type === 'collection' &&
+			((collection.is_public &&
+				avoUser.profile.permissions.includes(
+					PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS
+				)) ||
+				(!collection.is_public &&
+					avoUser.profile.permissions.includes(
+						PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+					)))
+		) {
+			return collection;
+		}
+
+		return null;
 	}
 
 	public static async fetchItemExternalIdByMediamosaId(id: string): Promise<string | null> {
