@@ -1,4 +1,4 @@
-import { Tickets } from 'node-zendesk';
+import { Requests } from 'node-zendesk';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
@@ -23,18 +23,22 @@ export default class ZendeskRoute {
 	 */
 	@Path('')
 	@POST
-	async createTicket(ticket: Tickets.CreateModel): Promise<Tickets.ResponseModel> {
+	async createTicket(request: Requests.CreateModel): Promise<Requests.ResponseModel> {
 		try {
-			if (!ticket || !ticket.comment) {
+			if (!request || !request.comment) {
 				throw new BadRequestError(
 					'Body must be the ticket that you want to create and the comment property on the ticket is required',
 					null,
-					{ ticket }
+					{ request }
 				);
 			}
-			return await ZendeskController.createTicket(ticket);
+			return await ZendeskController.createTicket(request);
 		} catch (err) {
-			const error = new InternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
+			const error = new InternalServerError(
+				'Failed to create ticket through the zendesk api',
+				err,
+				{ request }
+			);
 			logger.error(error);
 			throw error;
 		}
@@ -45,7 +49,7 @@ export default class ZendeskRoute {
 	 */
 	@Path('/upload-attachment')
 	@POST
-	async uploadAttachment(fileInfo: ZendeskFileInfo): Promise<{url: string, id: number}> {
+	async uploadAttachment(fileInfo: ZendeskFileInfo): Promise<{ url: string; id: number }> {
 		try {
 			if (!fileInfo || !fileInfo.filename || !fileInfo.base64) {
 				throw new BadRequestError(
@@ -56,7 +60,9 @@ export default class ZendeskRoute {
 			}
 			return await ZendeskController.uploadAttachment(fileInfo);
 		} catch (err) {
-			const error = new InternalServerError('Failed to upload file to the zendesk api', err, { fileInfo });
+			const error = new InternalServerError('Failed to upload file to the zendesk api', err, {
+				fileInfo,
+			});
 			logger.error(error);
 			throw error;
 		}
