@@ -126,7 +126,7 @@ export default class SmartschoolRoute {
 				redirectUrl = process.env.CLIENT_HOST;
 			}
 
-			return new Return.MovedTemporarily(redirectUrl) || `${process.env.CLIENT_HOST}/start`;
+			return new Return.MovedTemporarily(redirectUrl || `${process.env.CLIENT_HOST}/start`);
 		} catch (err) {
 			const error = new InternalServerError(
 				'Failed during smartschool auth login-callback route',
