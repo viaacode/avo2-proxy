@@ -114,7 +114,7 @@ export default class SmartschoolRoute {
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, response.avoUser);
 			}
 
-			if (isRelativeUrl(redirectUrl)) {
+			if (redirectUrl && isRelativeUrl(redirectUrl)) {
 				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
 				logger.error(
 					new CustomError(
@@ -126,7 +126,7 @@ export default class SmartschoolRoute {
 				redirectUrl = process.env.CLIENT_HOST;
 			}
 
-			return new Return.MovedTemporarily(redirectUrl);
+			return new Return.MovedTemporarily(redirectUrl) || `${process.env.CLIENT_HOST}/start`;
 		} catch (err) {
 			const error = new InternalServerError(
 				'Failed during smartschool auth login-callback route',
