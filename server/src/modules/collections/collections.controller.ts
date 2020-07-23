@@ -17,30 +17,13 @@ export default class CollectionsController {
 			id,
 			type
 		);
-
 		const isOwner =
-			collection.owner_profile_id && collection.owner_profile_id === avoUser.profile.id;
+			collection.owner_profile_id &&
+			collection.owner_profile_id === get(avoUser, 'profile.id');
 		const isLinkedToAssignment = isNil(assignmentId)
 			? false
 			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
-		const isAllowedToViewBundle =
-			type === 'bundle' &&
-			((collection.is_public &&
-				avoUser.profile.permissions.includes(PermissionName.VIEW_ANY_PUBLISHED_BUNDLES)) ||
-				(!collection.is_public &&
-					avoUser.profile.permissions.includes(
-						PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
-					)));
-		const isAlllowedToViewCollection =
-			type === 'collection' &&
-			((collection.is_public &&
-				avoUser.profile.permissions.includes(
-					PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS
-				)) ||
-				(!collection.is_public &&
-					avoUser.profile.permissions.includes(
-						PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
-					)));
+		const { is_public } = collection;
 
 		// Return the collection/bundle if:
 		// - User is the owner of the collection.
@@ -52,8 +35,24 @@ export default class CollectionsController {
 			!avoUser ||
 			isOwner ||
 			isLinkedToAssignment ||
-			isAllowedToViewBundle ||
-			isAlllowedToViewCollection
+			(type === 'bundle' &&
+				((is_public &&
+					avoUser.profile.permissions.includes(
+						PermissionName.VIEW_ANY_PUBLISHED_BUNDLES
+					)) ||
+					(!is_public &&
+						avoUser.profile.permissions.includes(
+							PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
+						)))) ||
+			(type === 'collection' &&
+				((is_public &&
+					avoUser.profile.permissions.includes(
+						PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS
+					)) ||
+					(!is_public &&
+						avoUser.profile.permissions.includes(
+							PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+						))))
 		) {
 			return collection;
 		}
