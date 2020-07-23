@@ -2,8 +2,9 @@ import { get, isNil } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import CollectionsService from './collections.service';
 import { PermissionName } from '../../shared/permissions';
+
+import CollectionsService from './collections.service';
 
 export default class CollectionsController {
 	public static async fetchCollectionWithItemsById(
@@ -11,36 +12,26 @@ export default class CollectionsController {
 		type: 'collection' | 'bundle',
 		assignmentId: number | undefined,
 		avoUser: Avo.User.User
-	): Promise<Avo.Collection.Collection | null> {
+	): Promise<Avo.Collection.Collection | {} | null> {
 		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
 			id,
 			type
 		);
+
+		const isOwner =
+			collection.owner_profile_id && collection.owner_profile_id === avoUser.profile.id;
 		const isLinkedToAssignment = isNil(assignmentId)
 			? false
 			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
-		if (isLinkedToAssignment) {
-			return collection;
-		}
-		// is owner
-		if (
-			collection.owner_profile_id &&
-			collection.owner_profile_id === get(avoUser, 'profile.id')
-		) {
-			return collection;
-		}
-		if (
+		const isAllowedToViewBundle =
 			type === 'bundle' &&
 			((collection.is_public &&
 				avoUser.profile.permissions.includes(PermissionName.VIEW_ANY_PUBLISHED_BUNDLES)) ||
 				(!collection.is_public &&
 					avoUser.profile.permissions.includes(
 						PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
-					)))
-		) {
-			return collection;
-		}
-		if (
+					)));
+		const isAlllowedToViewCollection =
 			type === 'collection' &&
 			((collection.is_public &&
 				avoUser.profile.permissions.includes(
@@ -49,7 +40,20 @@ export default class CollectionsController {
 				(!collection.is_public &&
 					avoUser.profile.permissions.includes(
 						PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
-					)))
+					)));
+
+		// Return the collection/bundle if:
+		// - User is the owner of the collection.
+		// - User is not logged in.
+		// - Collection or bundle is linked to an assignment.
+		// - User is allowed to see bundle.
+		// - User is allowed to see collection.
+		if (
+			!avoUser ||
+			isOwner ||
+			isLinkedToAssignment ||
+			isAllowedToViewBundle ||
+			isAlllowedToViewCollection
 		) {
 			return collection;
 		}
