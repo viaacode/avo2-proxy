@@ -160,7 +160,7 @@ export default class HetArchiefRoute {
 				);
 			}
 
-			if (isRelativeUrl(info.returnToUrl)) {
+			if (info.returnToUrl && isRelativeUrl(info.returnToUrl)) {
 				// We received a relative url => this won't work, we'll fallback to the CLIENT_HOST url
 				logger.error(
 					new CustomError(
