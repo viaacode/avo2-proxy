@@ -2,8 +2,9 @@ import { get, isNil } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import CollectionsService from './collections.service';
 import { PermissionName } from '../../shared/permissions';
+
+import CollectionsService from './collections.service';
 
 export default class CollectionsController {
 	public static async fetchCollectionWithItemsById(

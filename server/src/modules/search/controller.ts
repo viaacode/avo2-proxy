@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -27,63 +27,47 @@ const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
 };
 
 export default class SearchController {
-
 	public static async search(searchRequest: Avo.Search.Request): Promise<Avo.Search.Search> {
 		try {
 			// Convert filters to ElasticSearch query object using queryBuilder
 			const esQueryObject = QueryBuilder.buildSearchObject(searchRequest);
 
 			// Perform search
-			return await SearchService.search(esQueryObject, ES_INDEX_MAP[searchRequest.index] || process.env.ELASTICSEARCH_INDEX);
+			return await SearchService.search(
+				esQueryObject,
+				ES_INDEX_MAP[searchRequest.index] || process.env.ELASTICSEARCH_INDEX
+			);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
 				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
-					{ ...searchRequest }); // TODO remove dev error
+					{ ...searchRequest }
+				); // TODO remove dev error
 			} else {
-				throw new InternalServerError(
-					'Failed to do search',
-					err,
-					{ ...searchRequest });
+				throw new InternalServerError('Failed to do search', err, { ...searchRequest });
 			}
 		}
 	}
 
-	public static async getRelatedItems(id: string, type: EsIndexType, limit: number = 5): Promise<Avo.Search.Search> {
+	public static async getRelatedItems(
+		id: string,
+		type: EsIndexType,
+		limit: number = 5
+	): Promise<Avo.Search.Search> {
 		try {
-			// For private collections we need pass the title and description to elasticsearch since elasticsearch doesn't contain these collections
-			// So we need to get the collection from graphql first so we can see if the collection has: is_public === false
-			let privateCollection: Avo.Collection.Collection | undefined;
 			if (type === 'collections' || type === 'bundles') {
-				const response = await DataService.execute(GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID, { id });
-				const collection = _.get(response, 'data.app_collections[0]');
-				if (!collection) {
-					throw new BadRequestError(
-						'Response does not contain any collections',
-						null,
-						{ response }
-					);
-				}
-				if (!collection.is_public) {
-					privateCollection = collection;
-				}
-			}
+				const response = await DataService.execute(
+					GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID,
+					{ id }
+				);
+				const collection = get(response, 'data.app_collections[0]');
 
-			let likeFilter: any;
-			if (privateCollection) {
-				likeFilter = {
-					_index: ES_INDEX_MAP[type],
-					doc: {
-						dc_title: privateCollection.title,
-						dcterms_abstract: privateCollection.description,
-					},
-				};
-			} else {
-				likeFilter = {
-					_index: ES_INDEX_MAP[type],
-					_id: id,
-				};
+				if (!collection) {
+					throw new BadRequestError('Response does not contain any collections', null, {
+						response,
+					});
+				}
 			}
 
 			const esQueryObject = {
@@ -92,7 +76,12 @@ export default class SearchController {
 				query: {
 					more_like_this: {
 						fields: ['dc_title', 'dcterms_abstract'],
-						like: [likeFilter],
+						like: [
+							{
+								_index: ES_INDEX_MAP[type],
+								_id: id,
+							},
+						],
 						min_term_freq: 1,
 						max_query_terms: 12,
 					},
@@ -106,12 +95,14 @@ export default class SearchController {
 				throw new InternalServerError(
 					'Failed to do search, are you connected to the elasticsearch VPN?',
 					err,
-					{ type, limit, itemId: id });
+					{ type, limit, itemId: id }
+				);
 			} else {
-				throw new InternalServerError(
-					'Failed to do search',
-					err,
-					{ type, limit, itemId: id });
+				throw new InternalServerError('Failed to do search', err, {
+					type,
+					limit,
+					itemId: id,
+				});
 			}
 		}
 	}
