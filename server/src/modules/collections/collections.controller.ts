@@ -13,52 +13,58 @@ export default class CollectionsController {
 		assignmentId: number | undefined,
 		avoUser: Avo.User.User
 	): Promise<Avo.Collection.Collection | {} | null> {
-		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
-			id,
-			type
-		);
-		const isOwner =
-			collection.owner_profile_id &&
-			collection.owner_profile_id === get(avoUser, 'profile.id');
-		const isLinkedToAssignment = isNil(assignmentId)
-			? false
-			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
-		const { is_public } = collection;
+															const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
+																id,
+																type
+															);
+															const isOwner =
+																collection.owner_profile_id &&
+																collection.owner_profile_id ===
+																	get(avoUser, 'profile.id');
+															const isLinkedToAssignment = isNil(
+																assignmentId
+															)
+																? false
+																: await CollectionsService.isCollectionLinkedToAssignment(
+																		id,
+																		assignmentId
+																  );
+															const { is_public } = collection;
 
-		// Return the collection/bundle if:
-		// - User is the owner of the collection.
-		// - User is not logged in.
-		// - Collection or bundle is linked to an assignment.
-		// - User is allowed to see bundle.
-		// - User is allowed to see collection.
-		if (
-			!avoUser ||
-			isOwner ||
-			isLinkedToAssignment ||
-			(type === 'bundle' &&
-				((is_public &&
-					avoUser.profile.permissions.includes(
-						PermissionName.VIEW_ANY_PUBLISHED_BUNDLES
-					)) ||
-					(!is_public &&
-						avoUser.profile.permissions.includes(
-							PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
-						)))) ||
-			(type === 'collection' &&
-				((is_public &&
-					avoUser.profile.permissions.includes(
-						PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS
-					)) ||
-					(!is_public &&
-						avoUser.profile.permissions.includes(
-							PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
-						))))
-		) {
-			return collection;
-		}
+															// Return the collection/bundle if:
+															// - User is the owner of the collection.
+															// - User is not logged in and the collection or bundle is public
+															// - Collection or bundle is linked to an assignment.
+															// - User is allowed to see bundle.
+															// - User is allowed to see collection.
+															if (
+																(!avoUser && is_public) ||
+																isOwner ||
+																isLinkedToAssignment ||
+																(type === 'bundle' &&
+																	((is_public &&
+																		avoUser.profile.permissions.includes(
+																			PermissionName.VIEW_ANY_PUBLISHED_BUNDLES
+																		)) ||
+																		(!is_public &&
+																			avoUser.profile.permissions.includes(
+																				PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
+																			)))) ||
+																(type === 'collection' &&
+																	((is_public &&
+																		avoUser.profile.permissions.includes(
+																			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS
+																		)) ||
+																		(!is_public &&
+																			avoUser.profile.permissions.includes(
+																				PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+																			))))
+															) {
+																return collection;
+															}
 
-		return null;
-	}
+															return null;
+														}
 
 	public static async fetchItemExternalIdByMediamosaId(id: string): Promise<string | null> {
 		return CollectionsService.fetchItemExternalIdByMediamosaId(id);
