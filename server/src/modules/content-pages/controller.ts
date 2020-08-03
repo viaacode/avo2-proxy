@@ -86,6 +86,8 @@ export default class ContentPageController {
 		withBlock: boolean,
 		contentType: string,
 		labelIds: number[],
+		orderByProp: string,
+		orderByDirection: 'asc' | 'desc',
 		offset: number,
 		limit: number,
 		user: Avo.User.User
@@ -95,6 +97,8 @@ export default class ContentPageController {
 			getUserGroupIds(user),
 			contentType,
 			labelIds,
+			orderByProp,
+			orderByDirection,
 			offset,
 			limit
 		);
