@@ -14,6 +14,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 				bio
 				updated_at
 				user_id
+				is_exception
 				company_id
 				organisation {
 					logo_url
@@ -78,6 +79,7 @@ export const GET_USER_INFO_BY_ID = `
 				bio
 				updated_at
 				user_id
+				is_exception
 				company_id
 				organisation {
 					logo_url
@@ -143,6 +145,7 @@ export const GET_USER_BY_LDAP_UUID = `
 					bio
 					updated_at
 					user_id
+					is_exception
 					company_id
 					organisation {
 						logo_url
