@@ -23,6 +23,7 @@ export default class CollectionsController {
 		const isLinkedToAssignment = isNil(assignmentId)
 			? false
 			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
+		const permissions: string[] = get(avoUser, 'profile.permissions') || [];
 		const { is_public } = collection;
 
 		// Return the collection/bundle if:
@@ -36,23 +37,14 @@ export default class CollectionsController {
 			isOwner ||
 			isLinkedToAssignment ||
 			(type === 'bundle' &&
-				((is_public &&
-					avoUser.profile.permissions.includes(
-						PermissionName.VIEW_ANY_PUBLISHED_BUNDLES
-					)) ||
+				((is_public && permissions.includes(PermissionName.VIEW_ANY_PUBLISHED_BUNDLES)) ||
 					(!is_public &&
-						avoUser.profile.permissions.includes(
-							PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES
-						)))) ||
+						permissions.includes(PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES)))) ||
 			(type === 'collection' &&
 				((is_public &&
-					avoUser.profile.permissions.includes(
-						PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS
-					)) ||
+					permissions.includes(PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS)) ||
 					(!is_public &&
-						avoUser.profile.permissions.includes(
-							PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
-						))))
+						permissions.includes(PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS))))
 		) {
 			return collection;
 		}
