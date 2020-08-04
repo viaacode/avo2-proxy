@@ -12,7 +12,7 @@ export default class CollectionsController {
 		type: 'collection' | 'bundle',
 		assignmentId: number | undefined,
 		avoUser: Avo.User.User
-	): Promise<Avo.Collection.Collection | {} | null> {
+	): Promise<Avo.Collection.Collection | null> {
 		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
 			id,
 			type
