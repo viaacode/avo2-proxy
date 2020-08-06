@@ -388,7 +388,7 @@ export default class ContentPageController {
 			} as Avo.Core.MediaType,
 			collection_fragments_aggregate: {
 				aggregate: {
-					count: 0, // TODO get value into elasticsearch
+					count: (searchResult as any).fragment_count || 0, // TODO add to typings repo after completion of: https://meemoo.atlassian.net/browse/AVO-1107
 				},
 			},
 			view_counts_aggregate: {
