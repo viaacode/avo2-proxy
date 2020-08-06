@@ -128,15 +128,17 @@ export default class HetArchiefRoute {
 				}
 
 				// Update avo user with ldap fields and user groups
-				const isUpdated = await HetArchiefController.createOrUpdateUser(
+				avoUser = await HetArchiefController.createOrUpdateUser(
 					HetArchiefController.ldapObjectToLdapPerson(ldapUser),
-					avoUser
+					avoUser,
+					this.context.request
 				);
 
-				if (isUpdated) {
-					// Get avo user from the database again after having updated its user groups
-					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
-						ldapUser.attributes.entryUUID[0]
+				if (get(avoUser, 'is_blocked')) {
+					return redirectToClientErrorPage(
+						i18n.t('modules/auth/idps/hetarchief/route___geen-avo-groep-error'),
+						'lock',
+						['home', 'helpdesk']
 					);
 				}
 
@@ -386,17 +388,10 @@ export default class HetArchiefRoute {
 
 				// Add permission groups
 				const ldapUser = IdpHelper.getIdpUserInfoFromSession(this.context.request);
-				const isUpdated = await HetArchiefController.updateUserGroups(
+				avoUser = await HetArchiefController.updateUserGroups(
 					HetArchiefController.parseLdapObject(ldapUser),
 					avoUser
 				);
-
-				if (isUpdated) {
-					// Get avo user from the database again after having updated its user groups
-					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
-						ldapUser.attributes.entryUUID[0]
-					);
-				}
 
 				// Link avoUser to LdapUser using idp_map table
 				await IdpHelper.createIdpMap(
@@ -471,7 +466,12 @@ export default class HetArchiefRoute {
 			);
 		}
 		try {
-			await HetArchiefController.createOrUpdateUser(body.data.person, null);
+			await HetArchiefController.createOrUpdateUser(
+				body.data.person,
+				null,
+				this.context.request
+			);
+
 			return { message: 'user has been updated' };
 		} catch (err) {
 			const error = new InternalServerError(
