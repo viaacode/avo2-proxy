@@ -1,12 +1,9 @@
 import _ from 'lodash';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 
-import { ClientEvent } from '@viaa/avo2-types/types/event-logging';
+import { BadRequestError } from '../../shared/helpers/error';
 
-import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
-import { logger } from '../../shared/helpers/logger';
-
-import EventLoggingController from './controller';
+import EventLoggingController, { ClientEvent } from './controller';
 
 @Path('/event-logging')
 export default class EventLoggingRoute {
@@ -25,26 +22,7 @@ export default class EventLoggingRoute {
 		const clientEventArray: ClientEvent[] = _.isArray(clientEvents)
 			? clientEvents
 			: [clientEvents];
-		EventLoggingController.insertEvents(
-			clientEventArray,
-			EventLoggingRoute.getIp(this.context),
-			EventLoggingRoute.getViaaRequestId(this.context)
-		)
-			.then(() => {
-				logger.info('event inserted');
-			})
-			.catch(err => {
-				const error = new InternalServerError('Failed during insert event route', err, {});
-				logger.error(error);
-			});
+		EventLoggingController.insertEvents(clientEventArray, this.context.request);
 		return; // Return before event is inserted, since we do not want to hold up the client if the event fails to be inserted
-	}
-
-	private static getIp(context: ServiceContext): string | null {
-		return (context.request.headers['x-real-ip'] as string) || null;
-	}
-
-	private static getViaaRequestId(context: ServiceContext): string | null {
-		return (context.request.headers['x-viaa-request-id'] as string) || null;
 	}
 }
