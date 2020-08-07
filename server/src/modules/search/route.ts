@@ -10,7 +10,6 @@ import SearchController, { EsIndex } from './controller';
 
 @Path('/search')
 export default class SearchRoute {
-
 	/**
 	 * If no searchRequest.filters are passed, then a default search with aggregations is executed
 	 * @param searchRequest <Avo.Search.Request>
@@ -22,7 +21,9 @@ export default class SearchRoute {
 		try {
 			return await SearchController.search(searchRequest);
 		} catch (err) {
-			const error = new InternalServerError('failed during search route', err, { ...searchRequest });
+			const error = new InternalServerError('failed during search route', err, {
+				...searchRequest,
+			});
 			logger.error(error);
 			throw error;
 		}
@@ -34,15 +35,22 @@ export default class SearchRoute {
 	async related(
 		@QueryParam('id') itemId: string,
 		@QueryParam('type') type: EsIndex,
-		@QueryParam('limit') limit: number): Promise<Avo.Search.Search> {
+		@QueryParam('limit') limit: number
+	): Promise<Avo.Search.Search> {
 		try {
 			if (!['items', 'collections', 'bundles'].includes(type)) {
-				throw new BadRequestError(`parameter "type" has to be one of ["items", "collections", "bundles"], received: ${type}`);
+				throw new BadRequestError(
+					`parameter "type" has to be one of ["items", "collections", "bundles"], received: ${type}`
+				);
 			}
 
 			return await SearchController.getRelatedItems(itemId, type as any, limit); // TODO remove cast after update to typings v2.14.0
 		} catch (err) {
-			const error = new InternalServerError('failed during search/related route', err, { itemId, type, limit });
+			const error = new InternalServerError('failed during search/related route', err, {
+				itemId,
+				type,
+				limit,
+			});
 			logger.error(error);
 			throw error;
 		}

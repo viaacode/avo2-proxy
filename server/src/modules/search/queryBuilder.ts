@@ -43,24 +43,26 @@ export default class QueryBuilder {
 			const max = Math.max(0, MAX_COUNT_SEARCH_RESULTS - queryObject.size);
 			queryObject.from = _.clamp(searchRequest.from || 0, 0, max);
 
-			// Provide the ordering to the query object
-			_.set(
-				queryObject,
-				'sort',
-				this.buildSortArray(searchRequest.orderProperty, searchRequest.orderDirection)
-			);
+			if ((searchRequest as any).onlyAggs) {
+				// Provide the ordering to the query object
+				_.set(
+					queryObject,
+					'sort',
+					this.buildSortArray(searchRequest.orderProperty, searchRequest.orderDirection)
+				);
 
-			// Add the filters and search terms to the query object
-			_.set(queryObject, 'query', this.buildFilterObject(searchRequest.filters));
+				// Add the filters and search terms to the query object
+				_.set(queryObject, 'query', this.buildFilterObject(searchRequest.filters));
+
+				// If search terms are passed, we're only interested in items with a score > 0
+				// If only filters are passed, and no search terms, then score 0 items are also accepted
+				if (searchRequest.filters && searchRequest.filters.query) {
+					queryObject.min_score = 0.5;
+				}
+			}
 
 			// Specify the aggs objects with optional search terms
-			_.set(queryObject, 'aggs', this.buildAggsObject(searchRequest.filterOptionSearch));
-
-			// If search terms are passed, we're only interested in items with a score > 0
-			// If only filters are passed, and no search terms, then score 0 items are also accepted
-			if (searchRequest.filters && searchRequest.filters.query) {
-				queryObject.min_score = 0.5;
-			}
+			_.set(queryObject, 'aggs', this.buildAggsObject(searchRequest));
 
 			return queryObject;
 		} catch (err) {
@@ -155,7 +157,7 @@ export default class QueryBuilder {
 		return {
 			bool: {
 				should: [
-					values.map(value => ({
+					values.map((value) => ({
 						term: {
 							[elasticKey + this.suffix(readableKey)]: value,
 						},
@@ -183,7 +185,7 @@ export default class QueryBuilder {
 			// Replace {{query}} in the template with the escaped search terms
 			const textQueryObjectArray = _.cloneDeep(textQueryObjectTemplate);
 			const escapedQueryString = stringQuery;
-			_.forEach(textQueryObjectArray, matchObj => {
+			_.forEach(textQueryObjectArray, (matchObj) => {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});
 
@@ -274,18 +276,22 @@ export default class QueryBuilder {
 	 * }
 	 * @param filterOptionSearch
 	 */
-	private static buildAggsObject(
-		filterOptionSearch: Partial<Avo.Search.FilterOption> | undefined
-	): any {
+	private static buildAggsObject(searchRequest: Avo.Search.Request | undefined): any {
 		const aggs: any = {};
-		_.forEach(AGGS_PROPERTIES, aggProperty => {
-			const elasticProperty = READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty];
+		_.forEach((searchRequest as any).requestedAggs || AGGS_PROPERTIES, (aggProperty) => {
+			const elasticProperty =
+				READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty as Avo.Search.FilterProp];
 			if (!elasticProperty) {
 				throw new InternalServerError(`Failed to resolve agg property: ${aggProperty}`);
 			}
-			if (filterOptionSearch && (filterOptionSearch as any)[aggProperty]) {
+			if (
+				searchRequest.filterOptionSearch &&
+				(searchRequest.filterOptionSearch as any)[aggProperty]
+			) {
 				// An extra search filter should be applied for these filter options
-				const filterOptionsTerm: string | undefined = (filterOptionSearch as any)[
+				const filterOptionsTerm:
+					| string
+					| undefined = (searchRequest.filterOptionSearch as any)[
 					aggProperty as AggProps
 				];
 				aggs[elasticProperty] = {
@@ -299,7 +305,7 @@ export default class QueryBuilder {
 						[elasticProperty]: {
 							terms: {
 								field: elasticProperty + this.suffix(aggProperty),
-								size: NUMBER_OF_FILTER_OPTIONS,
+								size: (searchRequest as any).aggsSize || NUMBER_OF_FILTER_OPTIONS,
 							},
 						},
 					},
@@ -309,7 +315,7 @@ export default class QueryBuilder {
 				aggs[elasticProperty] = {
 					terms: {
 						field: elasticProperty + this.suffix(aggProperty),
-						size: NUMBER_OF_FILTER_OPTIONS,
+						size: (searchRequest as any).aggsSize || NUMBER_OF_FILTER_OPTIONS,
 					},
 				};
 			}

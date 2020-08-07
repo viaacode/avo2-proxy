@@ -111,7 +111,11 @@ export default class SearchService {
 		}
 	}
 
-	public static async search(searchQueryObject: any, index: string): Promise<Avo.Search.Search> {
+	public static async search(
+		searchQueryObject: any,
+		index: string,
+		onlyAggs: boolean = false
+	): Promise<Avo.Search.Search> {
 		let url;
 		if (!process.env.ELASTICSEARCH_URL) {
 			throw new InternalServerError('Environment variable ELASTICSEARCH_URL is undefined');
@@ -149,21 +153,31 @@ export default class SearchService {
 
 			// Handle response
 			if (esResponse.status >= 200 && esResponse.status < 400) {
-				// Return search results
-				return {
-					count: _.get(esResponse, 'data.hits.total'),
-					results: _.map(
-						_.get(esResponse, 'data.hits.hits'),
-						(result): Avo.Search.ResultItem => {
-							return {
-								...result._source,
-								id: result._source.external_id,
-							} as Avo.Search.ResultItem;
-						}
-					),
+				let data = {};
+
+				if (!onlyAggs) {
+					data = {
+						count: _.get(esResponse, 'data.hits.total'),
+						results: _.map(
+							_.get(esResponse, 'data.hits.hits'),
+							(result): Avo.Search.ResultItem => {
+								return {
+									...result._source,
+									id: result._source.external_id,
+								} as Avo.Search.ResultItem;
+							}
+						),
+					};
+				}
+
+				data = {
+					...data,
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
+
+				return data as any;
 			}
+
 			throw new InternalServerError('Request to elasticsearch was unsuccessful', null, {
 				url,
 				searchQueryObject,

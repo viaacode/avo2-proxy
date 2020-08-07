@@ -35,7 +35,8 @@ export default class SearchController {
 			// Perform search
 			return await SearchService.search(
 				esQueryObject,
-				ES_INDEX_MAP[searchRequest.index] || process.env.ELASTICSEARCH_INDEX
+				ES_INDEX_MAP[searchRequest.index] || process.env.ELASTICSEARCH_INDEX,
+				(searchRequest as any).onlyAggs
 			);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
