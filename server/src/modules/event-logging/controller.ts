@@ -58,7 +58,7 @@ export type EventObjectType =
 
 export default class EventLoggingController {
 	public static async insertEvent(event: ClientEvent, request: Request): Promise<void> {
-		await this.insertEvents([event], request);
+		await EventLoggingController.insertEvents([event], request);
 	}
 
 	public static async insertEvents(clientEvents: ClientEvent[], request: Request): Promise<void> {
