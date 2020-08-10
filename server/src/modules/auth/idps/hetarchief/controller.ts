@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
@@ -10,6 +11,7 @@ import {
 import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/controller';
 import DataService from '../../../data/service';
+import EventLoggingController from '../../../event-logging/controller';
 import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
 import { IdpHelper } from '../../idp-helper';
@@ -172,8 +174,9 @@ export default class HetArchiefController {
 
 	public static async createOrUpdateUser(
 		ldapUserInfo: Partial<LdapPerson>,
-		avoUser: Avo.User.User | null
-	): Promise<boolean> {
+		avoUser: Avo.User.User | null,
+		request: Request
+	): Promise<Avo.User.User> {
 		let isUpdated = false;
 		let avoUserInfo = avoUser;
 
@@ -190,6 +193,40 @@ export default class HetArchiefController {
 						ldapUserInfo,
 						null
 					);
+
+					EventLoggingController.insertEvent(
+						{
+							object: avoUserInfo.uid,
+							object_type: 'account',
+							message: `${get(avoUserInfo, 'first_name')} ${get(
+								avoUserInfo,
+								'last_name'
+							)} heeft zijn account aangemaakt`,
+							action: 'create',
+							subject: avoUserInfo.uid,
+							subject_type: 'user',
+							occurred_at: new Date().toISOString(),
+							source_url: process.env.HOST + request.path,
+						},
+						request
+					);
+
+					EventLoggingController.insertEvent(
+						{
+							object: avoUserInfo.uid,
+							object_type: 'profile',
+							message: `${get(avoUserInfo, 'first_name')} ${get(
+								avoUserInfo,
+								'last_name'
+							)} heeft zijn profiel aangemaakt`,
+							action: 'create',
+							subject: avoUserInfo.uid,
+							subject_type: 'user',
+							occurred_at: new Date().toISOString(),
+							source_url: process.env.HOST + request.path,
+						},
+						request
+					);
 				}
 			}
 			if (!avoUserInfo) {
@@ -201,7 +238,7 @@ export default class HetArchiefController {
 			}
 		}
 
-		const newAvoUser = cloneDeep(avoUserInfo);
+		let newAvoUser = cloneDeep(avoUserInfo);
 		newAvoUser.mail = get(ldapUserInfo, 'email[0]') || newAvoUser.mail;
 		newAvoUser.first_name = get(ldapUserInfo, 'first_name');
 		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
@@ -241,21 +278,20 @@ export default class HetArchiefController {
 			await AuthService.updateAvoUserInfo(newAvoUser);
 		}
 
-		isUpdated =
-			(await this.updateUserGroups(
-				{
-					first_name: newAvoUser.first_name,
-					last_name: newAvoUser.last_name,
-					mail: newAvoUser.mail,
-					roles: (get(ldapUserInfo, 'organizational_status') || []) as string[],
-				},
-				newAvoUser
-			)) || isUpdated;
+		newAvoUser = await this.updateUserGroups(
+			{
+				first_name: newAvoUser.first_name,
+				last_name: newAvoUser.last_name,
+				mail: newAvoUser.mail,
+				roles: (get(ldapUserInfo, 'organizational_status') || []) as string[],
+			},
+			newAvoUser
+		);
 
 		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
 		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser);
 
-		return isUpdated;
+		return newAvoUser;
 	}
 
 	/**
@@ -275,7 +311,7 @@ export default class HetArchiefController {
 	public static async updateUserGroups(
 		ldapUser: BasicIdpUserInfo,
 		avoUser: Avo.User.User
-	): Promise<boolean> {
+	): Promise<Avo.User.User> {
 		const allUserGroups = await AuthService.getAllUserGroups();
 
 		const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map(role =>
@@ -348,6 +384,6 @@ export default class HetArchiefController {
 			get(avoUser, 'profile.educationLevels', [])
 		);
 
-		return !!addedUserGroupIds.length || !!deletedUserGroupIds.length;
+		return AuthService.getAvoUserInfoById(avoUser.uid);
 	}
 }

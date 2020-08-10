@@ -125,7 +125,7 @@ export const GET_COLLECTION_TILE_BY_ID = `
 `;
 
 export const GET_CONTENT_PAGES_WITH_BLOCKS = `
-	query getContent(
+	query getContentPagesWithBlocks(
 		$where: app_content_bool_exp
 		$offset: Int = 0
 		$limit: Int = 10
@@ -185,7 +185,7 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 `;
 
 export const GET_CONTENT_PAGES = `
-	query getContent(
+	query getContentPages(
 		$where: app_content_bool_exp
 		$offset: Int = 0
 		$limit: Int = 10
@@ -234,7 +234,7 @@ export const GET_CONTENT_PAGES = `
 `;
 
 export const GET_PUBLIC_CONTENT_PAGES = `
-	query getContent(
+	query getPublicContentPages(
 		$where: app_content_bool_exp
 	) {
 		app_content(where: $where) {
