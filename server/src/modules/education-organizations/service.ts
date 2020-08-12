@@ -16,11 +16,15 @@ export interface LdapEducationOrganization {
 	postal_code: string;
 	type: string;
 	sector: string;
-	units: Unit[];
 }
 
-export interface Unit {
+export interface LdapEducationOrganizationWithUnits extends LdapEducationOrganization {
+	units: LdapEduOrgUnit[];
+}
+
+export interface LdapEduOrgUnit {
 	id: string;
+	or_id: string;
 	ou_id: string;
 	name: string;
 	dn: string;
@@ -47,7 +51,7 @@ export default class EducationOrganizationsService {
 			if (!cityName && !zipCode) {
 				return [];
 			}
-			url = `${process.env.LDAP_API_ENDPOINT}/organizations?size=500&sideload=units`;
+			url = `${process.env.LDAP_API_ENDPOINT}/organizations?size=1000`;
 			if (zipCode) {
 				url += `&postal_code=${zipCode}`;
 			} else {
@@ -63,7 +67,49 @@ export default class EducationOrganizationsService {
 			return response.data;
 		} catch (err) {
 			const error = new InternalServerError(
-				'Failed to get organizations from the ldap api',
+				'Failed to get educational organizations from the ldap api',
+				err,
+				{
+					url,
+					zipCode,
+				}
+			);
+			logger.error(error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Get units by zipCode
+	 * @param cityName
+	 * @param zipCode
+	 */
+	public static async getUnits(
+		cityName: string | null,
+		zipCode: string | null
+	): Promise<LdapEduOrgUnit[]> {
+		let url: string;
+		try {
+			if (!cityName && !zipCode) {
+				return [];
+			}
+			url = `${process.env.LDAP_API_ENDPOINT}/units?size=1000`;
+			if (zipCode) {
+				url += `&postal_code=${zipCode}`;
+			} else {
+				url += `&city=${cityName}`;
+			}
+			const response: AxiosResponse<LdapEduOrgUnit[]> = await axios(url, {
+				method: 'get',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+			});
+			return response.data;
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed to get educational organisation units from the ldap api',
 				err,
 				{
 					url,
@@ -78,14 +124,14 @@ export default class EducationOrganizationsService {
 	public static async getOrganization(
 		organizationId: string,
 		unitId: string
-	): Promise<LdapEducationOrganization | null> {
+	): Promise<LdapEducationOrganizationWithUnits | null> {
 		let url: string;
 		try {
 			url = `${process.env.LDAP_API_ENDPOINT}/organizations?${querystring.stringify({
 				sideload: 'units',
 				or_id: organizationId,
 			})}`;
-			const response: AxiosResponse<LdapEducationOrganization[]> = await axios(url, {
+			const response: AxiosResponse<LdapEducationOrganizationWithUnits[]> = await axios(url, {
 				method: 'get',
 				auth: {
 					username: process.env.LDAP_API_USERNAME,
