@@ -39,11 +39,11 @@ export default class QueryBuilder {
 			delete queryObject.default; // Side effect of importing a json file as a module
 
 			// Avoid huge queries
-			queryObject.size = Math.min(searchRequest.size || 30, MAX_NUMBER_SEARCH_RESULTS);
+			queryObject.size = Math.min(searchRequest.size, MAX_NUMBER_SEARCH_RESULTS);
 			const max = Math.max(0, MAX_COUNT_SEARCH_RESULTS - queryObject.size);
 			queryObject.from = _.clamp(searchRequest.from || 0, 0, max);
 
-			if ((searchRequest as any).onlyAggs) {
+			if (searchRequest.size) {
 				// Provide the ordering to the query object
 				_.set(
 					queryObject,
@@ -157,7 +157,7 @@ export default class QueryBuilder {
 		return {
 			bool: {
 				should: [
-					values.map((value) => ({
+					values.map(value => ({
 						term: {
 							[elasticKey + this.suffix(readableKey)]: value,
 						},
@@ -185,7 +185,7 @@ export default class QueryBuilder {
 			// Replace {{query}} in the template with the escaped search terms
 			const textQueryObjectArray = _.cloneDeep(textQueryObjectTemplate);
 			const escapedQueryString = stringQuery;
-			_.forEach(textQueryObjectArray, (matchObj) => {
+			_.forEach(textQueryObjectArray, matchObj => {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});
 
@@ -278,7 +278,7 @@ export default class QueryBuilder {
 	 */
 	private static buildAggsObject(searchRequest: Avo.Search.Request | undefined): any {
 		const aggs: any = {};
-		_.forEach((searchRequest as any).requestedAggs || AGGS_PROPERTIES, (aggProperty) => {
+		_.forEach((searchRequest as any).requestedAggs || AGGS_PROPERTIES, aggProperty => {
 			const elasticProperty =
 				READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty as Avo.Search.FilterProp];
 			if (!elasticProperty) {

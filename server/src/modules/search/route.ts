@@ -1,3 +1,4 @@
+import { isNil } from 'lodash';
 import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
@@ -18,14 +19,17 @@ export default class SearchRoute {
 	@POST
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async search(searchRequest: any): Promise<any> {
+		if (isNil(searchRequest.size)) {
+			throw new BadRequestError('size parameter is required', null, { searchRequest });
+		}
 		try {
 			return await SearchController.search(searchRequest);
 		} catch (err) {
 			const error = new InternalServerError('failed during search route', err, {
-				...searchRequest,
+				searchRequest,
 			});
 			logger.error(error);
-			throw error;
+			throw new InternalServerError(error.message, null, { searchRequest });
 		}
 	}
 
@@ -44,7 +48,7 @@ export default class SearchRoute {
 				);
 			}
 
-			return await SearchController.getRelatedItems(itemId, type as any, limit); // TODO remove cast after update to typings v2.14.0
+			return await SearchController.getRelatedItems(itemId, type, limit); // TODO remove cast after update to typings v2.14.0
 		} catch (err) {
 			const error = new InternalServerError('failed during search/related route', err, {
 				itemId,

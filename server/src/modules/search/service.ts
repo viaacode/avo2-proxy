@@ -111,11 +111,7 @@ export default class SearchService {
 		}
 	}
 
-	public static async search(
-		searchQueryObject: any,
-		index: string,
-		onlyAggs: boolean = false
-	): Promise<Avo.Search.Search> {
+	public static async search(searchQueryObject: any, index: string): Promise<Avo.Search.Search> {
 		let url;
 		if (!process.env.ELASTICSEARCH_URL) {
 			throw new InternalServerError('Environment variable ELASTICSEARCH_URL is undefined');
@@ -155,7 +151,7 @@ export default class SearchService {
 			if (esResponse.status >= 200 && esResponse.status < 400) {
 				let data = {};
 
-				if (!onlyAggs) {
+				if (searchQueryObject.size !== 0) {
 					data = {
 						count: _.get(esResponse, 'data.hits.total'),
 						results: _.map(

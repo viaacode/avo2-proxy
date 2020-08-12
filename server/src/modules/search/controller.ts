@@ -35,8 +35,7 @@ export default class SearchController {
 			// Perform search
 			return await SearchService.search(
 				esQueryObject,
-				ES_INDEX_MAP[searchRequest.index] || process.env.ELASTICSEARCH_INDEX,
-				(searchRequest as any).onlyAggs
+				ES_INDEX_MAP[searchRequest.index] || process.env.ELASTICSEARCH_INDEX
 			);
 		} catch (err) {
 			if (err.statusText === 'Bad Request') {
@@ -53,7 +52,7 @@ export default class SearchController {
 
 	public static async getRelatedItems(
 		id: string,
-		type: EsIndexType,
+		type: EsIndex,
 		limit: number = 5
 	): Promise<Avo.Search.Search> {
 		try {
