@@ -9,6 +9,7 @@ import DataService from '../data/service';
 import { ClientEducationOrganization } from '../education-organizations/route';
 import EducationOrganizationsService, {
 	LdapEducationOrganization,
+	LdapEducationOrganizationWithUnits,
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
 
@@ -109,7 +110,7 @@ export class AuthService {
 					get(user, 'profile.profile_organizations', []),
 					5,
 					async (org): Promise<ClientEducationOrganization> => {
-						const ldapOrg: LdapEducationOrganization = await EducationOrganizationsService.getOrganization(
+						const ldapOrg: LdapEducationOrganizationWithUnits = await EducationOrganizationsService.getOrganization(
 							org.organization_id,
 							org.unit_id
 						);
@@ -247,7 +248,7 @@ export class AuthService {
 			let unitUuid: string;
 
 			if (organisationId) {
-				const orgInfo: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
+				const orgInfo: LdapEducationOrganizationWithUnits | null = await EducationOrganizationsService.getOrganization(
 					organisationId,
 					unitId
 				);
