@@ -149,21 +149,31 @@ export default class SearchService {
 
 			// Handle response
 			if (esResponse.status >= 200 && esResponse.status < 400) {
-				// Return search results
-				return {
-					count: _.get(esResponse, 'data.hits.total'),
-					results: _.map(
-						_.get(esResponse, 'data.hits.hits'),
-						(result): Avo.Search.ResultItem => {
-							return {
-								...result._source,
-								id: result._source.external_id,
-							} as Avo.Search.ResultItem;
-						}
-					),
+				let data = {};
+
+				if (searchQueryObject.size !== 0) {
+					data = {
+						count: _.get(esResponse, 'data.hits.total'),
+						results: _.map(
+							_.get(esResponse, 'data.hits.hits'),
+							(result): Avo.Search.ResultItem => {
+								return {
+									...result._source,
+									id: result._source.external_id,
+								} as Avo.Search.ResultItem;
+							}
+						),
+					};
+				}
+
+				data = {
+					...data,
 					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
 				};
+
+				return data as any;
 			}
+
 			throw new InternalServerError('Request to elasticsearch was unsuccessful', null, {
 				url,
 				searchQueryObject,

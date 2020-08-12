@@ -52,7 +52,7 @@ export default class SearchController {
 
 	public static async getRelatedItems(
 		id: string,
-		type: EsIndexType,
+		type: EsIndex,
 		limit: number = 5
 	): Promise<Avo.Search.Search> {
 		try {
