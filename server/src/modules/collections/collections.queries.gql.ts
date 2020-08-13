@@ -27,6 +27,7 @@ export const GET_COLLECTION_BY_ID = `
 			}
 			title
 			note
+			briefing_id
 			thumbnail_path
 			publish_at
 			owner_profile_id
