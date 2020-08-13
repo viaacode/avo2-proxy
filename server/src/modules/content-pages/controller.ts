@@ -232,30 +232,13 @@ export default class ContentPageController {
 		request: Request
 	): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {
 		try {
-			let results: any[] = [];
-			// Check for search queries
-			if (searchQuery) {
-				// resolve search query to a list of results
-				const parsedSearchQuery = JSON.parse(searchQuery);
-				let searchQueryLimitNum: number = parseInt(searchQueryLimit, 10);
-				if (_.isNaN(searchQueryLimitNum)) {
-					searchQueryLimitNum = 8;
-				}
-				const searchResponse = await ContentPageService.fetchSearchQuery(
-					searchQueryLimitNum,
-					parsedSearchQuery.filters || {},
-					parsedSearchQuery.orderProperty || 'relevance',
-					parsedSearchQuery.orderDirection || 'desc'
-				);
-				results = await promiseUtils.mapLimit(searchResponse.results || [], 8, result =>
-					ContentPageController.mapSearchResultToItemOrCollection(result, request)
-				);
-			}
+			let manualResults: any[] = [];
+			let searchResults: any[] = [];
 
 			// Check for items/collections
 			const nonEmptyMediaItems = mediaItems.filter(mediaItem => !_.isEmpty(mediaItem));
 			if (nonEmptyMediaItems.length) {
-				results = await promiseUtils.mapLimit(
+				manualResults = await promiseUtils.mapLimit(
 					nonEmptyMediaItems,
 					10,
 					async (itemInfo: {
@@ -290,7 +273,29 @@ export default class ContentPageController {
 				);
 			}
 
-			return results;
+			// Check for search queries
+			if (searchQuery) {
+				// resolve search query to a list of results
+				const parsedSearchQuery = JSON.parse(searchQuery);
+				let searchQueryLimitNum: number = parseInt(searchQueryLimit, 10);
+				if (_.isNaN(searchQueryLimitNum)) {
+					searchQueryLimitNum = 8;
+				}
+				const searchResponse = await ContentPageService.fetchSearchQuery(
+					searchQueryLimitNum - manualResults.length, // Fetch less search results if the user already specified some manual results
+					parsedSearchQuery.filters || {},
+					parsedSearchQuery.orderProperty || 'relevance',
+					parsedSearchQuery.orderDirection || 'desc'
+				);
+				searchResults = await promiseUtils.mapLimit(
+					searchResponse.results || [],
+					8,
+					result =>
+						ContentPageController.mapSearchResultToItemOrCollection(result, request)
+				);
+			}
+
+			return [...manualResults, ...searchResults];
 		} catch (err) {
 			throw new CustomError('Failed to resolve media grid content', err, {
 				searchQuery,
