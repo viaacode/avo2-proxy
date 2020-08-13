@@ -262,9 +262,9 @@ export class AuthService {
 			}
 
 			const body = {
-				...(organisationId ? { organization: organisationUuid } : {}),
-				...(unitId ? { unit: unitUuid } : {}),
-				...(educationLevel ? { edu_levelname: educationLevel } : {}),
+				...(organisationId ? { organization: organisationUuid } : { organization: null }),
+				...(unitId ? { unit: unitUuid } : { unit: null }),
+				...(educationLevel ? { edu_levelname: educationLevel } : { edu_levelname: null }),
 			};
 
 			const response: AxiosResponse<{}> = await axios(url, {
