@@ -26,10 +26,7 @@ interface ResponseHeader {
 	id: string;
 }
 
-checkRequiredEnvs([
-	'SAML_IDP_META_DATA_ENDPOINT',
-	'SAML_SP_ENTITY_ID',
-]);
+checkRequiredEnvs(['SAML_IDP_META_DATA_ENDPOINT', 'SAML_SP_ENTITY_ID']);
 
 export default class HetArchiefService {
 	private static serviceProvider: ServiceProvider;
@@ -58,9 +55,12 @@ export default class HetArchiefService {
 				ignoreCdata: true,
 				ignoreDoctype: true,
 			}) as IdpMetaData;
-			const idpCertificatePath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:KeyDescriptor[0].ds:KeyInfo.ds:X509Data.ds:X509Certificate._text';
-			const ssoLoginUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleSignOnService._attributes.Location';
-			const ssoLogoutUrlPath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleLogoutService._attributes.Location';
+			const idpCertificatePath =
+				'md:EntityDescriptor.md:IDPSSODescriptor.md:KeyDescriptor[0].ds:KeyInfo.ds:X509Data.ds:X509Certificate._text';
+			const ssoLoginUrlPath =
+				'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleSignOnService._attributes.Location';
+			const ssoLogoutUrlPath =
+				'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleLogoutService._attributes.Location';
 			const idpCertificate = _.get(metaData, idpCertificatePath);
 			this.ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
 			this.ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
@@ -86,9 +86,12 @@ export default class HetArchiefService {
 				entity_id: process.env.SAML_SP_ENTITY_ID as string,
 				private_key: process.env.SAML_PRIVATE_KEY as string,
 				certificate: process.env.SAML_SP_CERTIFICATE as string,
-				assert_endpoint: 'http://localhost:3000/auth/login', // dummy url, isn't currently used
+				assert_endpoint: `${process.env.HOST}/auth/hetarchief/login-callback`,
 				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
-				auth_context: { comparison: 'exact', class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'] },
+				auth_context: {
+					comparison: 'exact',
+					class_refs: ['urn:oasis:names:tc:SAML:1.0:am:password'],
+				},
 				nameid_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
 				sign_get_request: false,
 				allow_unencrypted_assertion: true,
@@ -104,7 +107,11 @@ export default class HetArchiefService {
 			logIfNotTestEnv('caching idp info hetarchief... done');
 		} catch (err) {
 			logIfNotTestEnv('caching idp info hetarchief... error');
-			logger.error(new InternalServerError('Failed to get meta data from idp server', err, { endpoint: url }));
+			logger.error(
+				new InternalServerError('Failed to get meta data from idp server', err, {
+					endpoint: url,
+				})
+			);
 		}
 	}
 
@@ -117,11 +124,17 @@ export default class HetArchiefService {
 				},
 				(error: any, loginUrl: string, requestId: string) => {
 					if (error) {
-						reject(new InternalServerError('Failed to create login request url on SAML service provider', error));
+						reject(
+							new InternalServerError(
+								'Failed to create login request url on SAML service provider',
+								error
+							)
+						);
 					} else {
 						resolve(loginUrl);
 					}
-				});
+				}
+			);
 		});
 	}
 
@@ -135,11 +148,16 @@ export default class HetArchiefService {
 				},
 				(err, samlResponse: DecodedSamlResponse) => {
 					if (err) {
-						reject(new InternalServerError('Failed to verify SAML response', err, { requestBody }));
+						reject(
+							new InternalServerError('Failed to verify SAML response', err, {
+								requestBody,
+							})
+						);
 					} else {
 						resolve(samlResponse.user);
 					}
-				});
+				}
+			);
 		});
 	}
 
@@ -153,11 +171,17 @@ export default class HetArchiefService {
 				},
 				(error: any, logoutUrl: string) => {
 					if (error) {
-						reject(new InternalServerError('Failed to create logout request url on saml service provider', error));
+						reject(
+							new InternalServerError(
+								'Failed to create logout request url on saml service provider',
+								error
+							)
+						);
 					} else {
 						resolve(logoutUrl);
 					}
-				});
+				}
+			);
 		});
 	}
 
