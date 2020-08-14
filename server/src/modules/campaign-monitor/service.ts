@@ -4,10 +4,10 @@ import * as querystring from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
+import EventLoggingController from '../event-logging/controller';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
 import { CustomFields, EmailInfo, NewsletterPreferences } from './types';
-import EventLoggingController from '../event-logging/controller';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',

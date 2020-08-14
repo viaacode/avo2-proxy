@@ -13,11 +13,11 @@ import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
+import EventLoggingController from '../event-logging/controller';
 
 import { templateIds } from './const';
 import CampaignMonitorController from './controller';
 import { EmailInfo } from './types';
-import EventLoggingController from '../event-logging/controller';
 
 @Path('/campaign-monitor')
 export default class CampaignMonitorRoute {

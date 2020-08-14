@@ -9,9 +9,9 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
 import { LdapUser } from '../auth/types';
+import EventLoggingController from '../event-logging/controller';
 
 import ProfileController, { UpdateProfileValues } from './controller';
-import EventLoggingController from '../event-logging/controller';
 
 @Path('/profile')
 export default class ProfileRoute {
