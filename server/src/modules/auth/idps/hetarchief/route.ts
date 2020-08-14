@@ -144,7 +144,8 @@ export default class HetArchiefRoute {
 
 				IdpHelper.setAvoUserInfoOnSession(this.context.request, avoUser);
 			} catch (err) {
-				if (JSON.stringify(err).includes('ENOTFOUND')) {
+				const errorString = JSON.stringify(err);
+				if (errorString.includes('ENOTFOUND')) {
 					// Failed to connect to the database
 					return redirectToClientErrorPage(
 						i18n.t(
@@ -154,6 +155,18 @@ export default class HetArchiefRoute {
 						['home', 'helpdesk']
 					);
 				}
+
+				if (errorString.includes('Failed to get role id by role name from the database')) {
+					// User does not have a usergroup in LDAP
+					return redirectToClientErrorPage(
+						i18n.t(
+							'Je account heeft nog geen gebruikersgroep. Gelieve de helpdesk te contacteren.'
+						),
+						'alert-triangle',
+						['home', 'helpdesk']
+					);
+				}
+
 				// We want to use this route also for registration, so it could be that the avo user and profile do not exist yet
 				logger.info(
 					'login callback without avo user object found (this is correct for the registration flow)',
