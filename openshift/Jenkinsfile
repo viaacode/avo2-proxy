@@ -43,14 +43,14 @@ pipeline {
             }
         }
         stage('Build Dockerfile in server dir') {
-            steps {
-                script {sh'''#!/bin/bash
-                    login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
-                    cd server &&
-                    docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION .
-                    docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
-                }//end script
-			   waitUntil {
+			waitUntil {
+				steps {
+					script {sh'''#!/bin/bash
+						login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
+						cd server &&
+						docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION .
+						docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
+					}//end script
 					try {
 						script {sh'''#!/bin/bash
 							echo PUSHING image $VERSION to $REGISTRY
@@ -67,8 +67,8 @@ pipeline {
 						input "Retry pushing image to registry?"
 						false
 					}
-			   }
-            } // steps
+				} // steps
+		    }
         } // stage
         stage('INT TESTS') {
             steps {
