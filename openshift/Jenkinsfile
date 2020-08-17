@@ -43,32 +43,33 @@ pipeline {
             }
         }
         stage('Build Dockerfile in server dir') {
-			waitUntil {
-				steps {
-					script {sh'''#!/bin/bash
-						login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
-						cd server &&
-						docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION .
-						docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
-					}//end script
-					try {
-						script {sh'''#!/bin/bash
-							echo PUSHING image $VERSION to $REGISTRY
-							docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION
-							echo pushing image $VERSION $OKD_ENDPOINT
-							login_oc.sh $OKD_ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 && docker push $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
+            steps {
+                script {sh'''#!/bin/bash
+                    login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
+                    cd server &&
+                    docker build -t $REGISTRY/sc-avo2/avo2-proxy:$VERSION .
+                    docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
+                }//end script
+			   waitUntil {
+					script {
+						try {
 							sh'''#!/bin/bash
-							echo set INT and DEV tag to $VERSION
-							oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:int
-							oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev
-							'''
-						} // script
-					} catch (error) {
-						input "Retry pushing image to registry?"
-						false
-					}
-				} // steps
-		    }
+								echo PUSHING image $VERSION to $REGISTRY
+								docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION
+								echo pushing image $VERSION $OKD_ENDPOINT
+								login_oc.sh $OKD_ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 && docker push $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
+								sh'''#!/bin/bash
+								echo set INT and DEV tag to $VERSION
+								oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:int
+								oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev
+								'''
+						} catch (error) {
+							input "Retry pushing image to registry?"
+							false
+						}
+					} // script
+			   }
+            } // steps
         } // stage
         stage('INT TESTS') {
             steps {
