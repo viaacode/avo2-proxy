@@ -64,11 +64,14 @@ pipeline {
 			  					oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev
 			  					'''
 			  			} catch (error) {
+			  				echo 'Failed to push to registry'
 			  				def userChoice = input(message: "Retry pushing image to registry?", ok: 'yes');
 			  				if (userChoice) {
+			  					// try again
 			  					return false;
 			  				} else {
-			  					throw error;
+			  					// do not try again
+			  					return true;
 			  				}
 			  			}
 			    	}
