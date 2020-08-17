@@ -52,24 +52,19 @@ pipeline {
                     docker tag $REGISTRY/sc-avo2/avo2-proxy:$VERSION $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION'''
                 }//end script
                 script {
-                    waitUntil {
-                        try {
-                            sh '''#!/bin/bash
+					timeout(time: 10, unit: 'MINUTES') {
+						waitUntil {
+							try {
+								sh '''#!/bin/bash
 			  					echo PUSHING image $VERSION to $REGISTRY
 			  					docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION
 			  					'''
-                        } catch (error) {
-                            echo 'Failed to push to registry'
-                            def userChoice = input(message: "Retry pushing image to registry?", ok: 'yes');
-                            if (userChoice) {
-                                // try again
-                                return false;
-                            } else {
-                                // do not try again
-                                return true;
-                            }
-                        }
-                    }
+							} catch (error) {
+								echo 'Failed to push to registry'
+								return false;
+							}
+						}
+					}
                 } // script
                 script {
                     sh '''#!/bin/bash
