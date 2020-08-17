@@ -18,6 +18,8 @@ export interface ContentPageOverviewParams {
 	withBlock: boolean;
 	contentType: string;
 	labelIds: number[];
+	orderByProp?: string;
+	orderByDirection?: 'asc' | 'desc';
 	offset: number;
 	limit: number;
 }

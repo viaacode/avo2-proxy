@@ -4,6 +4,7 @@ import * as querystring from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
+import EventLoggingController from '../event-logging/controller';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
 import { CustomFields, EmailInfo, NewsletterPreferences } from './types';
@@ -45,26 +46,29 @@ export default class CampaignMonitorService {
 				},
 			});
 		} catch (err) {
-			throw new CustomError('Failed to send email using the campaign monitor api', err, { info, url });
+			throw new CustomError('Failed to send email using the campaign monitor api', err, {
+				info,
+				url,
+			});
 		}
 	}
 
 	public static async fetchNewsletterPreference(listId: string, email: string) {
 		let url: string;
 		try {
-			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${querystring.stringify({ email })}`;
-			const response: AxiosResponse<any> = await axios(url,
-				{
-					method: 'GET',
-					auth: {
-						username: process.env.CAMPAIGN_MONITOR_API_KEY,
-						password: '.',
-					},
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
+			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${querystring.stringify(
+				{ email }
+			)}`;
+			const response: AxiosResponse<any> = await axios(url, {
+				method: 'GET',
+				auth: {
+					username: process.env.CAMPAIGN_MONITOR_API_KEY,
+					password: '.',
+				},
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
 
 			return _.get(response, 'data.State') === 'Active';
 		} catch (err) {
@@ -72,13 +76,21 @@ export default class CampaignMonitorService {
 				return false;
 			}
 
-			throw new CustomError('Failed to retrieve newsletter preference', err, { listId, email, url });
+			throw new CustomError('Failed to retrieve newsletter preference', err, {
+				listId,
+				email,
+				url,
+			});
 		}
 	}
 
 	public static async fetchNewsletterPreferences(email: string): Promise<NewsletterPreferences> {
 		try {
-			const responses = await axios.all(NEWSLETTERS_TO_FETCH.map((list => this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email))));
+			const responses = await axios.all(
+				NEWSLETTERS_TO_FETCH.map(list =>
+					this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
+				)
+			);
 
 			return {
 				newsletter: responses[0],
@@ -91,7 +103,10 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async unsubscribeFromNewsletterList(listId: string, email: string): Promise<void> {
+	public static async unsubscribeFromNewsletterList(
+		listId: string,
+		email: string
+	): Promise<void> {
 		try {
 			await axios(
 				`https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`,
@@ -114,7 +129,12 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async subscribeToNewsletterList(listId: string, email: string, name: string, customFields: CustomFields) {
+	public static async subscribeToNewsletterList(
+		listId: string,
+		email: string,
+		name: string,
+		customFields: CustomFields
+	) {
 		try {
 			const data = {
 				EmailAddress: email,
@@ -127,22 +147,23 @@ export default class CampaignMonitorService {
 				})),
 			};
 
-			await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`,
-				{
-					data,
-					method: 'POST',
-					auth: {
-						username: process.env.CAMPAIGN_MONITOR_API_KEY,
-						password: '.',
-					},
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				}
-			);
+			await axios(`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`, {
+				data,
+				method: 'POST',
+				auth: {
+					username: process.env.CAMPAIGN_MONITOR_API_KEY,
+					password: '.',
+				},
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
 		} catch (err) {
-			throw new CustomError('Failed to subscribe from newsletter list', err, { listId, name, email });
+			throw new CustomError('Failed to subscribe from newsletter list', err, {
+				listId,
+				name,
+				email,
+			});
 		}
 	}
 }

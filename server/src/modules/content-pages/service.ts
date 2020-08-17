@@ -111,6 +111,8 @@ export default class ContentPageService {
 		userGroupIds: number[],
 		contentType: string,
 		labelIds: number[],
+		orderByProp: string,
+		orderByDirection: 'asc' | 'desc',
 		offset: number,
 		limit: number
 	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
@@ -144,6 +146,7 @@ export default class ContentPageService {
 						},
 					],
 				},
+				orderBy: { [orderByProp]: orderByDirection },
 			}
 		);
 		if (response.errors) {

@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import _ from 'lodash';
+import { extend, get, isNil } from 'lodash';
 import moment from 'moment';
 import * as queryString from 'querystring';
 import { Return } from 'typescript-rest';
@@ -12,6 +12,7 @@ import { logger } from '../../shared/helpers/logger';
 import { isLoggedIn } from '../../shared/middleware/is-authenticated';
 import i18n from '../../shared/translations/i18n';
 import DataService from '../data/service';
+import EventLoggingController from '../event-logging/controller';
 
 import { ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS, IDP_ADAPTERS } from './consts';
 import { IdpHelper } from './idp-helper';
@@ -44,6 +45,23 @@ export default class AuthController {
 			});
 			const now = moment();
 
+			EventLoggingController.insertEvent(
+				{
+					object: userInfo.uid,
+					object_type: 'user',
+					message: `${get(userInfo, 'first_name')} ${get(
+						userInfo,
+						'last_name'
+					)} is geauthenticeerd door de proxy server`,
+					action: 'authenticate',
+					subject: userInfo.uid,
+					subject_type: 'system',
+					occurred_at: new Date().toISOString(),
+					source_url: process.env.HOST + req.path,
+				},
+				req
+			);
+
 			return {
 				userInfo,
 				acceptedConditions,
@@ -65,7 +83,7 @@ export default class AuthController {
 	public static async getUserHasAcceptedUsageAndPrivacyDeclaration(
 		userInfo: Avo.User.User
 	): Promise<boolean> {
-		const profileId = _.get(userInfo, 'profile.id');
+		const profileId = get(userInfo, 'profile.id');
 		if (!profileId) {
 			return false;
 		}
@@ -86,7 +104,7 @@ export default class AuthController {
 			);
 			return false;
 		}
-		return _.get(response, 'data.users_notifications[0].through_platform', false);
+		return get(response, 'data.users_notifications[0].through_platform', false);
 	}
 
 	private static async getRoleId(roleName: string): Promise<number> {
@@ -94,8 +112,8 @@ export default class AuthController {
 			const response = await DataService.execute(GET_USER_ROLE_BY_NAME, {
 				roleName,
 			});
-			const roleId: number | undefined = _.get(response, 'data.shared_user_roles[0].id');
-			if (_.isNil(roleId)) {
+			const roleId: number | undefined = get(response, 'data.shared_user_roles[0].id');
+			if (isNil(roleId)) {
 				throw new CustomError('Role with specified name was not found');
 			}
 			return roleId;
@@ -119,8 +137,8 @@ export default class AuthController {
 				});
 			}
 
-			const userUid = _.get(response, 'data.insert_shared_users.returning[0].uid');
-			if (_.isNil(userUid)) {
+			const userUid = get(response, 'data.insert_shared_users.returning[0].uid');
+			if (isNil(userUid)) {
 				throw new InternalServerError(
 					"Response from insert request didn't contain a uid",
 					null,
@@ -137,7 +155,7 @@ export default class AuthController {
 	}
 
 	public static async createProfile(profile: Partial<Avo.User.Profile>): Promise<string> {
-		const profileWithDefaults = _.extend(
+		const profileWithDefaults = extend(
 			{
 				alias: null,
 				avatar: null,
@@ -155,8 +173,8 @@ export default class AuthController {
 			);
 		}
 
-		const profileId = _.get(response, 'data.insert_users_profiles.returning[0].id');
-		if (_.isNil(profileId)) {
+		const profileId = get(response, 'data.insert_users_profiles.returning[0].id');
+		if (isNil(profileId)) {
 			throw new InternalServerError(
 				"Failed to create avo user profile. Response from insert request didn't contain a uid",
 				null,
@@ -197,8 +215,7 @@ export default class AuthController {
 			const idpTypeLowerCase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
 				// TODO rename this key so it doesn't include "smartschool"
-				i18n.t(
-					'modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
+				i18n.t('modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
 					{ idpType: idpTypeLowerCase }
 				),
 				'link',
@@ -210,8 +227,7 @@ export default class AuthController {
 		const idpLoginPath: string | undefined = IDP_ADAPTERS[idpType].loginPath;
 		if (!idpLoginPath) {
 			return redirectToClientErrorPage(
-				i18n.t(
-					'modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'
+				i18n.t('modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'
 				),
 				'link',
 				['home', 'helpdesk']
@@ -221,9 +237,9 @@ export default class AuthController {
 		// Let the user login to smartschool, then redirect to this url
 		const serverRedirectUrl = `${
 			process.env.HOST
-			}/auth/link-account-callback?${queryString.stringify({
-				returnToUrl,
-			})}`;
+		}/auth/link-account-callback?${queryString.stringify({
+			returnToUrl,
+		})}`;
 		return new Return.MovedTemporarily(
 			`${process.env.HOST}/${idpLoginPath}?${queryString.stringify({
 				returnToUrl: serverRedirectUrl,
@@ -259,8 +275,7 @@ export default class AuthController {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t(
-					'modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'
+				i18n.t('modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -285,8 +300,7 @@ export default class AuthController {
 			logger.error(error);
 			const idpTypeLowercase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				i18n.t(
-					'modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account',
+				i18n.t('modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account',
 					{ idpType: idpTypeLowercase }
 				),
 				'alert-triangle',

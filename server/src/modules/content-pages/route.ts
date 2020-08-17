@@ -60,6 +60,8 @@ export default class ContentPagesRoute {
 				body.withBlock,
 				body.contentType,
 				body.labelIds,
+				body.orderByProp || 'published_at',
+				body.orderByDirection || 'desc',
 				body.offset,
 				body.limit,
 				IdpHelper.getAvoUserInfoFromSession(this.context.request)

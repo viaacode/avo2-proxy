@@ -13,6 +13,7 @@ import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
+import EventLoggingController from '../event-logging/controller';
 
 import { templateIds } from './const';
 import CampaignMonitorController from './controller';
@@ -59,6 +60,20 @@ export default class CampaignMonitorRoute {
 					username,
 				},
 			});
+
+			EventLoggingController.insertEvent(
+				{
+					object: templateIds[info.template],
+					object_type: 'mail',
+					message: `sent ${info.template} email to ${info.to}`,
+					action: 'send',
+					subject: 'avo-proxy',
+					subject_type: 'system',
+					occurred_at: new Date().toISOString(),
+					source_url: process.env.HOST + this.context.request.path,
+				},
+				this.context.request
+			);
 		} catch (err) {
 			const error = new InternalServerError(
 				'Failed during send in campaignMonitor route',

@@ -9,6 +9,7 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
 import { LdapUser } from '../auth/types';
+import EventLoggingController from '../event-logging/controller';
 
 import ProfileController, { UpdateProfileValues } from './controller';
 
@@ -59,6 +60,22 @@ export default class ProfileRoute {
 				}
 			}
 			IdpHelper.setAvoUserInfoOnSession(this.context.request, updatedAvoUser);
+			EventLoggingController.insertEvent(
+				{
+					object: updatedAvoUser.uid,
+					object_type: 'account',
+					message: `${get(updatedAvoUser, 'first_name')} ${get(
+						updatedAvoUser,
+						'last_name'
+					)} heeft zijn account geupdate`,
+					action: 'edit',
+					subject: updatedAvoUser.uid,
+					subject_type: 'user',
+					occurred_at: new Date().toISOString(),
+					source_url: process.env.HOST + this.context.request.path,
+				},
+				this.context.request
+			);
 		} catch (err) {
 			const error = new InternalServerError('Failed to update profile', err);
 			logger.error(error);

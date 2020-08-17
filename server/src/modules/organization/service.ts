@@ -1,14 +1,15 @@
 import axios, { AxiosResponse } from 'axios';
 import { get, uniqBy } from 'lodash';
-// import cron from 'node-cron';
+import cron from 'node-cron';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
-// import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
+import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 
 import { DELETE_ORGANIZATIONS, GET_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
+
 
 interface OrganisationResponse {
 	status: string;
@@ -46,33 +47,32 @@ export interface ParsedOrganisation {
 
 export default class OrganisationService {
 	public static async initialize() {
-		// TODO re-enable after https://meemoo.atlassian.net/browse/DEV-1041
 		// For now you can manually trigger a refresh of the cache using /organisations/update-cache with the proxy api key
-		// try {
-		// 	logIfNotTestEnv('caching organizations...');
-		//
-		// 	await OrganisationService.updateOrganisationsCache();
-		//
-		// 	// Register a cron job to refresh the organizations every night
-		// 	if (process.env.NODE_ENV !== 'test') {
-		// 		/* istanbul ignore next */
-		// 		cron.schedule('0 0 04 * * *', async () => {
-		// 			await OrganisationService.initialize();
-		// 		}).start();
-		// 	}
-		//
-		// 	logIfNotTestEnv('caching organizations... done');
-		// } catch (err) {
-		// 	logIfNotTestEnv('caching organizations... error');
-		//
-		// 	/* istanbul ignore next */
-		// 	logger.error(
-		// 		new InternalServerError(
-		// 			'Failed to fill initial organizations cache or schedule cron job to renew the cache',
-		// 			err
-		// 		)
-		// 	);
-		// }
+		try {
+			logIfNotTestEnv('caching organizations...');
+
+			await OrganisationService.updateOrganisationsCache();
+
+			// Register a cron job to refresh the organizations every night
+			if (process.env.NODE_ENV !== 'test') {
+				/* istanbul ignore next */
+				cron.schedule('0 0 04 * * *', async () => {
+					await OrganisationService.initialize();
+				}).start();
+			}
+
+			logIfNotTestEnv('caching organizations... done');
+		} catch (err) {
+			logIfNotTestEnv('caching organizations... error');
+
+			/* istanbul ignore next */
+			logger.error(
+				new InternalServerError(
+					'Failed to fill initial organizations cache or schedule cron job to renew the cache',
+					err
+				)
+			);
+		}
 	}
 
 	public static async updateOrganisationsCache() {
@@ -123,7 +123,7 @@ export default class OrganisationService {
 		const parsedOrganizations: ParsedOrganisation[] = organizations.map(
 			(organization: OrganisationInfo) => ({
 				or_id: organization.or_id,
-				name: organization.cp_name,
+				name: organization.cp_name_catpro || organization.cp_name,
 				website: organization.contact_information.website,
 				logo_url: organization.contact_information.logoUrl,
 				description: organization.description,

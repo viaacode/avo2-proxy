@@ -1,6 +1,6 @@
 import axios from 'axios';
 import _ from 'lodash';
-import zendesk, { Client, Tickets } from 'node-zendesk';
+import zendesk, { Client, Requests } from 'node-zendesk';
 import * as queryString from 'querystring';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
@@ -23,23 +23,32 @@ export default class ZendeskService {
 
 	/**
 	 * Create a new ticket in zendesk
-	 * @param ticket
+	 * @param request
 	 */
-	public static async createTicket(ticket: Tickets.CreateModel): Promise<Tickets.ResponseModel> {
-		return new Promise<Tickets.ResponseModel>((resolve, reject) => {
+	public static async createTicket(
+		request: Requests.CreateModel
+	): Promise<Requests.ResponseModel> {
+		return new Promise<Requests.ResponseModel>((resolve, reject) => {
 			try {
-				ZendeskService.client.tickets.create({ ticket }, (error: Error | undefined, response: any, result: any) => {
-					error ? reject(error) : resolve(result);
-				});
+				ZendeskService.client.requests.create(
+					{ request },
+					(error: Error | undefined, response: any, result: any) => {
+						error ? reject(error) : resolve(result);
+					}
+				);
 			} catch (err) {
-				const error = new ExternalServerError('Failed to create ticket through the zendesk api', err, { ticket });
+				const error = new ExternalServerError(
+					'Failed to create ticket through the zendesk api',
+					err,
+					{ request }
+				);
 				logger.error(error);
 				reject(error);
 			}
 		});
 	}
 
-	static async uploadAttachment(fileInfo: ZendeskFileInfo): Promise<{ url: string, id: number }> {
+	static async uploadAttachment(fileInfo: ZendeskFileInfo): Promise<{ url: string; id: number }> {
 		try {
 			const base64Code = (fileInfo.base64.split(';base64,').pop() || '').trim();
 			if (!base64Code) {
@@ -61,7 +70,8 @@ export default class ZendeskService {
 						username: process.env.ZENDESK_USERNAME,
 						password: process.env.ZENDESK_TOKEN,
 					},
-				});
+				}
+			);
 			if (response.status < 200 && response.status >= 400) {
 				throw new CustomError(
 					'Failed to upload file to zendesk api, unexpected status code in response',
@@ -83,10 +93,13 @@ export default class ZendeskService {
 			return attachmentInfo;
 		} catch (err) {
 			const error = new ExternalServerError(
-				'Failed to upload file to zendesk attachment api', err, {
+				'Failed to upload file to zendesk attachment api',
+				err,
+				{
 					fileInfo,
 					startOfFile: fileInfo.base64.substring(0, 50),
-				});
+				}
+			);
 			logger.error(error);
 			throw error;
 		}

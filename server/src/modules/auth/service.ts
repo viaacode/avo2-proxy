@@ -9,6 +9,7 @@ import DataService from '../data/service';
 import { ClientEducationOrganization } from '../education-organizations/route';
 import EducationOrganizationsService, {
 	LdapEducationOrganization,
+	LdapEducationOrganizationWithUnits,
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
 
@@ -109,7 +110,7 @@ export class AuthService {
 					get(user, 'profile.profile_organizations', []),
 					5,
 					async (org): Promise<ClientEducationOrganization> => {
-						const ldapOrg: LdapEducationOrganization = await EducationOrganizationsService.getOrganization(
+						const ldapOrg: LdapEducationOrganizationWithUnits = await EducationOrganizationsService.getOrganization(
 							org.organization_id,
 							org.unit_id
 						);
@@ -240,14 +241,14 @@ export class AuthService {
 
 			const organisationId = get(avoUser, 'profile.organizations[0].organizationId');
 			const unitId = get(avoUser, 'profile.organizations[0].unitId');
-			const educationLevel = get(avoUser, 'profile.educationLevels[0]');
+			const educationLevels = get(avoUser, 'profile.educationLevels');
 
 			// Resolve org id en unit id to uuids since the ldap api uses those
 			let organisationUuid: string;
 			let unitUuid: string;
 
 			if (organisationId) {
-				const orgInfo: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
+				const orgInfo: LdapEducationOrganizationWithUnits | null = await EducationOrganizationsService.getOrganization(
 					organisationId,
 					unitId
 				);
@@ -261,9 +262,11 @@ export class AuthService {
 			}
 
 			const body = {
-				...(organisationId ? { organization: organisationUuid } : {}),
-				...(unitId ? { unit: unitUuid } : {}),
-				...(educationLevel ? { edu_levelname: educationLevel } : {}),
+				...(organisationId ? { organization: organisationUuid } : { organization: null }),
+				...(unitId ? { unit: unitUuid } : { unit: null }),
+				...(educationLevels && educationLevels.length
+					? { edu_levelname: educationLevels }
+					: { edu_levelname: null }),
 			};
 
 			const response: AxiosResponse<{}> = await axios(url, {
