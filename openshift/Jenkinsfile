@@ -64,10 +64,12 @@ pipeline {
 			  					oc tag sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev
 			  					'''
 			  			} catch (error) {
-			  				if (input "Retry pushing image to registry?") {
+			  				def userChoice = input(message: "Retry pushing image to registry?", ok: 'yes');
+			  				if (userChoice) {
 			  					return false;
+			  				} else {
+			  					throw error;
 			  				}
-			  				throw error;
 			  			}
 			    	}
 				} // script
