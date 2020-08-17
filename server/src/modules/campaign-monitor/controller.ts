@@ -112,7 +112,7 @@ export default class CampaignMonitorController {
 							is_uitzondering: isExceptionAccount ? 'true' : 'false',
 							firstname: firstName,
 							lastname: lastName,
-							graad: join(educationLevels),
+							onderwijsniveaus: educationLevels.join(),
 							vakken: subjects,
 							school_postcodes: join(schoolZipcodes),
 							school_ids: join(schoolIds),
