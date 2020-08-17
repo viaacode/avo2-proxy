@@ -59,6 +59,7 @@ pipeline {
 			  					echo PUSHING image $VERSION to $REGISTRY
 			  					docker push $REGISTRY/sc-avo2/avo2-proxy:$VERSION
 			  					'''
+								return true;
 							} catch (error) {
 								echo 'Failed to push to registry'
 								return false;
