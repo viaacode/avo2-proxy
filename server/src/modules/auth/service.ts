@@ -266,7 +266,7 @@ export class AuthService {
 				...(unitId ? { unit: unitUuid } : { unit: null }),
 				...(educationLevels && educationLevels.length
 					? { edu_levelname: educationLevels }
-					: { edu_levelname: null }),
+					: { edu_levelname: [] }),
 			};
 
 			const response: AxiosResponse<{}> = await axios(url, {
