@@ -14,6 +14,7 @@
   "homepage": "https://github.com/viaacode/avo2-proxy",
   "scripts": {
     "start": "npm run serve",
+    "start-with-env": "dotenv -e .env/local.env npm run serve",
     "serve": "ts-node-dev --transpileOnly --poll -- index.ts",
     "prebuild": "npm run clean:build",
     "build": "tsc -p tsconfig.json",
