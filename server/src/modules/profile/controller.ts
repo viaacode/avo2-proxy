@@ -1,4 +1,4 @@
-import { uniq } from 'lodash';
+import { uniq, remove } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -37,7 +37,7 @@ export default class ProfileController {
 	public static async updateProfile(
 		profile: Avo.User.Profile,
 		variables: Partial<UpdateProfileValues>
-	): Promise<void> {
+	): Promise<UpdateProfileValues> {
 		try {
 			const completeVars: UpdateProfileValues = {
 				educationLevels: uniq(profile.educationLevels || ([] as string[])).map(
@@ -75,12 +75,7 @@ export default class ProfileController {
 				...completeVars,
 			});
 
-			const userGroupIds = (profile as any).userGroupIds || [];
-			await this.updateUserGroupsSecondaryEducation(
-				userGroupIds,
-				profile.id,
-				(completeVars.educationLevels || []).map(el => el.key)
-			);
+			return completeVars;
 		} catch (err) {
 			throw new CustomError('Failed to update profile info', err, {
 				profile,
@@ -90,67 +85,23 @@ export default class ProfileController {
 	}
 
 	public static async updateUserGroupsSecondaryEducation(
-		userGroupIds: number[],
+		userGroupId: number,
 		profileId: string,
 		educationLevels: string[]
 	) {
-		// Add extra usergroup for lesgever secundair en student lesgever secudair
+		await AuthService.removeAllUserGroupsFromProfile(profileId);
+
+		let newUserGroupId = userGroupId; // Only one user group should be set
+
+		// Add extra usergroup for lesgever secundair or student lesgever secundair
 		if (
 			educationLevels.includes('Secundair onderwijs') &&
-			userGroupIds.includes(SpecialUserGroup.Teacher) &&
-			!userGroupIds.includes(SpecialUserGroup.TeacherSecondary)
+			(newUserGroupId === SpecialUserGroup.Teacher ||
+				newUserGroupId === SpecialUserGroup.StudentTeacher)
 		) {
-			await AuthService.addUserGroupsToProfile(
-				[SpecialUserGroup.TeacherSecondary],
-				profileId
-			);
-			await AuthService.removeUserGroupsFromProfile([SpecialUserGroup.Teacher], profileId);
-		}
-		if (
-			educationLevels.includes('Secundair onderwijs') &&
-			userGroupIds.includes(SpecialUserGroup.StudentTeacherSecondary) &&
-			!userGroupIds.includes(SpecialUserGroup.StudentTeacher)
-		) {
-			await AuthService.addUserGroupsToProfile([SpecialUserGroup.StudentTeacher], profileId);
-			await AuthService.removeUserGroupsFromProfile(
-				[SpecialUserGroup.StudentTeacherSecondary],
-				profileId
-			);
+			newUserGroupId = SpecialUserGroup.TeacherSecondary;
 		}
 
-		// Remove usergroup if not lesgever secundair nor student lesgever secudair
-		if (
-			!educationLevels.includes('Secundair onderwijs') &&
-			userGroupIds.includes(SpecialUserGroup.TeacherSecondary)
-		) {
-			await AuthService.removeUserGroupsFromProfile(
-				[SpecialUserGroup.TeacherSecondary],
-				profileId
-			);
-		}
-		if (
-			userGroupIds.includes(SpecialUserGroup.Teacher) &&
-			userGroupIds.includes(SpecialUserGroup.TeacherSecondary)
-		) {
-			await AuthService.removeUserGroupsFromProfile([SpecialUserGroup.Teacher], profileId);
-		}
-		if (
-			!educationLevels.includes('Secundair onderwijs') &&
-			userGroupIds.includes(SpecialUserGroup.StudentTeacher)
-		) {
-			await AuthService.removeUserGroupsFromProfile(
-				[SpecialUserGroup.StudentTeacher],
-				profileId
-			);
-		}
-		if (
-			userGroupIds.includes(SpecialUserGroup.StudentTeacherSecondary) &&
-			userGroupIds.includes(SpecialUserGroup.StudentTeacher)
-		) {
-			await AuthService.removeUserGroupsFromProfile(
-				[SpecialUserGroup.StudentTeacherSecondary],
-				profileId
-			);
-		}
+		await AuthService.addUserGroupsToProfile([newUserGroupId], profileId);
 	}
 }

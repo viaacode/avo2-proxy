@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import { get, uniq, isNil } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
@@ -41,7 +41,26 @@ export default class ProfileRoute {
 					'Cannot update profile since no profile is linked to the logged in user'
 				);
 			}
-			await ProfileController.updateProfile(user.profile, variables);
+			const newProfileValues: UpdateProfileValues = await ProfileController.updateProfile(
+				user.profile,
+				variables
+			);
+			const userGroupId: number | undefined = uniq(
+				get(user, 'profile.userGroupIds', []) as number[]
+			)[0];
+			if (isNil(userGroupId)) {
+				throw new InternalServerError(
+					"Failed to update user groups because user doesn't have a user group",
+					null,
+					{ user }
+				);
+			}
+			await ProfileController.updateUserGroupsSecondaryEducation(
+				userGroupId,
+				user.profile.id,
+				(newProfileValues.educationLevels || []).map(lvl => lvl.key) // Could have been updated by the update profile function
+			);
+
 			const updatedAvoUser = await AuthService.getAvoUserInfoById(user.uid);
 			const idpType = IdpHelper.getIdpTypeFromSession(this.context.request);
 			if (idpType === 'HETARCHIEF') {
