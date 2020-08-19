@@ -56,18 +56,39 @@ export default class SearchController {
 		limit: number = 5
 	): Promise<Avo.Search.Search> {
 		try {
+			// For private collections we need pass the title and description to elasticsearch since elasticsearch doesn't contain these collections
+			// So we need to get the collection from graphql first so we can see if the collection has: is_public === false
+			let privateCollection: Avo.Collection.Collection | undefined;
 			if (type === 'collections' || type === 'bundles') {
 				const response = await DataService.execute(
 					GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID,
 					{ id }
 				);
 				const collection = get(response, 'data.app_collections[0]');
-
 				if (!collection) {
 					throw new BadRequestError('Response does not contain any collections', null, {
 						response,
 					});
 				}
+				if (!collection.is_public) {
+					privateCollection = collection;
+				}
+			}
+
+			let likeFilter: any;
+			if (privateCollection) {
+				likeFilter = {
+					_index: ES_INDEX_MAP[type],
+					doc: {
+						dc_title: privateCollection.title,
+						dcterms_abstract: privateCollection.description,
+					},
+				};
+			} else {
+				likeFilter = {
+					_index: ES_INDEX_MAP[type],
+					_id: id,
+				};
 			}
 
 			const esQueryObject = {
@@ -76,12 +97,7 @@ export default class SearchController {
 				query: {
 					more_like_this: {
 						fields: ['dc_title', 'dcterms_abstract'],
-						like: [
-							{
-								_index: ES_INDEX_MAP[type],
-								_id: id,
-							},
-						],
+						like: [likeFilter],
 						min_term_freq: 1,
 						max_query_terms: 12,
 					},
