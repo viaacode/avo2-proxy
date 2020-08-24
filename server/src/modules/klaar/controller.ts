@@ -77,7 +77,11 @@ export default class KlaarController {
 	 */
 	public static async getKlaarJson(): Promise<KlaarNewsletter> {
 		try {
-			const klaarNewsLetterContentPage = await ContentPageController.getContentPageByPath(process.env.KLAAR_NEWSLETTER_CONTENT_PAGE_PATH, null, null);
+			const klaarNewsLetterContentPage = await ContentPageController.getContentPageByPath(
+				process.env.KLAAR_NEWSLETTER_CONTENT_PAGE_PATH,
+				null,
+				null
+			);
 			if (!klaarNewsLetterContentPage) {
 				throw new NotFoundError(
 					'Failed to find klaar newsletter content page by path',
@@ -85,18 +89,21 @@ export default class KlaarController {
 					{
 						envVarName: 'KLAAR_NEWSLETTER_CONTENT_PAGE_PATH',
 						envVarValue: process.env.KLAAR_NEWSLETTER_CONTENT_PAGE_PATH,
-					});
+					}
+				);
 			}
 			const subjectAndDate = this.extractKlaarSubjectAndDate(klaarNewsLetterContentPage);
 			return {
 				// Avoid issues with different timezones in the ibm server
 				// eg: 21/04/2020 Belgium time is 20/04/2020 22:00:00 UTC time
 				// By adding 12 hours we always extract the correct date that was intended
-				uuid: moment(subjectAndDate.date).add(12, 'hours').format('YYYYMMDD'),
+				uuid: moment(subjectAndDate.date)
+					.add(12, 'hours')
+					.format('YYYYMMDD'),
 				timestamp: klaarNewsLetterContentPage.updated_at,
 				message: {
 					subject: subjectAndDate.subject || klaarNewsLetterContentPage.title,
-					body: klaarNewsLetterContentPage.description,
+					body: klaarNewsLetterContentPage.meta_description,
 					avo_link: `${process.env.CLIENT_HOST}/klaar`,
 					assets: await KlaarController.extractMediaItems(klaarNewsLetterContentPage),
 				},
@@ -113,12 +120,18 @@ export default class KlaarController {
 		}
 	}
 
-	private static extractKlaarSubjectAndDate(contentPage: Avo.ContentPage.Page): { date: string, subject: string } {
-		const klaarBlocks: KlaarBlock[] = contentPage.contentBlockssBycontentId.filter(block =>
-			block.content_block_type === 'KLAAR'
-		) as unknown as KlaarBlock[];
+	private static extractKlaarSubjectAndDate(
+		contentPage: Avo.ContentPage.Page
+	): { date: string; subject: string } {
+		const klaarBlocks: KlaarBlock[] = (contentPage.contentBlockssBycontentId.filter(
+			block => block.content_block_type === 'KLAAR'
+		) as unknown) as KlaarBlock[];
 		if (!klaarBlocks.length) {
-			throw new CustomError('Failed to find klaar block on klaar page. This block is needed for the json date and subject', null, contentPage);
+			throw new CustomError(
+				'Failed to find klaar block on klaar page. This block is needed for the json date and subject',
+				null,
+				contentPage
+			);
 		}
 		return {
 			subject: (_.get(klaarBlocks, '[0].variables.componentState.titles') || []).join(' • '),
@@ -130,23 +143,35 @@ export default class KlaarController {
 	 * Convert each block of type MEDIA_PLAYER_TITLE_TEXT_BUTTON to the correct json object for the klaar json
 	 * @param contentPage
 	 */
-	private static async extractMediaItems(contentPage: Avo.ContentPage.Page): Promise<KlaarNewsletterItem[]> {
+	private static async extractMediaItems(
+		contentPage: Avo.ContentPage.Page
+	): Promise<KlaarNewsletterItem[]> {
 		try {
-			const itemBlocks: MediaPlayerTitleTextButtonBlock[] = contentPage.contentBlockssBycontentId.filter(block =>
-				block.content_block_type === 'MEDIA_PLAYER_TITLE_TEXT_BUTTON'
-			) as unknown as MediaPlayerTitleTextButtonBlock[];
-			const externalIds = _.compact(itemBlocks.map(item => _.get(item, 'variables.componentState.mediaItem.value')));
+			const itemBlocks: MediaPlayerTitleTextButtonBlock[] = (contentPage.contentBlockssBycontentId.filter(
+				block => block.content_block_type === 'MEDIA_PLAYER_TITLE_TEXT_BUTTON'
+			) as unknown) as MediaPlayerTitleTextButtonBlock[];
+			const externalIds = _.compact(
+				itemBlocks.map(item => _.get(item, 'variables.componentState.mediaItem.value'))
+			);
 			const thumbnails = await this.getItemThumbnails(externalIds);
-			return itemBlocks.map((item): KlaarNewsletterItem => {
-				return {
-					title: item.variables.componentState.headingTitle,
-					description: item.variables.componentState.content,
-					link: KlaarController.buttonActionToUrl(item.variables.componentState.mediaItem),
-					still: thumbnails[item.variables.componentState.mediaItem.value],
-				};
-			});
+			return itemBlocks.map(
+				(item): KlaarNewsletterItem => {
+					return {
+						title: item.variables.componentState.headingTitle,
+						description: item.variables.componentState.content,
+						link: KlaarController.buttonActionToUrl(
+							item.variables.componentState.mediaItem
+						),
+						still: thumbnails[item.variables.componentState.mediaItem.value],
+					};
+				}
+			);
 		} catch (err) {
-			throw new CustomError('Failed to extract media items from klaar newsletter content page', err, { contentPage });
+			throw new CustomError(
+				'Failed to extract media items from klaar newsletter content page',
+				err,
+				{ contentPage }
+			);
 		}
 	}
 
@@ -157,7 +182,7 @@ export default class KlaarController {
 			switch (type) {
 				case 'INTERNAL_LINK':
 				case 'CONTENT_PAGE':
-					return process.env.CLIENT_HOST + value as string;
+					return (process.env.CLIENT_HOST + value) as string;
 
 				case 'COLLECTION':
 					return `${process.env.CLIENT_HOST}/collections/${value}`;
@@ -181,18 +206,26 @@ export default class KlaarController {
 		}
 	}
 
-	private static async getItemThumbnails(externalIds: string[]): Promise<{ [externalId: string]: string }> {
+	private static async getItemThumbnails(
+		externalIds: string[]
+	): Promise<{ [externalId: string]: string }> {
 		try {
-			const response = await DataService.execute(GET_ITEM_THUMBNAIL_BY_EXTERNAL_ID, { externalIds });
+			const response = await DataService.execute(GET_ITEM_THUMBNAIL_BY_EXTERNAL_ID, {
+				externalIds,
+			});
 			if (response.errors) {
 				throw new CustomError('Graphql response contains errors', null, { response });
 			}
 			return _.fromPairs(
-				_.get(response, 'data.app_item_meta', [])
-					.map((item: any) => [item.external_id, item.thumbnail_path])
+				_.get(response, 'data.app_item_meta', []).map((item: any) => [
+					item.external_id,
+					item.thumbnail_path,
+				])
 			);
 		} catch (err) {
-			throw new CustomError('Failed to get item thumbnails by external ids', err, { externalIds });
+			throw new CustomError('Failed to get item thumbnails by external ids', err, {
+				externalIds,
+			});
 		}
 	}
 }
