@@ -12,6 +12,7 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 			is_protected
 			is_public
 			path
+			user_profile_id
 			profile {
 				user: usersByuserId {
 					first_name
