@@ -177,7 +177,6 @@ export default class HetArchiefController {
 		avoUser: Avo.User.User | null,
 		request: Request
 	): Promise<Avo.User.User> {
-		let isUpdated = false;
 		let avoUserInfo = avoUser;
 
 		if (!avoUserInfo) {
@@ -245,8 +244,7 @@ export default class HetArchiefController {
 		newAvoUser.profile.stamboek =
 			get(ldapUserInfo, 'employee_nr[0]') || newAvoUser.profile.stamboek;
 		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
-		newAvoUser.profile.educationLevels =
-			get(ldapUserInfo, 'edu_levelname') || newAvoUser.profile.educationLevels || [];
+		newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
 		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
 		(newAvoUser.profile as any).business_category = get(ldapUserInfo, 'role[0]') || null;
 		(newAvoUser.profile as any).is_exception =
@@ -274,7 +272,6 @@ export default class HetArchiefController {
 
 		if (!isEqual(newAvoUser, avoUserInfo)) {
 			// Something changes => save to database
-			isUpdated = true;
 			await AuthService.updateAvoUserInfo(newAvoUser);
 		}
 
@@ -312,78 +309,49 @@ export default class HetArchiefController {
 		ldapUser: BasicIdpUserInfo,
 		avoUser: Avo.User.User
 	): Promise<Avo.User.User> {
-		const allUserGroups = await AuthService.getAllUserGroups();
+		try {
+			const profileId = get(avoUser, 'profile.id');
+			if (!profileId) {
+				throw new CustomError(
+					'Failed to update user groups because the profile does not have an id',
+					null,
+					{ avoUser }
+				);
+			}
 
-		const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map(role =>
-			allUserGroups.find(ug => ug.ldap_role === role)
-		);
-		const ldapUserGroups: UserGroup[] = compact(ldapUserGroupsRaw);
+			const allUserGroups = await AuthService.getAllUserGroups();
 
-		if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
-			logger.error(
-				new CustomError('Failed to map all ldap roles to user groups', null, {
-					ldapUser,
-					allUserGroups,
-					ldapUserGroupsRaw,
-					ldapUserGroups,
-				})
+			const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map(role =>
+				allUserGroups.find(ug => ug.ldap_role === role)
 			);
-		}
+			const ldapUserGroups: UserGroup[] = compact(ldapUserGroupsRaw);
 
-		const avoUserGroupRaw: (
-			| UserGroup
-			| undefined
-		)[] = avoUser.profile.userGroupIds.map(avoUserGroupId =>
-			allUserGroups.find(ug => ug.id === avoUserGroupId)
-		);
-		const avoUserGroups: UserGroup[] = compact(avoUserGroupRaw);
+			if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
+				logger.error(
+					new CustomError('Failed to map all ldap roles to user groups', null, {
+						ldapUser,
+						allUserGroups,
+						ldapUserGroupsRaw,
+						ldapUserGroups,
+					})
+				);
+			}
 
-		if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
-			logger.error(
-				new CustomError('Failed to map all avo user group ids to user groups', null, {
-					avoUser,
-					allUserGroups,
-					avoUserGroupRaw,
-					avoUserGroups,
-				})
+			// Update user groups:
+			const ldapUserGroupIds = uniq(ldapUserGroups.map(ug => ug.id));
+
+			await ProfileController.updateUserGroupsSecondaryEducation(
+				ldapUserGroupIds[0], // We can only have one user group by decree, the database still handles multiple, but this is deprecated
+				profileId,
+				get(avoUser, 'profile.educationLevels', [])
 			);
+
+			return AuthService.getAvoUserInfoById(avoUser.uid);
+		} catch (err) {
+			throw new InternalServerError('Failed to update user groups', err, {
+				ldapUser,
+				avoUser,
+			});
 		}
-
-		// Remove the user groups that are managed by avo without a corresponding role in ldap
-		// eg: lesgever secundair, student lesgever secundair
-		const avoUserGroupsFiltered = avoUserGroups.filter(ug => ug.ldap_role !== null);
-		const avoUserGroupIdsOther = avoUserGroups
-			.filter(ug => ug.ldap_role === null)
-			.map(ug => ug.id);
-
-		// Update user groups:
-		const ldapUserGroupIds = uniq(ldapUserGroups.map(ug => ug.id));
-		const avoUserGroupIds = uniq(avoUserGroupsFiltered.map(ug => ug.id));
-
-		const addedUserGroupIds = without(ldapUserGroupIds, ...avoUserGroupIds);
-		const deletedUserGroupIds = without(avoUserGroupIds, ...ldapUserGroupIds);
-
-		const profileId = get(avoUser, 'profile.id');
-		if (!profileId) {
-			throw new CustomError(
-				'Failed to update user groups because the profile does not have an id',
-				null,
-				{ avoUser }
-			);
-		}
-		if (addedUserGroupIds.length || deletedUserGroupIds.length) {
-			await Promise.all([
-				AuthService.addUserGroupsToProfile(addedUserGroupIds, profileId),
-				AuthService.removeUserGroupsFromProfile(deletedUserGroupIds, profileId),
-			]);
-		}
-
-		await ProfileController.updateUserGroupsSecondaryEducation(
-			uniq([...ldapUserGroupIds, ...avoUserGroupIdsOther]),
-			profileId,
-			get(avoUser, 'profile.educationLevels', [])
-		);
-
-		return AuthService.getAvoUserInfoById(avoUser.uid);
 	}
 }

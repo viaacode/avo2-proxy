@@ -272,9 +272,9 @@ export const LINK_USER_GROUPS_TO_PROFILE = `
 	}
 `;
 
-export const UNLINK_USER_GROUP_FROM_PROFILE = `
-	mutation unlinkUserGroupFromProfile($userGroupIds: [Int!]!, $profileId: uuid!) {
-		delete_users_profile_user_groups(where: {user_group_id: {_in: $userGroupIds}, user_profile_id: {_eq: $profileId}}) {
+export const UNLINK_ALL_USER_GROUPS_FROM_PROFILE = `
+	mutation unlinkAllUserGroupsFromProfile($profileId: uuid!) {
+		delete_users_profile_user_groups(where: {user_profile_id: {_eq: $profileId}}) {
 			returning {
 				id
 			}
