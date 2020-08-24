@@ -120,7 +120,7 @@ export default class SearchService {
 			const searchPath = process.env.ELASTICSEARCH_PATH || '_search';
 			url = process.env.ELASTICSEARCH_URL;
 
-			// TODO remove once ELASTICSEARCH_SEARCH_PATH env var has been added
+			// TODO remove once ELASTICSEARCH_PATH env var has been added
 			url = url.replace(/\/_search/, '');
 			url = url.replace(/\/avo-search/, '');
 
