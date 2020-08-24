@@ -103,7 +103,7 @@ export default class KlaarController {
 				timestamp: klaarNewsLetterContentPage.updated_at,
 				message: {
 					subject: subjectAndDate.subject || klaarNewsLetterContentPage.title,
-					body: klaarNewsLetterContentPage.meta_description,
+					body: (klaarNewsLetterContentPage as any).meta_description, // TODO remove cast after update to typings v2.23.0
 					avo_link: `${process.env.CLIENT_HOST}/klaar`,
 					assets: await KlaarController.extractMediaItems(klaarNewsLetterContentPage),
 				},
