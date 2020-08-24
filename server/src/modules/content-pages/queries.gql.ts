@@ -7,6 +7,7 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 			depublish_at
 			description
 			seo_description
+			meta_description
 			id
 			thumbnail_path
 			is_protected
@@ -138,6 +139,7 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 			depublish_at
 			description
 			seo_description
+			meta_description
 			id
 			thumbnail_path
 			is_protected
@@ -198,6 +200,7 @@ export const GET_CONTENT_PAGES = `
 			depublish_at
 			description
 			seo_description
+			meta_description
 			id
 			thumbnail_path
 			is_protected
