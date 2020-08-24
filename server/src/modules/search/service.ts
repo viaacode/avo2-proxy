@@ -117,8 +117,14 @@ export default class SearchService {
 			throw new InternalServerError('Environment variable ELASTICSEARCH_URL is undefined');
 		}
 		try {
+			const searchPath = process.env.ELASTICSEARCH_PATH || '_search';
 			url = process.env.ELASTICSEARCH_URL;
-			url = url.replace('/avo-search/', `/avo-search/${index}/`);
+
+			// TODO remove once ELASTICSEARCH_SEARCH_PATH env var has been added
+			url = url.replace(/\/_search/, '');
+			url = url.replace(/\/avo-search/, '');
+
+			url = `${url}/${index}/${searchPath}`; // TODO remove default once ELASTICSEARCH_SEARCH_PATH env var has been added
 
 			let token: string;
 			try {
