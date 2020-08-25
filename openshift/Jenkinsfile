@@ -70,10 +70,10 @@ pipeline {
                 script {
                     sh '''#!/bin/bash
 						echo pushing image $VERSION $OKD_ENDPOINT
-						login_oc.sh $OKD_ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 && docker push $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION
+						login_oc.sh $OKD_ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 && docker push $OKD_REGISTRY/sc-avo2/avo2-proxy:$VERSION &&
 						echo set INT and DEV tag to $VERSION
-						oc tag --source=docker sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:int
-						oc tag --source=docker sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev
+						oc tag --source=docker sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:int &&
+						oc tag --source=docker sc-avo2/avo2-proxy:$VERSION sc-avo2/avo2-proxy:dev 
 						'''
                 } // script
             } // steps
@@ -95,6 +95,8 @@ pipeline {
                 script {
                     sh '''#!/bin/bash
                         login_oc.sh $ENDPOINT  > /dev/null 2>&1 &&
+			oc project &
+			oc whoami &&
                         oc -n sc-avo2 tag --source=docker avo2-proxy:$VERSION avo2-proxy:qas
                         '''
                 }//end script
