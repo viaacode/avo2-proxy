@@ -1,4 +1,4 @@
-import { get, uniq, isNil } from 'lodash';
+import { get, isNil, uniq } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { Avo } from '@viaa/avo2-types';
@@ -96,6 +96,13 @@ export default class ProfileRoute {
 				this.context.request
 			);
 		} catch (err) {
+			if (
+				JSON.stringify(err).includes(
+					'Uniqueness violation. duplicate key value violates unique constraint \\"user_profiles_alias_key\\"'
+				)
+			) {
+				throw new BadRequestError('DUPLICATE_ALIAS');
+			}
 			const error = new InternalServerError('Failed to update profile', err);
 			logger.error(error);
 			throw new InternalServerError(error.message);

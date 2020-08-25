@@ -99,6 +99,7 @@ export interface SharedUser {
 export interface Profile {
 	id: number;
 	alias: any;
+	title: string | null;
 	alternative_email: string;
 	avatar: any;
 	created_at: string;
