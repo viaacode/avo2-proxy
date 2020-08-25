@@ -8,7 +8,6 @@ import { CustomError, ExternalServerError, InternalServerError } from '../../sha
 import DataService from '../data/service';
 import { ClientEducationOrganization } from '../education-organizations/route';
 import EducationOrganizationsService, {
-	LdapEducationOrganization,
 	LdapEducationOrganizationWithUnits,
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
@@ -18,7 +17,7 @@ import {
 	GET_USER_INFO_BY_ID,
 	GET_USER_INFO_BY_USER_EMAIL,
 	LINK_USER_GROUPS_TO_PROFILE,
-	UNLINK_USER_GROUP_FROM_PROFILE,
+	UNLINK_ALL_USER_GROUPS_FROM_PROFILE,
 	UPDATE_AVO_USER,
 	UPDATE_USER_LAST_ACCESS_DATE,
 } from './queries.gql';
@@ -176,18 +175,16 @@ export class AuthService {
 		}
 	}
 
-	static async removeUserGroupsFromProfile(userGroupIds: number[], profileId: string) {
+	static async removeAllUserGroupsFromProfile(profileId: string) {
 		try {
-			const response = await DataService.execute(UNLINK_USER_GROUP_FROM_PROFILE, {
-				userGroupIds,
+			const response = await DataService.execute(UNLINK_ALL_USER_GROUPS_FROM_PROFILE, {
 				profileId,
 			});
 			if (response.errors) {
 				throw new CustomError('response contains errors', null, { response });
 			}
 		} catch (err) {
-			throw new CustomError('Failed to remove usergroup from profile', err, {
-				userGroupIds,
+			throw new CustomError('Failed to remove all usergroup from profile', err, {
 				profileId,
 			});
 		}

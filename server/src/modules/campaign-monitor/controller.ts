@@ -56,7 +56,7 @@ export default class CampaignMonitorController {
 				'label'
 			);
 
-			const oormerk = get(user, 'profile.title');
+			const oormerk = get(user, 'profile.business_category');
 			const isExceptionAccount = get(user, 'profile.is_exception') || false;
 			const stamboekNumber = get(user, 'profile.stamboek');
 			const educationLevels: string[] = get(user, 'profile.educationLevels');
