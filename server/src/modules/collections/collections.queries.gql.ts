@@ -33,6 +33,7 @@ export const GET_COLLECTION_BY_ID = `
 			owner_profile_id
 			profile {
 				alias
+				title
 				alternative_email
 				avatar
 				id
