@@ -20,12 +20,12 @@ export const UPDATE_PROFILE_INFO = `
 		$company_id: String
 		$profileId: uuid!
 		$alias: String
+		$title: String
 		$alternativeEmail: String
 		$avatar: String
 		$bio: String
 		$stamboek: String
 		$is_exception: Boolean!
-		$title: String
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
 			affected_rows
@@ -40,12 +40,12 @@ export const UPDATE_PROFILE_INFO = `
 			where: { id: { _eq: $profileId } }
 			_set: {
 				alias: $alias
+				title: $title
 				alternative_email: $alternativeEmail
 				avatar: $avatar
 				bio: $bio
 				stamboek: $stamboek
 				company_id: $company_id
-				title: $title
 				is_exception: $is_exception
 			}
 		) {

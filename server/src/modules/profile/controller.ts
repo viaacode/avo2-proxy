@@ -25,11 +25,11 @@ export interface UpdateProfileValues {
 	}[];
 	company_id: string;
 	alias: string;
+	title: string | null;
 	alternativeEmail: string;
 	avatar: string | null;
 	bio: string | null;
 	stamboek: string | null;
-	title: string | null;
 	is_exception: boolean;
 }
 
@@ -59,11 +59,11 @@ export default class ProfileController {
 				),
 				company_id: variables.company_id || profile.company_id,
 				alias: profile.alias || profile.alternative_email,
+				title: profile.title,
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,
 				bio: profile.bio || null,
 				stamboek: profile.stamboek,
-				title: profile.title,
 				is_exception: profile.is_exception || false,
 				...variables, // Override current profile variables with the variables in the parameter
 			};

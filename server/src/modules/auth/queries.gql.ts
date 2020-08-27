@@ -7,6 +7,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			profiles {
 				id
 				alias
+				title
 				alternative_email
 				avatar
 				created_at
@@ -72,6 +73,7 @@ export const GET_USER_INFO_BY_ID = `
 			profiles {
 				id
 				alias
+				title
 				alternative_email
 				avatar
 				created_at
@@ -138,6 +140,7 @@ export const GET_USER_BY_LDAP_UUID = `
 				profiles {
 					id
 					alias
+					title
 					alternative_email
 					avatar
 					created_at
