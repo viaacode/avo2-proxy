@@ -44,6 +44,7 @@ import SitemapRoutes from './modules/sitemap/sitemap.route';
 import AssetService from './modules/assets/service';
 import OrganisationService from './modules/organization/service';
 import ZendeskService from './modules/zendesk/service';
+import MamSyncratorRoute from './modules/mam-syncrator/mam-syncrator.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -158,6 +159,7 @@ export class App {
 			OrganisationsRoute,
 			CollectionsRoute,
 			SitemapRoutes,
+			MamSyncratorRoute,
 
 			FallbackRoute
 		);
