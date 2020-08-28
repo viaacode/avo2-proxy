@@ -2,6 +2,7 @@ import cors from 'cors';
 import { get } from 'lodash';
 
 import { logger } from '../../../shared/helpers/logger';
+import { jsonStringify } from '../../../shared/helpers/single-line-logging';
 import { IInternalServerError, INext, IRequest, IResponse } from '../../../shared/shared.types';
 
 export class ErrorMiddleware {
@@ -28,16 +29,12 @@ export class ErrorMiddleware {
 			methods: 'GET, POST, OPTIONS, PUT, DELETE',
 		})(req, res, next);
 
-		let errorJson = JSON.stringify(err, null, 2);
+		let errorJson = jsonStringify(err);
 		if (errorJson === '{}' && err) {
-			errorJson = JSON.stringify(
-				{
-					message: (err as any).message,
-					stack: (err as any).stack,
-				},
-				null,
-				2
-			);
+			errorJson = jsonStringify({
+				message: (err as any).message,
+				stack: (err as any).stack,
+			});
 		}
 
 		logger.error(errorJson);

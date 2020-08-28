@@ -44,9 +44,15 @@ export class CustomError {
 	}
 
 	public toString(): string {
+		const singleLineLogging = process.env.SINGLE_LINE_LOGGING === 'true';
 		return util.inspect(
 			omitByDeep(this, key => key === 'request'),
-			{ showHidden: false, depth: 20, colors: true, compact: false }
+			{
+				showHidden: false,
+				depth: 20,
+				colors: !singleLineLogging,
+				compact: singleLineLogging,
+			}
 		);
 	}
 }
