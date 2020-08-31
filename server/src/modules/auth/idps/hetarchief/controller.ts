@@ -29,13 +29,6 @@ export interface BasicIdpUserInfo {
 }
 
 export default class HetArchiefController {
-	public static async getAvoUserInfoFromDatabaseByEmail(
-		ldapUserInfo: LdapUser
-	): Promise<Avo.User.User> {
-		const email = ldapUserInfo.name_id;
-		return await AuthService.getAvoUserInfoByEmail(email);
-	}
-
 	public static async createUserAndProfile(
 		ldapUserInfo: Partial<LdapPerson> | null,
 		stamboekNumber: string | null
@@ -286,7 +279,8 @@ export default class HetArchiefController {
 		);
 
 		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
-		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser);
+		// Also update existing users if their email changed
+		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);
 
 		return newAvoUser;
 	}

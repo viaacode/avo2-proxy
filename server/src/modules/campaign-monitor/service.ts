@@ -166,4 +166,34 @@ export default class CampaignMonitorService {
 			});
 		}
 	}
+
+	public static async changeEmail(listId: string, oldEmail: string, newEmail: string) {
+		try {
+			const data = {
+				EmailAddress: newEmail,
+			};
+
+			await axios(
+				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${oldEmail}`,
+				{
+					data,
+					method: 'POST',
+					auth: {
+						username: process.env.CAMPAIGN_MONITOR_API_KEY,
+						password: '.',
+					},
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+		} catch (err) {
+			throw new CustomError('Failed to change email in newsletter list', err, {
+				listId,
+				name,
+				oldEmail,
+				newEmail,
+			});
+		}
+	}
 }
