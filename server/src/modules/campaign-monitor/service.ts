@@ -171,6 +171,7 @@ export default class CampaignMonitorService {
 		try {
 			const data = {
 				EmailAddress: newEmail,
+				ConsentToTrack: 'Yes',
 			};
 
 			await axios(
