@@ -16,7 +16,7 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
-import { ContentPageOverviewParams } from './types';
+import { ContentPageOverviewParams, ContentPageOverviewResponse } from './types';
 
 @Path('/content-pages')
 export default class ContentPagesRoute {
@@ -54,12 +54,13 @@ export default class ContentPagesRoute {
 	@POST
 	async getContentPagesForOverview(
 		body: ContentPageOverviewParams
-	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+	): Promise<ContentPageOverviewResponse> {
 		try {
 			return ContentPageController.getContentPagesForOverview(
 				body.withBlock,
 				body.contentType,
 				body.labelIds,
+				body.selectedLabelIds,
 				body.orderByProp || 'published_at',
 				body.orderByDirection || 'desc',
 				body.offset,
@@ -87,11 +88,11 @@ export default class ContentPagesRoute {
 		searchQueryLimit: string | undefined;
 		mediaItems:
 			| {
-					mediaItem: {
-						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-						value: string;
-					};
-			  }[]
+			mediaItem: {
+				type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+				value: string;
+			};
+		}[]
 			| undefined;
 	}): Promise<any[]> {
 		try {
