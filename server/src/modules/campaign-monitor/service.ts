@@ -4,7 +4,7 @@ import * as querystring from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
-import EventLoggingController from '../event-logging/controller';
+import { logger } from '../../shared/helpers/logger';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
 import { CustomFields, EmailInfo, NewsletterPreferences } from './types';
@@ -171,14 +171,14 @@ export default class CampaignMonitorService {
 		try {
 			const data = {
 				EmailAddress: newEmail,
-				ConsentToTrack: 'Yes',
+				ConsentToTrack: 'Unchanged',
 			};
 
-			await axios(
+			const response = await axios(
 				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${oldEmail}`,
 				{
 					data,
-					method: 'POST',
+					method: 'PUT',
 					auth: {
 						username: process.env.CAMPAIGN_MONITOR_API_KEY,
 						password: '.',
@@ -188,6 +188,28 @@ export default class CampaignMonitorService {
 					},
 				}
 			);
+			if (response.status < 200 || response.status >= 400) {
+				throw new CustomError('Failed to update email in Campaign Monitor', null, {
+					listId,
+					oldEmail,
+					newEmail,
+					response: {
+						status: response.status,
+						statusText: response.statusText,
+						data: response.data,
+					},
+				});
+			}
+			logger.info('CM account email changed: ', {
+				listId,
+				oldEmail,
+				newEmail,
+				response: {
+					status: response.status,
+					statusText: response.statusText,
+					data: response.data,
+				},
+			});
 		} catch (err) {
 			throw new CustomError('Failed to change email in newsletter list', err, {
 				listId,
