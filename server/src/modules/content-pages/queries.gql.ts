@@ -131,7 +131,9 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 		$where: app_content_bool_exp
 		$offset: Int = 0
 		$limit: Int = 10
-		$orderBy: [app_content_order_by!] = {}
+		$orderBy: [app_content_order_by!] = {},
+		$labelIds: [Int!] = [],
+		$orUserGroupIds: [app_content_content_labels_bool_exp] = {}
 	) {
 		app_content(where: $where, limit: $limit, offset: $offset, order_by: $orderBy) {
 			content_type
@@ -184,15 +186,25 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 				count
 			}
 		}
+		app_content_labels(where: {id: {_in: $labelIds}}) {
+			id
+			content_content_labels_aggregate(where: {_or: $orUserGroupIds}) {
+				aggregate {
+					count
+				}
+			}
+		}
 	}
 `;
 
 export const GET_CONTENT_PAGES = `
 	query getContentPages(
-		$where: app_content_bool_exp
-		$offset: Int = 0
-		$limit: Int = 10
-		$orderBy: [app_content_order_by!] = {}
+		$where: app_content_bool_exp,
+		$offset: Int = 0,
+		$limit: Int = 10,
+		$orderBy: [app_content_order_by!] = {},
+		$labelIds: [Int!] = [],
+		$orUserGroupIds: [app_content_content_labels_bool_exp] = {}
 	) {
 		app_content(where: $where, limit: $limit, offset: $offset, order_by: $orderBy) {
 			content_type
@@ -232,6 +244,14 @@ export const GET_CONTENT_PAGES = `
 		app_content_aggregate(where: $where) {
 			aggregate {
 				count
+			}
+		}
+		app_content_labels(where: {id: {_in: $labelIds}}) {
+			id
+			content_content_labels_aggregate(where: {_or: $orUserGroupIds}) {
+				aggregate {
+					count
+				}
 			}
 		}
 	}

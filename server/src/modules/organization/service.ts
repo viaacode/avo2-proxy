@@ -10,7 +10,6 @@ import DataService from '../data/service';
 
 import { DELETE_ORGANIZATIONS, GET_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
 
-
 interface OrganisationResponse {
 	status: string;
 	description: string;

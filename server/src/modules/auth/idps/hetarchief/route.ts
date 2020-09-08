@@ -20,6 +20,7 @@ import {
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
 import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
+import { jsonStringify } from '../../../../shared/helpers/single-line-logging';
 import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
 import StamboekController from '../../../stamboek-validate/controller';
@@ -68,7 +69,8 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -86,7 +88,7 @@ export default class HetArchiefRoute {
 	async loginCallback(response: SamlCallbackBody): Promise<any> {
 		try {
 			const ldapUser: LdapUser = await HetArchiefService.assertSamlResponse(response);
-			logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
+			logger.info('login-callback ldap info: ', jsonStringify(ldapUser));
 			const info: RelayState = response.RelayState ? JSON.parse(response.RelayState) : {};
 
 			IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
@@ -132,7 +134,8 @@ export default class HetArchiefRoute {
 				if (errorString.includes('ENOTFOUND')) {
 					// Failed to connect to the database
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/hetarchief/route___de-server-kan-je-gebruikers-informatie-niet-ophalen-uit-de-database'
+						i18n.t(
+							'modules/auth/idps/hetarchief/route___de-server-kan-je-gebruikers-informatie-niet-ophalen-uit-de-database'
 						),
 						'alert-triangle',
 						['home', 'helpdesk']
@@ -142,7 +145,8 @@ export default class HetArchiefRoute {
 				if (errorString.includes('Failed to get role id by role name from the database')) {
 					// User does not have a usergroup in LDAP
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/hetarchief/route___je-account-heeft-nog-geen-gebruikersgroep-gelieve-de-helpdesk-te-contacteren'
+						i18n.t(
+							'modules/auth/idps/hetarchief/route___je-account-heeft-nog-geen-gebruikersgroep-gelieve-de-helpdesk-te-contacteren'
 						),
 						'alert-triangle',
 						['home', 'helpdesk']
@@ -212,7 +216,7 @@ export default class HetArchiefRoute {
 				return new Return.MovedTemporarily<void>(url);
 			}
 			logger.error(
-				new InternalServerError("ldap user wasn't found on the session", null, {
+				new InternalServerError('ldap user wasn\'t found on the session', null, {
 					returnToUrl,
 				})
 			);
@@ -225,7 +229,8 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -290,7 +295,8 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -329,7 +335,8 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -360,7 +367,8 @@ export default class HetArchiefRoute {
 				);
 				logger.error(error);
 				redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___uw-stamboek-nummer-zit-niet-bij-de-request-we-kunnen-uw-account-niet-registreren'
+					i18n.t(
+						'modules/auth/idps/hetarchief/route___uw-stamboek-nummer-zit-niet-bij-de-request-we-kunnen-uw-account-niet-registreren'
 					),
 					'slash',
 					['home', 'helpdesk'],
@@ -398,7 +406,8 @@ export default class HetArchiefRoute {
 			}
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
 				redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-reeds-in-gebruik-gelieve-de-helpdesk-te-contacteren'
+					i18n.t(
+						'modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-reeds-in-gebruik-gelieve-de-helpdesk-te-contacteren'
 					),
 					'users',
 					['home', 'helpdesk']
@@ -406,7 +415,8 @@ export default class HetArchiefRoute {
 			}
 			// INVALID
 			redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-ongeldig-controleer-u-invoer-en-probeer-opnieuw-te-registeren'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-ongeldig-controleer-u-invoer-en-probeer-opnieuw-te-registeren'
 				),
 				'x-circle',
 				['home', 'helpdesk']
@@ -420,7 +430,8 @@ export default class HetArchiefRoute {
 				)
 			) {
 				return redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'
+					i18n.t(
+						'modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'
 					),
 					'users',
 					['home', 'helpdesk'],
@@ -428,7 +439,8 @@ export default class HetArchiefRoute {
 				);
 			}
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registratie-proces-gelieve-de-helpdesk-te-contacteren'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registratie-proces-gelieve-de-helpdesk-te-contacteren'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],

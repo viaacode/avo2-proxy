@@ -2,19 +2,15 @@ import i18n from 'i18next';
 import { get } from 'lodash';
 
 import TranslationsController from '../../modules/site-variables/controllers/translations.controller';
+import { InternalServerError } from '../helpers/error';
 import { logger } from '../helpers/logger';
 
 const retrieveBackendTranslations = async () => {
 	try {
 		// retrieve back-end translations from graphql interface
-		const backendTranslations = await TranslationsController.getTranslationsJSON(
-			'backend'
-		);
-
-		return backendTranslations;
+		return await TranslationsController.getTranslationsJSON('backend');
 	} catch (err) {
-		// handle error
-		logger.error('failed to retrieve back-end translations');
+		logger.error(new InternalServerError('failed to retrieve back-end translations', err));
 	}
 };
 
@@ -31,7 +27,7 @@ i18n.init({
 });
 
 // apply translations
-retrieveBackendTranslations().then((translations) => {
+retrieveBackendTranslations().then(translations => {
 	i18n.addResources('nl', 'translation', get(translations, 'value'));
 });
 

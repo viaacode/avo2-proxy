@@ -35,7 +35,6 @@
   },
   "dependencies": {
     "@hapi/joi": "15.1.1",
-    "@studiohyperdrive/logger": "1.1.1",
     "@viaa/avo2-types": "^2.21.0",
     "apollo-boost": "^0.4.4",
     "async": "3.1.0",
@@ -72,6 +71,7 @@
     "sanitize-html": "^1.20.1",
     "session-file-store": "1.2.0",
     "simple-oauth2": "^3.0.1",
+    "string-strip-html": "^5.0.1",
     "swagger-express-ts": "1.0.1",
     "swagger-ui-express": "4.0.7",
     "typescript-rest": "2.2.2",
@@ -126,7 +126,7 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "3.5.2"
+    "typescript": "4.0.2"
   },
   "license": "ISC"
 }

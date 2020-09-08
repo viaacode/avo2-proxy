@@ -1,9 +1,19 @@
-// Temporary require statement: @studiohyperdrive/logger should export an ESModule bundle for Node.js
-const Logger = require('@studiohyperdrive/logger'); // tslint:disable-line variable-name
+import { omit } from 'lodash';
+import winston from 'winston';
 
-import { default as config } from '../../config';
+import { jsonStringify } from './single-line-logging';
 
-export const logger = new Logger(config.logger);
+const myFormat = winston.format.printf(info => {
+	return `${info.timestamp} [${info.level}]: ${jsonStringify(
+		omit(info, ['level', 'timestamp'])
+	)}`;
+});
+
+export const logger = winston.createLogger({
+	level: process.env.LOGGING_PRESET || 'verbose',
+	format: winston.format.combine(winston.format.timestamp(), winston.format.colorize(), myFormat),
+	transports: [new winston.transports.Console()],
+});
 
 export function logIfNotTestEnv(message: string) {
 	if (process.env.NODE_ENV !== 'test') {

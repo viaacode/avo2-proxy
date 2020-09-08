@@ -42,7 +42,8 @@ export default class KlascementRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-inloggen-met-klascement'
+				i18n.t(
+					'modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-inloggen-met-klascement'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -68,7 +69,7 @@ export default class KlascementRoute {
 			}
 
 			let redirectUrl = get(this.context, REDIRECT_URL_PATH);
-			if (redirectUrl.includes(process.env.HOST)) {
+			if (redirectUrl && redirectUrl.includes(process.env.HOST)) {
 				// User had to login, to link klascement account to an existing hetarchief or viaa account
 				const linkAccountInfo: LinkAccountInfo = {
 					userObject: response.klascementUserInfo,
@@ -80,7 +81,8 @@ export default class KlascementRoute {
 				// Check if accounts are linked
 				if (!response.avoUser) {
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/klascement/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-klascement-te-koppelen-in-je-account-instellingen'
+						i18n.t(
+							'modules/auth/idps/klascement/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-klascement-te-koppelen-in-je-account-instellingen'
 						),
 						'link',
 						['home', 'helpdesk']
@@ -115,7 +117,8 @@ export default class KlascementRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-na-het-inloggen-met-klascement'
+				i18n.t(
+					'modules/auth/idps/klascement/route___er-ging-iets-mis-na-het-inloggen-met-klascement'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -136,7 +139,8 @@ export default class KlascementRoute {
 			});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-uitloggen-met-klascement'
+				i18n.t(
+					'modules/auth/idps/klascement/route___er-ging-iets-mis-tijdens-het-uitloggen-met-klascement'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
