@@ -174,7 +174,9 @@ export default class SearchService {
 
 				data = {
 					...data,
-					aggregations: this.simplifyAggregations(_.get(esResponse, 'data.aggregations')),
+					aggregations: SearchService.simplifyAggregations(
+						_.get(esResponse, 'data.aggregations')
+					),
 				};
 
 				return data as any;

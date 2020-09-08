@@ -111,8 +111,8 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 						// tslint:disable-next-line:no-console
 						console.warn(
 							'WARNING: Translation params should not contain any function calls, ' +
-							'since the regex replacement cannot deal with brackets inside the t() function. ' +
-							'Store the translation params in a variable before calling the t() function.',
+								'since the regex replacement cannot deal with brackets inside the t() function. ' +
+								'Store the translation params in a variable before calling the t() function.',
 							{
 								match,
 								prefix,
@@ -179,7 +179,10 @@ async function updateTranslations() {
 	const newTranslationKeys: string[] = _.keys(newTranslations);
 	const addedTranslationKeys: string[] = _.without(newTranslationKeys, ...oldTranslationKeys);
 	const removedTranslationKeys: string[] = _.without(oldTranslationKeys, ...newTranslationKeys);
-	const existingTranslationKeys: string[] = _.intersection(newTranslationKeys, oldTranslationKeys);
+	const existingTranslationKeys: string[] = _.intersection(
+		newTranslationKeys,
+		oldTranslationKeys
+	);
 
 	// Console log translations that were found in the json file but not in the code
 	// tslint:disable-next-line:no-console
@@ -214,7 +217,8 @@ async function updateTranslations() {
 	);
 }
 
-updateTranslations().catch((err) => {
+// deepcode ignore UsageOfUndefinedReturnValue: False positive
+updateTranslations().catch(err => {
 	// tslint:disable-next-line:no-console
 	console.error('Update of translations failed: ', err);
 });
