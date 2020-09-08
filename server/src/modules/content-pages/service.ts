@@ -1,8 +1,9 @@
-import { get } from 'lodash';
+import { fromPairs, get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { AuthService } from '../auth/service';
 import { SpecialPermissionGroups } from '../auth/types';
 import DataService from '../data/service';
 import SearchController from '../search/controller';
@@ -17,6 +18,7 @@ import {
 	GET_ITEM_TILE_BY_ID,
 	GET_PUBLIC_CONTENT_PAGES,
 } from './queries.gql';
+import { ContentPageOverviewResponse } from './types';
 
 export default class ContentPageService {
 	public static async getContentPageByPath(path: string): Promise<Avo.ContentPage.Page | null> {
@@ -111,43 +113,49 @@ export default class ContentPageService {
 		userGroupIds: number[],
 		contentType: string,
 		labelIds: number[],
+		selectedLabelIds: number[],
 		orderByProp: string,
 		orderByDirection: 'asc' | 'desc',
 		offset: number,
 		limit: number
-	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+	): Promise<ContentPageOverviewResponse> {
 		const now = new Date().toISOString();
+		const variables = {
+			offset,
+			limit,
+			labelIds,
+			where: {
+				_and: [
+					{
+						// Get content pages with the selected content type
+						content_type: { _eq: contentType },
+					},
+					{
+						// Get pages that are visible to the current user
+						_or: userGroupIds.map(userGroupId => ({
+							user_group_ids: { _contains: userGroupId },
+						})),
+					},
+					...this.getLabelFilter(selectedLabelIds),
+					// publish state
+					{
+						_or: [
+							{ is_public: { _eq: true } },
+							{ publish_at: { _eq: null }, depublish_at: { _gte: now } },
+							{ publish_at: { _lte: now }, depublish_at: { _eq: null } },
+							{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
+						],
+					},
+				],
+			},
+			orderBy: { [orderByProp]: orderByDirection },
+			orUserGroupIds: userGroupIds.map(userGroupId => ({
+				content: { user_group_ids: { _contains: userGroupId } },
+			})),
+		};
 		const response = await DataService.execute(
 			withBlock ? GET_CONTENT_PAGES_WITH_BLOCKS : GET_CONTENT_PAGES,
-			{
-				offset,
-				limit,
-				where: {
-					_and: [
-						{
-							// Get content pages with the selected content type
-							content_type: { _eq: contentType },
-						},
-						{
-							// Get pages that are visible to the current user
-							_or: userGroupIds.map(userGroupId => ({
-								user_group_ids: { _contains: userGroupId },
-							})),
-						},
-						...this.getLabelFilter(labelIds),
-						// publish state
-						{
-							_or: [
-								{ is_public: { _eq: true } },
-								{ publish_at: { _eq: null }, depublish_at: { _gte: now } },
-								{ publish_at: { _lte: now }, depublish_at: { _eq: null } },
-								{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
-							],
-						},
-					],
-				},
-				orderBy: { [orderByProp]: orderByDirection },
-			}
+			variables
 		);
 		if (response.errors) {
 			throw new InternalServerError('GraphQL has errors', null, { response });
@@ -155,6 +163,15 @@ export default class ContentPageService {
 		return {
 			pages: get(response, 'data.app_content') || [],
 			count: get(response, 'data.app_content_aggregate.aggregate.count', 0),
+			labelCounts: fromPairs(
+				get(response, 'data.app_content_labels', []).map((labelInfo: any): [
+					number,
+					number
+				] => [
+					get(labelInfo, 'id'),
+					get(labelInfo, 'content_content_labels_aggregate.aggregate.count'),
+				])
+			),
 		};
 	}
 
