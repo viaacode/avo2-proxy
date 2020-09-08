@@ -88,7 +88,7 @@ export default class CampaignMonitorService {
 		try {
 			const responses = await axios.all(
 				NEWSLETTERS_TO_FETCH.map(list =>
-					this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
+					CampaignMonitorService.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
 				)
 			);
 

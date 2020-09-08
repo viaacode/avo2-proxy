@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { get } from 'lodash';
 
 import TranslationsController from '../../modules/site-variables/controllers/translations.controller';
-import { InternalServerError } from '../helpers/error';
+import { ExternalServerError, InternalServerError } from '../helpers/error';
 import { logger } from '../helpers/logger';
 
 const retrieveBackendTranslations = async () => {
@@ -27,8 +27,12 @@ i18n.init({
 });
 
 // apply translations
-retrieveBackendTranslations().then(translations => {
-	i18n.addResources('nl', 'translation', get(translations, 'value'));
-});
+retrieveBackendTranslations()
+	.then(translations => {
+		i18n.addResources('nl', 'translation', get(translations, 'value'));
+	})
+	.catch(err => {
+		logger.error(new ExternalServerError('Failed to fetch translations from backend', err));
+	});
 
 export default i18n;
