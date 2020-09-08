@@ -40,20 +40,20 @@ export class IdpHelper {
 	public static clearAllIdpUserInfosFromSession(request: Express.Request) {
 		const idpTypes: IdpType[] = ['HETARCHIEF', 'SMARTSCHOOL', 'KLASCEMENT'];
 		idpTypes.forEach((idpType: IdpType) => {
-			this.setIdpUserInfoOnSession(request, null, idpType);
+			IdpHelper.setIdpUserInfoOnSession(request, null, idpType);
 		});
 	}
 
 	public static getAvoUserInfoFromSession(request: Request): Avo.User.User | null {
 		// Check if the avo session is expired
-		if (this.isSessionExpired(request)) {
+		if (IdpHelper.isSessionExpired(request)) {
 			return null;
 		}
 		return _.get(request, AVO_USER_INFO_PATH, null);
 	}
 
 	public static async getUpdatedAvoUserInfoFromSession(request: Request): Promise<Avo.User.User> {
-		const avoUser: Avo.User.User | null = this.getAvoUserInfoFromSession(request);
+		const avoUser: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(request);
 		if (!avoUser) {
 			throw new ServerError('User object was not found on the session', null);
 		}

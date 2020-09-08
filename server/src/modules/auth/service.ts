@@ -35,7 +35,7 @@ export class AuthService {
 				);
 			}
 			const user: SharedUser = get(response, 'data.users[0]', null);
-			return this.simplifyUserObject(user);
+			return AuthService.simplifyUserObject(user);
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to get user info from graphql by user email',
@@ -56,7 +56,7 @@ export class AuthService {
 				);
 			}
 			const user: SharedUser = get(response, 'data.users[0]', null);
-			return this.simplifyUserObject(user);
+			return AuthService.simplifyUserObject(user);
 		} catch (err) {
 			throw new InternalServerError('Failed to get user info from graphql by user uid', err, {
 				userId,

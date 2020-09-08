@@ -128,7 +128,7 @@ export default class ContentPageController {
 						(item: any) => item.mediaItem
 					);
 
-					const results: any[] = await this.resolveMediaTileItems(
+					const results: any[] = await ContentPageController.resolveMediaTileItems(
 						searchQuery,
 						searchQueryLimit,
 						mediaItems,

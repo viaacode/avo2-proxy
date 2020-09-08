@@ -16,7 +16,7 @@ export class ErrorMiddleware {
 			// important to allow default error handler to close connection if headers already sent
 			return next(err);
 		}
-		res.set('Content-Type', 'application/json');
+		res.set('Content-Type', 'application/json charset=utf-8');
 		res.status(get(err, 'statusCode', 500));
 
 		cors({
@@ -39,6 +39,6 @@ export class ErrorMiddleware {
 
 		logger.error(errorJson);
 
-		res.send(errorJson);
+		res.send('Unhandled exception');
 	}
 }
