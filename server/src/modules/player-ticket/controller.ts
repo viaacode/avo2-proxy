@@ -38,7 +38,12 @@ export default class PlayerTicketController {
 				);
 			}
 
-			return this.getPlayableUrlFromBrowsePath(browsePath, ip, referrer, expire);
+			return PlayerTicketController.getPlayableUrlFromBrowsePath(
+				browsePath,
+				ip,
+				referrer,
+				expire
+			);
 		} catch (err) {
 			throw new InternalServerError('Failed to get player ticket', err, {
 				externalId,

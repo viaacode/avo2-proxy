@@ -274,7 +274,7 @@ export default class HetArchiefController {
 			await AuthService.updateAvoUserInfo(newAvoUser);
 		}
 
-		newAvoUser = await this.updateUserGroups(
+		newAvoUser = await HetArchiefController.updateUserGroups(
 			{
 				first_name: newAvoUser.first_name,
 				last_name: newAvoUser.last_name,
