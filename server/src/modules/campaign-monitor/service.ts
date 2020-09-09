@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
-import * as querystring from 'query-string';
+import { get } from 'lodash';
+import * as queryString from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
@@ -56,7 +57,7 @@ export default class CampaignMonitorService {
 	public static async fetchNewsletterPreference(listId: string, email: string) {
 		let url: string;
 		try {
-			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${querystring.stringify(
+			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
 				{ email }
 			)}`;
 			const response: AxiosResponse<any> = await axios(url, {
@@ -175,7 +176,9 @@ export default class CampaignMonitorService {
 			};
 
 			const response = await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?email=${oldEmail}`,
+				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
+					{ email: oldEmail }
+				)}`,
 				{
 					data,
 					method: 'PUT',
@@ -211,9 +214,12 @@ export default class CampaignMonitorService {
 				},
 			});
 		} catch (err) {
+			if (get(err, 'response.data.Code') === 203) {
+				// User not in list or already removed
+				return;
+			}
 			throw new CustomError('Failed to change email in newsletter list', err, {
 				listId,
-				name,
 				oldEmail,
 				newEmail,
 			});
