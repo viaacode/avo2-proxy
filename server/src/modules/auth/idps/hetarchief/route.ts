@@ -113,21 +113,6 @@ export default class HetArchiefRoute {
 					ldapUser.attributes.entryUUID[0]
 				);
 
-				// TODO remove fix for missing idp map link for existing users
-				if (!avoUser) {
-					// link ldap user by email and then link ldap user to avo user through idp_map table
-					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(
-						ldapUser
-					);
-					if (avoUser) {
-						await IdpHelper.createIdpMap(
-							'HETARCHIEF',
-							ldapUser.attributes.entryUUID[0],
-							String(avoUser.uid)
-						);
-					}
-				}
-
 				// Update avo user with ldap fields and user groups
 				avoUser = await HetArchiefController.createOrUpdateUser(
 					HetArchiefController.ldapObjectToLdapPerson(ldapUser),
