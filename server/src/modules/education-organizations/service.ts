@@ -34,6 +34,11 @@ export interface LdapEduOrgUnit {
 	postal_code: string;
 }
 
+export interface SimpleOrgInfo {
+	organizationId: string;
+	unitId: string | null;
+}
+
 checkRequiredEnvs(['LDAP_API_ENDPOINT', 'LDAP_API_USERNAME', 'LDAP_API_PASSWORD']);
 
 export default class EducationOrganizationsService {

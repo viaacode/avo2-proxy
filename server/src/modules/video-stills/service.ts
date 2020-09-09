@@ -17,9 +17,7 @@ export interface VideoStillRaw {
 	thumbnailImagePath: string;
 }
 
-checkRequiredEnvs([
-	'VIDEO_STILLS_ENDPOINT',
-]);
+checkRequiredEnvs(['VIDEO_STILLS_ENDPOINT']);
 
 export default class VideoStillsService {
 	/**
@@ -45,20 +43,19 @@ export default class VideoStillsService {
 				},
 			});
 			const videoStills: VideoStillRaw[] = response.data;
-			return videoStills.map((videoStill: VideoStillRaw): VideoStill => {
-				return {
-					thumbnailImagePath: videoStill.thumbnailImagePath,
-					previewImagePath: videoStill.previewImagePath,
-					time: toMilliseconds(videoStill.absoluteTimecode) || 0,
-				};
-			});
+			return videoStills.map(
+				(videoStill: VideoStillRaw): VideoStill => {
+					return {
+						thumbnailImagePath: videoStill.thumbnailImagePath,
+						previewImagePath: videoStill.previewImagePath,
+						time: toMilliseconds(videoStill.absoluteTimecode) || 0,
+					};
+				}
+			);
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to get player-token from player-token service',
-				err,
-				{
-					url,
-				});
+			throw new InternalServerError('Failed to get stills from video stills service', err, {
+				url,
+			});
 		}
 	}
 }
