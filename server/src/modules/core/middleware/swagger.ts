@@ -1,31 +1,33 @@
 import { Application } from 'express';
 import { express as swaggerExpress, SwaggerDefinitionConstant } from 'swagger-express-ts';
-import { serve as swaggerServe, setup as swaggerSetup } from 'swagger-ui-express';
+// import { serve as swaggerServe, setup as swaggerSetup } from 'swagger-ui-express';
 
 import { name, version } from '../../../../package.json';
-import { default as config }  from '../../../config';
+import { default as config } from '../../../config';
 import { ISwaggerModels } from '../../../shared/shared.types';
 
 export class SwaggerMiddleware {
 	public static load(app: Application, models: ISwaggerModels): void {
-		app.use(swaggerExpress({
-			path: '/docs/json',
-			definition: {
-				models,
-				info: {
-					version,
-					title: name,
-				},
-				host: config.server.host,
-				responses: {
-					500: {
-						description: 'Internal Server Error',
-						type: SwaggerDefinitionConstant.Response.Type.OBJECT,
-						model: 'Error',
+		app.use(
+			swaggerExpress({
+				path: '/docs/json',
+				definition: {
+					models,
+					info: {
+						version,
+						title: name,
+					},
+					host: config.server.host,
+					responses: {
+						500: {
+							description: 'Internal Server Error',
+							type: SwaggerDefinitionConstant.Response.Type.OBJECT,
+							model: 'Error',
+						},
 					},
 				},
-			},
-		}));
+			})
+		);
 
 		// app.use('/docs', swaggerServe, swaggerSetup(
 		// 	null, // SwaggerDoc

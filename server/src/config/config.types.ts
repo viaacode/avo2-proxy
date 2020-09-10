@@ -1,8 +1,5 @@
-import { NodejsOptions } from '@studiohyperdrive/logger';
-
 export type IEnvs = 'local' | 'test' | 'development' | 'staging' | 'production';
-export type ILoggerConfig = NodejsOptions;
-export type ILoggerPresets = 'default' | 'verbose' | 'silent';
+import winston from 'winston';
 
 export interface IStateConfig {
 	env: IEnvs;
@@ -20,5 +17,5 @@ export interface IServerConfig {
 export interface IConfig {
 	state: IStateConfig;
 	server: IServerConfig;
-	logger: ILoggerConfig;
+	logger: winston.Logger;
 }

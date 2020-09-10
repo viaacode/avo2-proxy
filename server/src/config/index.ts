@@ -1,6 +1,5 @@
 import { IConfig } from './config.types';
 import { EnvHelper } from './helpers/env';
-import { default as loggerPresets } from './presets/logger';
 
 export default {
 	state: {
@@ -14,5 +13,4 @@ export default {
 		port: EnvHelper.envToNumber('PORT'),
 		timezone: 'TZ',
 	},
-	logger: loggerPresets['LOGGING_PRESET'],
 } as IConfig;
