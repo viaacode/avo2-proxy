@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import moment from 'moment';
 import * as queryString from 'querystring';
+import stripHtml from 'string-strip-html';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -157,8 +158,8 @@ export default class KlaarController {
 			return itemBlocks.map(
 				(item): KlaarNewsletterItem => {
 					return {
-						title: item.variables.componentState.headingTitle,
-						description: item.variables.componentState.content,
+						title: stripHtml(item.variables.componentState.headingTitle || '').result,
+						description: stripHtml(item.variables.componentState.content || '').result,
 						link: KlaarController.buttonActionToUrl(
 							item.variables.componentState.mediaItem
 						),
