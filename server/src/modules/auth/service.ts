@@ -9,6 +9,7 @@ import DataService from '../data/service';
 import { ClientEducationOrganization } from '../education-organizations/route';
 import EducationOrganizationsService, {
 	LdapEducationOrganizationWithUnits,
+	SimpleOrgInfo,
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
 
@@ -35,7 +36,7 @@ export class AuthService {
 				);
 			}
 			const user: SharedUser = get(response, 'data.users[0]', null);
-			return this.simplifyUserObject(user);
+			return AuthService.simplifyUserObject(user);
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to get user info from graphql by user email',
@@ -56,7 +57,7 @@ export class AuthService {
 				);
 			}
 			const user: SharedUser = get(response, 'data.users[0]', null);
-			return this.simplifyUserObject(user);
+			return AuthService.simplifyUserObject(user);
 		} catch (err) {
 			throw new InternalServerError('Failed to get user info from graphql by user uid', err, {
 				userId,
@@ -236,34 +237,35 @@ export class AuthService {
 		try {
 			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapEntryUuid}`;
 
-			const organisationId = get(avoUser, 'profile.organizations[0].organizationId');
-			const unitId = get(avoUser, 'profile.organizations[0].unitId');
-			const educationLevels = get(avoUser, 'profile.educationLevels');
+			const orgs: SimpleOrgInfo[] = get(avoUser, 'profile.organizations') || [];
+			const educationLevels = get(avoUser, 'profile.educationLevels') || [];
 
-			// Resolve org id en unit id to uuids since the ldap api uses those
-			let organisationUuid: string;
-			let unitUuid: string;
-
-			if (organisationId) {
-				const orgInfo: LdapEducationOrganizationWithUnits | null = await EducationOrganizationsService.getOrganization(
-					organisationId,
-					unitId
-				);
-				if (orgInfo) {
-					organisationUuid = orgInfo.id;
-					unitUuid = get(
-						orgInfo.units.find(unit => unit.ou_id === unitId),
-						'id'
+			// Resolve org id en unit id to uuids since the ldap api expects those
+			const orgUuids: string[] = [];
+			const unitUuids: string[] = [];
+			if (orgs.length) {
+				promiseUtils.mapLimit(orgs, 10, async (simpleOrgInfo: SimpleOrgInfo) => {
+					const fullOrgInfo: LdapEducationOrganizationWithUnits | null = await EducationOrganizationsService.getOrganization(
+						simpleOrgInfo.organizationId,
+						simpleOrgInfo.unitId
 					);
-				}
+					if (fullOrgInfo) {
+						orgUuids.push(fullOrgInfo.id);
+						const unitUuid = get(
+							fullOrgInfo.units.find(unit => unit.ou_id === simpleOrgInfo.unitId),
+							'id'
+						);
+						if (unitUuid) {
+							unitUuids.push(unitUuid);
+						}
+					}
+				});
 			}
 
 			const body = {
-				...(organisationId ? { organization: organisationUuid } : { organization: null }),
-				...(unitId ? { unit: unitUuid } : { unit: null }),
-				...(educationLevels && educationLevels.length
-					? { edu_levelname: educationLevels }
-					: { edu_levelname: [] }),
+				organizations: orgUuids,
+				units: unitUuids,
+				edu_levelname: educationLevels,
 			};
 
 			const response: AxiosResponse<{}> = await axios(url, {

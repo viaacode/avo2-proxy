@@ -17,7 +17,7 @@ export interface CustomFields {
 	is_uitzondering: string;
 	firstname: string;
 	lastname: string;
-	graad: string;
+	onderwijsniveaus: string;
 	vakken: string;
 	school_postcodes: string;
 	school_ids: string;

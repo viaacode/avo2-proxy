@@ -1,6 +1,6 @@
 {
   "name": "avo2-proxy-server",
-  "version": "1.2.17",
+  "version": "1.3.0",
   "description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
   "main": "index.ts",
   "repository": {
@@ -14,6 +14,7 @@
   "homepage": "https://github.com/viaacode/avo2-proxy",
   "scripts": {
     "start": "npm run serve",
+    "start-with-env": "dotenv -e .env/local.env npm run serve",
     "serve": "ts-node-dev --transpileOnly --poll -- index.ts",
     "prebuild": "npm run clean:build",
     "build": "tsc -p tsconfig.json",
@@ -26,15 +27,14 @@
     "clean:build": "rm -rf ./dist",
     "clean:coverage": "rm -rf ./test/coverage",
     "open:coverage": "open ./test/coverage/lcov-report/index.html",
-    "build-whitelist-queries": "tsc --sourceMap --esModuleInterop --resolveJsonModule scripts/whitelist-gql-queries.ts",
+    "build-whitelist-queries": "tsc --sourceMap --esModuleInterop --resolveJsonModule --skipLibCheck scripts/whitelist-gql-queries.ts",
     "whitelist-queries": "npm run build-whitelist-queries && dotenv -e .env/.env node scripts/whitelist-gql-queries.js",
     "licenses": "license-checker --csv --out licenses.csv",
-    "build-extract-translations-script": "tsc --sourceMap --esModuleInterop --resolveJsonModule scripts/extract-and-replace-translations.ts",
+    "build-extract-translations-script": "tsc --sourceMap --esModuleInterop --resolveJsonModule --skipLibCheck scripts/extract-and-replace-translations.ts",
     "extract-translations": "npm run build-extract-translations-script && dotenv -e .env/local.env node scripts/extract-and-replace-translations.js && npm run format"
   },
   "dependencies": {
     "@hapi/joi": "15.1.1",
-    "@studiohyperdrive/logger": "1.1.1",
     "@viaa/avo2-types": "^2.21.0",
     "apollo-boost": "^0.4.4",
     "async": "3.1.0",
@@ -57,6 +57,7 @@
     "i18next": "^19.5.5",
     "lodash": "^4.17.19",
     "memoizee": "^0.4.14",
+    "moment": "^2.27.0",
     "multer": "^1.4.2",
     "node-cron": "^2.0.3",
     "node-zendesk": "^1.4.0",
@@ -76,6 +77,7 @@
     "swagger-ui-express": "4.0.7",
     "typescript-rest": "2.2.2",
     "uuid": "^3.3.3",
+    "winston": "^3.3.3",
     "xml-js": "1.6.11"
   },
   "devDependencies": {
@@ -103,6 +105,7 @@
     "@types/ramda": "0.26.20",
     "@types/redis": "^2.8.16",
     "@types/saml2-js": "^1.6.7",
+    "@types/sanitize-html": "^1.27.0",
     "@types/simple-oauth2": "^2.2.1",
     "@types/sinon": "7.0.13",
     "@types/sinon-express-mock": "1.3.7",
@@ -126,7 +129,7 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "3.5.2"
+    "typescript": "4.0.2"
   },
   "license": "ISC"
 }

@@ -189,7 +189,7 @@ export default class KlaarController {
 					return `${process.env.CLIENT_HOST}/collections/${value}`;
 
 				case 'ITEM':
-					return `${process.env.CLIENT_HOST}/items/${value}`;
+					return `${process.env.CLIENT_HOST}/item/${value}`;
 
 				case 'BUNDLE':
 					return `${process.env.CLIENT_HOST}/bundels/${value}`;

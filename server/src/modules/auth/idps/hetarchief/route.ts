@@ -20,6 +20,7 @@ import {
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
 import { logger } from '../../../../shared/helpers/logger';
 import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
+import { jsonStringify } from '../../../../shared/helpers/single-line-logging';
 import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
 import StamboekController from '../../../stamboek-validate/controller';
@@ -86,7 +87,7 @@ export default class HetArchiefRoute {
 	async loginCallback(response: SamlCallbackBody): Promise<any> {
 		try {
 			const ldapUser: LdapUser = await HetArchiefService.assertSamlResponse(response);
-			logger.info('login-callback ldap info: ', JSON.stringify(ldapUser, null, 2));
+			logger.info('login-callback ldap info: ', jsonStringify(ldapUser));
 			const info: RelayState = response.RelayState ? JSON.parse(response.RelayState) : {};
 
 			IdpHelper.setIdpUserInfoOnSession(this.context.request, ldapUser, 'HETARCHIEF');
@@ -110,21 +111,6 @@ export default class HetArchiefRoute {
 				let avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
 					ldapUser.attributes.entryUUID[0]
 				);
-
-				// TODO remove fix for missing idp map link for existing users
-				if (!avoUser) {
-					// link ldap user by email and then link ldap user to avo user through idp_map table
-					avoUser = await HetArchiefController.getAvoUserInfoFromDatabaseByEmail(
-						ldapUser
-					);
-					if (avoUser) {
-						await IdpHelper.createIdpMap(
-							'HETARCHIEF',
-							ldapUser.attributes.entryUUID[0],
-							String(avoUser.uid)
-						);
-					}
-				}
 
 				// Update avo user with ldap fields and user groups
 				avoUser = await HetArchiefController.createOrUpdateUser(
@@ -227,7 +213,7 @@ export default class HetArchiefRoute {
 				return new Return.MovedTemporarily<void>(url);
 			}
 			logger.error(
-				new InternalServerError("ldap user wasn't found on the session", null, {
+				new InternalServerError('ldap user wasn\'t found on the session', null, {
 					returnToUrl,
 				})
 			);

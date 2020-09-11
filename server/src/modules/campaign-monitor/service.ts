@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
 import * as _ from 'lodash';
-import * as querystring from 'query-string';
+import { get } from 'lodash';
+import * as queryString from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
-import EventLoggingController from '../event-logging/controller';
+import { logger } from '../../shared/helpers/logger';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
 import { CustomFields, EmailInfo, NewsletterPreferences } from './types';
@@ -56,7 +57,7 @@ export default class CampaignMonitorService {
 	public static async fetchNewsletterPreference(listId: string, email: string) {
 		let url: string;
 		try {
-			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${querystring.stringify(
+			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
 				{ email }
 			)}`;
 			const response: AxiosResponse<any> = await axios(url, {
@@ -88,7 +89,7 @@ export default class CampaignMonitorService {
 		try {
 			const responses = await axios.all(
 				NEWSLETTERS_TO_FETCH.map(list =>
-					this.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
+					CampaignMonitorService.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
 				)
 			);
 
@@ -163,6 +164,64 @@ export default class CampaignMonitorService {
 				listId,
 				name,
 				email,
+			});
+		}
+	}
+
+	public static async changeEmail(listId: string, oldEmail: string, newEmail: string) {
+		try {
+			const data = {
+				EmailAddress: newEmail,
+				ConsentToTrack: 'Unchanged',
+			};
+
+			const response = await axios(
+				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
+					{ email: oldEmail }
+				)}`,
+				{
+					data,
+					method: 'PUT',
+					auth: {
+						username: process.env.CAMPAIGN_MONITOR_API_KEY,
+						password: '.',
+					},
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+			if (response.status < 200 || response.status >= 400) {
+				throw new CustomError('Failed to update email in Campaign Monitor', null, {
+					listId,
+					oldEmail,
+					newEmail,
+					response: {
+						status: response.status,
+						statusText: response.statusText,
+						data: response.data,
+					},
+				});
+			}
+			logger.info('CM account email changed: ', {
+				listId,
+				oldEmail,
+				newEmail,
+				response: {
+					status: response.status,
+					statusText: response.statusText,
+					data: response.data,
+				},
+			});
+		} catch (err) {
+			if (get(err, 'response.data.Code') === 203) {
+				// User not in list or already removed
+				return;
+			}
+			throw new CustomError('Failed to change email in newsletter list', err, {
+				listId,
+				oldEmail,
+				newEmail,
 			});
 		}
 	}

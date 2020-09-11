@@ -29,13 +29,6 @@ export interface BasicIdpUserInfo {
 }
 
 export default class HetArchiefController {
-	public static async getAvoUserInfoFromDatabaseByEmail(
-		ldapUserInfo: LdapUser
-	): Promise<Avo.User.User> {
-		const email = ldapUserInfo.name_id;
-		return await AuthService.getAvoUserInfoByEmail(email);
-	}
-
 	public static async createUserAndProfile(
 		ldapUserInfo: Partial<LdapPerson> | null,
 		stamboekNumber: string | null
@@ -238,11 +231,10 @@ export default class HetArchiefController {
 		}
 
 		let newAvoUser = cloneDeep(avoUserInfo);
-		newAvoUser.mail = get(ldapUserInfo, 'email[0]') || newAvoUser.mail;
+		newAvoUser.mail = get(ldapUserInfo, 'email[0]');
 		newAvoUser.first_name = get(ldapUserInfo, 'first_name');
 		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
-		newAvoUser.profile.stamboek =
-			get(ldapUserInfo, 'employee_nr[0]') || newAvoUser.profile.stamboek;
+		newAvoUser.profile.stamboek = get(ldapUserInfo, 'employee_nr[0]', null);
 		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
 		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
@@ -275,7 +267,7 @@ export default class HetArchiefController {
 			await AuthService.updateAvoUserInfo(newAvoUser);
 		}
 
-		newAvoUser = await this.updateUserGroups(
+		newAvoUser = await HetArchiefController.updateUserGroups(
 			{
 				first_name: newAvoUser.first_name,
 				last_name: newAvoUser.last_name,
@@ -286,7 +278,8 @@ export default class HetArchiefController {
 		);
 
 		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
-		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser);
+		// Also update existing users if their email changed
+		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);
 
 		return newAvoUser;
 	}

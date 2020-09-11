@@ -1,5 +1,5 @@
 import * as promiseUtils from 'blend-promise-utils';
-import { compact, fromPairs, get, map, toPairs, uniq } from 'lodash';
+import { compact, fromPairs, get, map, toPairs, uniq, values } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -112,7 +112,7 @@ export default class CampaignMonitorController {
 							is_uitzondering: isExceptionAccount ? 'true' : 'false',
 							firstname: firstName,
 							lastname: lastName,
-							graad: join(educationLevels),
+							onderwijsniveaus: educationLevels.join(),
 							vakken: subjects,
 							school_postcodes: join(schoolZipcodes),
 							school_ids: join(schoolIds),
@@ -135,11 +135,21 @@ export default class CampaignMonitorController {
 		}
 	}
 
-	public static async refreshNewsletterPreferences(avoUser: Avo.User.User): Promise<void> {
+	public static async refreshNewsletterPreferences(
+		avoUser: Avo.User.User,
+		oldAvoUser?: Avo.User.User
+	): Promise<void> {
 		try {
 			const preferences: NewsletterPreferences = await CampaignMonitorController.fetchNewsletterPreferences(
 				avoUser.mail
 			);
+
+			if (oldAvoUser && oldAvoUser.mail !== avoUser.mail) {
+				// If mail changed, update the old email in Campaign Monitor
+				await promiseUtils.map(values(NEWSLETTER_LISTS), newsLetterId =>
+					CampaignMonitorService.changeEmail(newsLetterId, oldAvoUser.mail, avoUser.mail)
+				);
+			}
 
 			await CampaignMonitorController.updateNewsletterPreferences(
 				avoUser,

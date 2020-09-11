@@ -14,7 +14,7 @@ import PlayerTicketRoute from '../player-ticket/route';
 
 import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
-import { ResolvedItemOrCollection } from './types';
+import { ContentPageOverviewResponse, ResolvedItemOrCollection } from './types';
 
 export type MediaItemResponse = Partial<Avo.Collection.Collection | Avo.Item.Item> & {
 	count: number;
@@ -86,17 +86,19 @@ export default class ContentPageController {
 		withBlock: boolean,
 		contentType: string,
 		labelIds: number[],
+		selectedLabelIds: number[],
 		orderByProp: string,
 		orderByDirection: 'asc' | 'desc',
 		offset: number,
 		limit: number,
 		user: Avo.User.User
-	): Promise<{ pages: Avo.ContentPage.Page[]; count: number }> {
+	): Promise<ContentPageOverviewResponse> {
 		return ContentPageService.fetchContentPages(
 			withBlock,
 			getUserGroupIds(user),
 			contentType,
 			labelIds,
+			selectedLabelIds,
 			orderByProp,
 			orderByDirection,
 			offset,
@@ -126,7 +128,7 @@ export default class ContentPageController {
 						(item: any) => item.mediaItem
 					);
 
-					const results: any[] = await this.resolveMediaTileItems(
+					const results: any[] = await ContentPageController.resolveMediaTileItems(
 						searchQuery,
 						searchQueryLimit,
 						mediaItems,
