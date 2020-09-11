@@ -267,3 +267,30 @@ export const GET_PUBLIC_CONTENT_PAGES = `
 		}
 	}
 `;
+
+export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
+  mutation publishContentPages($now: timestamptz, $publishedAt: timestamptz) {
+    publish_content_pages: update_app_content(
+      where: {
+        _or: [
+          {publish_at: {_lte: $now, _is_null: false}, depublish_at: {_gte: $now, _is_null: false}},
+          {publish_at: {_lte: $now, _is_null: false}, depublish_at: {_is_null: true}},
+          {publish_at: {_is_null: true}, published_at: {_gte: $now, _is_null: false}}
+        ],
+        published_at: {_is_null: true}
+      },
+      _set: {published_at: $publishedAt}
+    ) {
+      affected_rows
+    }
+    unpublish_content_pages: update_app_content(
+      where: {
+        depublish_at: {_lt: $now, _is_null: false},
+        published_at: {_is_null: false}
+      },
+      _set: {published_at: null}
+    ) {
+      affected_rows
+    }
+  }
+`;

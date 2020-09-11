@@ -162,6 +162,7 @@ export default class AuthRoute {
 	async clearSessions(): Promise<any> {
 		try {
 			await clearRedis();
+			return { message: 'User sessions have been cleared' };
 		} catch (err) {
 			logger.error(new CustomError('Failed to clear redis sessions', err));
 		}
