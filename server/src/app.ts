@@ -48,6 +48,7 @@ import MamSyncratorRoute from './modules/mam-syncrator/mam-syncrator.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+import { CustomError } from './shared/helpers/error';
 // tslint:enable
 
 export class App {
@@ -56,22 +57,26 @@ export class App {
 	public server: http.Server;
 
 	constructor(start: boolean = true) {
-		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
+		try {
+			Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
-		// One time initialization of objects needed for operation of the api
-		OrganisationService.initialize();
-		HetArchiefService.initialize();
-		SmartschoolService.initialize();
-		KlascementService.initialize();
-		ZendeskService.initialize();
-		AssetService.initialize();
+			// One time initialization of objects needed for operation of the api
+			OrganisationService.initialize();
+			HetArchiefService.initialize();
+			SmartschoolService.initialize();
+			KlascementService.initialize();
+			ZendeskService.initialize();
+			AssetService.initialize();
 
-		this.loadMiddleware();
-		this.loadModules();
-		this.loadErrorHandling();
+			this.loadMiddleware();
+			this.loadModules();
+			this.loadErrorHandling();
 
-		if (start) {
-			this.start();
+			if (start) {
+				this.start();
+			}
+		} catch (err) {
+			throw new CustomError(`Failed to start server: ${JSON.stringify(err)}`);
 		}
 	}
 
