@@ -14,6 +14,8 @@ export const tempFolder = process.env.TEMP_ASSET_FOLDER || '/tmp';
 
 export class GlobalMiddleware {
 	public static load(app: Application): void {
+		app.use(cors);
+
 		app.use(
 			multer({
 				dest: tempFolder,
@@ -36,6 +38,5 @@ export class GlobalMiddleware {
 
 		app.use(session);
 		app.use(useragent.express());
-		app.use(cors);
 	}
 }
