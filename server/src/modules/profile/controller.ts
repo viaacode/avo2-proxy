@@ -1,4 +1,4 @@
-import { uniq, remove } from 'lodash';
+import { remove, uniq } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 

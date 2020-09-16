@@ -20,8 +20,7 @@ const REDIRECT_URL_PATH = 'request.session.returnToUrl';
 const GET_SMARTSCHOOL_ERROR_MESSAGES = () => ({
 	// tslint:disable-next-line:max-line-length
 	FIRST_LINK_ACCOUNT: i18n.t('modules/auth/idps/smartschool/route___link-eerst-je-accounts'),
-	NO_ACCESS: i18n.t(
-		'modules/auth/idps/smartschool/route___enkel-leerkrachten-en-leerlingen-kunnen-inloggen-via-smartschool-op-deze-website'
+	NO_ACCESS: i18n.t('modules/auth/idps/smartschool/route___enkel-leerkrachten-en-leerlingen-kunnen-inloggen-via-smartschool-op-deze-website'
 	),
 });
 
@@ -49,8 +48,7 @@ export default class SmartschoolRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t(
-					'modules/auth/idps/smartschool/route___er-ging-iets-mis-tijdens-het-inloggen-met-smartschool'
+				i18n.t('modules/auth/idps/smartschool/route___er-ging-iets-mis-tijdens-het-inloggen-met-smartschool'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -99,8 +97,7 @@ export default class SmartschoolRoute {
 				// Check if accounts are linked
 				if (!response.avoUser) {
 					return redirectToClientErrorPage(
-						i18n.t(
-							'modules/auth/idps/smartschool/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-smartschool-te-koppelen-in-je-account-instellingen'
+						i18n.t('modules/auth/idps/smartschool/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-smartschool-te-koppelen-in-je-account-instellingen'
 						),
 						'link',
 						['home', 'helpdesk']
@@ -135,8 +132,7 @@ export default class SmartschoolRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t(
-					'modules/auth/idps/smartschool/route___er-ging-iets-mis-na-het-inloggen-met-smartschool'
+				i18n.t('modules/auth/idps/smartschool/route___er-ging-iets-mis-na-het-inloggen-met-smartschool'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -157,8 +153,7 @@ export default class SmartschoolRoute {
 			});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t(
-					'modules/auth/idps/smartschool/route___er-ging-iets-mis-tijdens-het-uitloggen-met-smartschool'
+				i18n.t('modules/auth/idps/smartschool/route___er-ging-iets-mis-tijdens-het-uitloggen-met-smartschool'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
