@@ -120,6 +120,11 @@ export const GET_ITEMS_BY_IDS = `
 				name
 				logo_url
 			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
+			}
 		}
 	}
 `;
