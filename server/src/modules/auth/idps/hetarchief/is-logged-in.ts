@@ -1,11 +1,13 @@
 import { Request } from 'express';
-import * as _ from 'lodash';
+import { get } from 'lodash';
+
+import { Avo } from '@viaa/avo2-types';
 
 import { IdpHelper } from '../../idp-helper';
-import { IdpType, LdapUser } from '../../types';
+import { LdapUser } from '../../types';
 
 export default function isLoggedIn(request: Request): boolean {
-	const idpType: IdpType | null = IdpHelper.getIdpTypeFromSession(request);
+	const idpType: Avo.Auth.IdpType | null = IdpHelper.getIdpTypeFromSession(request);
 	if (!idpType) {
 		return false;
 	}
@@ -19,15 +21,13 @@ export default function isLoggedIn(request: Request): boolean {
 		return false;
 	}
 	// Check if the ldap user is expired
-	const ldapExpireOn: number = new Date(
-		_.get(idpUserInfo, 'session_not_on_or_after', 0)
-	).getTime();
+	const ldapExpireOn: number = new Date(get(idpUserInfo, 'session_not_on_or_after', 0)).getTime();
 	if (Date.now() > ldapExpireOn) {
 		return false;
 	}
 
 	// Check if ldap user has access to avo
-	if (!_.get(idpUserInfo, 'attributes.apps', []).includes('avo')) {
+	if (!get(idpUserInfo, 'attributes.apps', []).includes('avo')) {
 		return false;
 	}
 
@@ -35,7 +35,7 @@ export default function isLoggedIn(request: Request): boolean {
 	const avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);
 
 	// Check if avo user has been blocked
-	if (_.get(avoUserInfo, 'is_blocked')) {
+	if (get(avoUserInfo, 'is_blocked')) {
 		return false;
 	}
 

@@ -143,7 +143,6 @@ export default class SearchService {
 				}
 			}
 
-			logger.info(`---------- query:\n${url}\n${JSON.stringify(searchQueryObject)}`);
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
 				method: 'post',

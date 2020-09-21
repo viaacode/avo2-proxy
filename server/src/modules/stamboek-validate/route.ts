@@ -1,15 +1,11 @@
 import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
 
+import { Avo } from '@viaa/avo2-types';
+
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 import StamboekController from './controller';
-
-export type StamboekValidationStatuses = 'VALID' | 'ALREADY_IN_USE' | 'INVALID'; // TODO use typings version
-
-export interface ValidateStamboekResponse { // TODO use typings version
-	status: StamboekValidationStatuses;
-}
 
 @Path('/stamboek')
 export default class StamboekRoute {
@@ -24,7 +20,7 @@ export default class StamboekRoute {
 	@GET
 	async verifyStamboekNumber(
 		@QueryParam('stamboekNumber') stamboekNumber: string
-	): Promise<ValidateStamboekResponse> {
+	): Promise<Avo.Stamboek.ValidateResponse> {
 		// Check inputs
 		if (!stamboekNumber) {
 			throw new BadRequestError('query param stamboekNumber is required');
@@ -35,9 +31,10 @@ export default class StamboekRoute {
 			return {
 				status: await StamboekController.validate(stamboekNumber),
 			};
-
 		} catch (err) {
-			const error = new InternalServerError('Failed during validate stamboek route', err, { stamboekNumber });
+			const error = new InternalServerError('Failed during validate stamboek route', err, {
+				stamboekNumber,
+			});
 			logger.error(error);
 			throw error;
 		}

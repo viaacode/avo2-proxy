@@ -25,12 +25,11 @@ import i18n from '../../shared/translations/i18n';
 
 import AuthController from './controller';
 import { IdpHelper } from './idp-helper';
-import { IdpType } from './types';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
 
 export interface LinkAccountInfo {
-	type: IdpType;
+	type: Avo.Auth.IdpType;
 	userObject: any;
 }
 
@@ -89,7 +88,7 @@ export default class AuthRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async linkAccount(
 		@QueryParam('returnToUrl') returnToUrl: string,
-		@QueryParam('idpType') idpType: IdpType
+		@QueryParam('idpType') idpType: Avo.Auth.IdpType
 	): Promise<any> {
 		return AuthController.redirectToIdpLoginForLinkingAccounts(
 			this.context.request,
@@ -136,7 +135,7 @@ export default class AuthRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async unlinkAccount(
 		@QueryParam('returnToUrl') returnToUrl: string,
-		@QueryParam('idpType') idpType: IdpType
+		@QueryParam('idpType') idpType: Avo.Auth.IdpType
 	): Promise<any> {
 		try {
 			await AuthController.unlinkAccounts(this.context.request, idpType);
