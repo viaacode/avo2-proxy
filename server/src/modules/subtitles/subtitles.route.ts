@@ -1,4 +1,4 @@
-import { Context, GET, Path, PathParam, ServiceContext } from 'typescript-rest';
+import { Context, GET, Path, ServiceContext } from 'typescript-rest';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
