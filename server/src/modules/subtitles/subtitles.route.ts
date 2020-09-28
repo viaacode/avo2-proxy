@@ -18,7 +18,7 @@ export default class SubtitleRoute {
 			checkRequiredEnvs(['archief-media']);
 
 			const path: string = this.context.request.originalUrl
-				.split('/convert-srt-to-vtt')
+				.split('/convert-srt-to-vtt/')
 				.pop();
 			if (!path) {
 				throw new BadRequestError(
