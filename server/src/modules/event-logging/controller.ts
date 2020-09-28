@@ -1,67 +1,26 @@
 import { Request } from 'express';
 import { compact } from 'lodash';
 
+import type { Avo } from '@viaa/avo2-types';
+
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 import EventLoggingService from './service';
 import { LogEvent } from './types';
 
-// TODO move to typings repo after update to typings v2.22.0
-export type EventAction =
-	| 'register'
-	| 'activate'
-	| 'create'
-	| 'edit'
-	| 'delete'
-	| 'request'
-	| 'reset'
-	| 'authenticate'
-	| 'logout'
-	| 'send'
-	| 'view'
-	| 'play'
-	| 'bookmark'
-	| 'share'
-	| 'report'
-	| 'publish'
-	| 'unpublish'
-	| 'copy'
-	| 'add_to'
-	| 'remove_from';
-
-export interface ClientEvent {
-	action: EventAction;
-	subject: string; // entity doing the modification
-	subject_type: EventSubjectType;
-	object: string; // entity being modified
-	object_type: EventObjectType;
-	message: any; // user played item xxx on avo
-	occurred_at: string | null;
-	source_url: string; // eg: url when the event was triggered
-}
-
-export type EventSubjectType = 'user' | 'system';
-
-export type EventObjectType =
-	| 'account'
-	| 'profile'
-	| 'password'
-	| 'user'
-	| 'mail'
-	| 'information'
-	| 'item'
-	| 'collection'
-	| 'bundle'
-	| 'assignment'
-	| 'search';
-
 export default class EventLoggingController {
-	public static async insertEvent(event: ClientEvent, request: Request): Promise<void> {
+	public static async insertEvent(
+		event: Avo.EventLogging.Event,
+		request: Request
+	): Promise<void> {
 		await EventLoggingController.insertEvents([event], request);
 	}
 
-	public static async insertEvents(clientEvents: ClientEvent[], request: Request): Promise<void> {
+	public static async insertEvents(
+		clientEvents: Avo.EventLogging.Event[],
+		request: Request
+	): Promise<void> {
 		let logEvents: LogEvent[] = [];
 		let ip: string;
 		let requestId: string;
@@ -69,7 +28,7 @@ export default class EventLoggingController {
 			ip = EventLoggingController.getIp(request) || '127.0.0.1';
 			requestId = EventLoggingController.getViaaRequestId(request);
 			logEvents = compact(
-				clientEvents.map((clientEvent: ClientEvent): LogEvent | null => {
+				clientEvents.map((clientEvent: Avo.EventLogging.Event): LogEvent | null => {
 					return {
 						subject_ip: ip,
 						component: 'webapp',

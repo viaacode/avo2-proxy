@@ -1,4 +1,4 @@
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { getUserByIdpId } from '../../helpers/get-user-by-idp-id';

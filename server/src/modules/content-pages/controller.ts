@@ -2,12 +2,13 @@ import * as promiseUtils from 'blend-promise-utils';
 import { Request } from 'express';
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
+import DataService from '../data/service';
 import OrganisationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';
@@ -111,7 +112,7 @@ export default class ContentPageController {
 		request: Request
 	) {
 		const mediaGridBlocks = contentPage.contentBlockssBycontentId.filter(
-			contentBlock => contentBlock.content_block_type === 'MEDIA_GRID'
+			(contentBlock) => contentBlock.content_block_type === 'MEDIA_GRID'
 		);
 		if (mediaGridBlocks.length) {
 			await promiseUtils.mapLimit(mediaGridBlocks, 2, async (mediaGridBlock: any) => {
@@ -152,7 +153,7 @@ export default class ContentPageController {
 		contentPage: Avo.ContentPage.Page,
 		request: Request
 	) {
-		const mediaPlayerBlocks = contentPage.contentBlockssBycontentId.filter(contentBlock =>
+		const mediaPlayerBlocks = contentPage.contentBlockssBycontentId.filter((contentBlock) =>
 			_.keys(MEDIA_PLAYER_BLOCKS).includes(contentBlock.content_block_type)
 		);
 		if (mediaPlayerBlocks.length) {
@@ -182,7 +183,7 @@ export default class ContentPageController {
 							['description', 'setDescriptionPath'],
 							['issued', 'setIssuedPath'],
 							['organisation', 'setOrganisationPath'],
-						].forEach(props => {
+						].forEach((props) => {
 							if (
 								itemInfo &&
 								(itemInfo as any)[props[0]] &&
@@ -238,7 +239,7 @@ export default class ContentPageController {
 			let searchResults: any[] = [];
 
 			// Check for items/collections
-			const nonEmptyMediaItems = mediaItems.filter(mediaItem => !_.isEmpty(mediaItem));
+			const nonEmptyMediaItems = mediaItems.filter((mediaItem) => !_.isEmpty(mediaItem));
 			if (nonEmptyMediaItems.length) {
 				manualResults = await promiseUtils.mapLimit(
 					nonEmptyMediaItems,
@@ -292,7 +293,7 @@ export default class ContentPageController {
 				searchResults = await promiseUtils.mapLimit(
 					searchResponse.results || [],
 					8,
-					result =>
+					(result) =>
 						ContentPageController.mapSearchResultToItemOrCollection(result, request)
 				);
 			}
@@ -452,5 +453,9 @@ export default class ContentPageController {
 			);
 			return null;
 		}
+	}
+
+	static async updatePublishDates() {
+		return ContentPageService.updatePublishDates();
 	}
 }

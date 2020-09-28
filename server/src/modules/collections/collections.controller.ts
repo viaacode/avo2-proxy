@@ -1,6 +1,6 @@
 import { get, isNil } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { PermissionName } from '../../shared/permissions';
 

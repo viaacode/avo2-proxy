@@ -4,7 +4,7 @@ import moment from 'moment';
 import * as queryString from 'querystring';
 import { Return } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
@@ -26,7 +26,6 @@ import {
 } from './queries.gql';
 import { LinkAccountInfo } from './route';
 import { AuthService } from './service';
-import { IdpType } from './types';
 
 export default class AuthController {
 	public static async getLoginResponse(req: Request): Promise<Avo.Auth.LoginResponse> {
@@ -205,7 +204,7 @@ export default class AuthController {
 	public static async redirectToIdpLoginForLinkingAccounts(
 		request: Request,
 		returnToUrl: string,
-		idpType: IdpType
+		idpType: Avo.Auth.IdpType
 	) {
 		const avoUserInfo: Avo.User.User = await IdpHelper.getUpdatedAvoUserInfoFromSession(
 			request
@@ -285,7 +284,7 @@ export default class AuthController {
 		}
 	}
 
-	public static async unlinkAccounts(request: Request, idpType: IdpType) {
+	public static async unlinkAccounts(request: Request, idpType: Avo.Auth.IdpType) {
 		let avoUserInfo: Avo.User.User;
 		try {
 			avoUserInfo = IdpHelper.getAvoUserInfoFromSession(request);

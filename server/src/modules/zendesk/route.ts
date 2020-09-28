@@ -1,17 +1,12 @@
 import { Requests } from 'node-zendesk';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 
+import type { Avo } from '@viaa/avo2-types';
+
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 import ZendeskController from './controller';
-
-export interface ZendeskFileInfo {
-	// TODO use typings version
-	base64: string;
-	filename: string;
-	mimeType: string;
-}
 
 @Path('/zendesk')
 export default class ZendeskRoute {
@@ -49,7 +44,7 @@ export default class ZendeskRoute {
 	 */
 	@Path('/upload-attachment')
 	@POST
-	async uploadAttachment(fileInfo: ZendeskFileInfo): Promise<{ url: string; id: number }> {
+	async uploadAttachment(fileInfo: Avo.FileUpload.ZendeskFileInfo): Promise<{ url: string; id: number }> {
 		try {
 			if (!fileInfo || !fileInfo.filename || !fileInfo.base64) {
 				throw new BadRequestError(

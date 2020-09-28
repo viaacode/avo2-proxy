@@ -1,7 +1,7 @@
 import * as promiseUtils from 'blend-promise-utils';
 import { compact, fromPairs, get, map, toPairs, uniq, values } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -12,7 +12,7 @@ import EducationOrganizationsService, {
 
 import { NEWSLETTER_LISTS } from './const';
 import CampaignMonitorService from './service';
-import { CustomFields, EmailInfo, NewsletterKey, NewsletterPreferences } from './types';
+import { CustomFields, EmailInfo } from './types';
 
 export default class CampaignMonitorController {
 	/**
@@ -27,7 +27,9 @@ export default class CampaignMonitorController {
 	 * Retrieve email preferences from campaign monitor api
 	 * @param email
 	 */
-	public static async fetchNewsletterPreferences(email: string): Promise<NewsletterPreferences> {
+	public static async fetchNewsletterPreferences(
+		email: string
+	): Promise<Avo.Newsletter.Preferences> {
 		return CampaignMonitorService.fetchNewsletterPreferences(email);
 	}
 
@@ -38,10 +40,13 @@ export default class CampaignMonitorController {
 	 */
 	public static async updateNewsletterPreferences(
 		user: Avo.User.User,
-		preferences: Partial<NewsletterPreferences>
+		preferences: Partial<Avo.Newsletter.Preferences>
 	) {
 		try {
-			const mappedPreferences = toPairs(preferences) as [NewsletterKey, boolean][];
+			const mappedPreferences = toPairs(preferences) as [
+				Avo.Newsletter.PreferencesKey,
+				boolean
+			][];
 
 			const email = get(user, 'mail');
 
@@ -52,7 +57,7 @@ export default class CampaignMonitorController {
 			const userGroupId = get(user, 'profile.userGroupIds[0]');
 			const allUserGroups = await AuthService.getAllUserGroups();
 			const userGroup = get(
-				allUserGroups.find(group => group.id === userGroupId),
+				allUserGroups.find((group) => group.id === userGroupId),
 				'label'
 			);
 
@@ -67,7 +72,7 @@ export default class CampaignMonitorController {
 			const schoolNames: string[] = [];
 			const educationalOrganizations: Avo.EducationOrganization.Organization[] =
 				get(user, 'profile.organizations') || [];
-			await promiseUtils.map(educationalOrganizations, async org => {
+			await promiseUtils.map(educationalOrganizations, async (org) => {
 				const educationalOrganizationId = get(org, 'organizationId');
 				const educationalOrganizationUnitId = get(org, 'unitId');
 				if (educationalOrganizationId) {
@@ -94,8 +99,8 @@ export default class CampaignMonitorController {
 
 			const subjects = uniq(get(user, 'profile.subjects') || []).join(', ');
 
-			await promiseUtils.map(mappedPreferences, async preference => {
-				const key: NewsletterKey = preference[0];
+			await promiseUtils.map(mappedPreferences, async (preference) => {
+				const key: Avo.Newsletter.PreferencesKey = preference[0];
 				const subscribed = preference[1];
 
 				if (subscribed) {
@@ -140,13 +145,13 @@ export default class CampaignMonitorController {
 		oldAvoUser?: Avo.User.User
 	): Promise<void> {
 		try {
-			const preferences: NewsletterPreferences = await CampaignMonitorController.fetchNewsletterPreferences(
+			const preferences: Avo.Newsletter.Preferences = await CampaignMonitorController.fetchNewsletterPreferences(
 				avoUser.mail
 			);
 
 			if (oldAvoUser && oldAvoUser.mail !== avoUser.mail) {
 				// If mail changed, update the old email in Campaign Monitor
-				await promiseUtils.map(values(NEWSLETTER_LISTS), newsLetterId =>
+				await promiseUtils.map(values(NEWSLETTER_LISTS), (newsLetterId) =>
 					CampaignMonitorService.changeEmail(newsLetterId, oldAvoUser.mail, avoUser.mail)
 				);
 			}

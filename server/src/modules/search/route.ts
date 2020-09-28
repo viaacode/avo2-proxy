@@ -1,7 +1,7 @@
 import { isNil } from 'lodash';
 import { GET, Path, POST, PreProcessor, QueryParam } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -12,7 +12,7 @@ import {
 } from '../../shared/middleware/is-authenticated';
 import { PermissionName } from '../../shared/permissions';
 
-import SearchController, { EsIndex } from './controller';
+import SearchController from './controller';
 
 @Path('/search')
 export default class SearchRoute {
@@ -45,7 +45,7 @@ export default class SearchRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async related(
 		@QueryParam('id') itemId: string,
-		@QueryParam('type') type: EsIndex,
+		@QueryParam('type') type: Avo.Search.EsIndex,
 		@QueryParam('limit') limit: number
 	): Promise<Avo.Search.Search> {
 		try {
@@ -55,7 +55,7 @@ export default class SearchRoute {
 				);
 			}
 
-			return await SearchController.getRelatedItems(itemId, type, limit); // TODO remove cast after update to typings v2.14.0
+			return await SearchController.getRelatedItems(itemId, type, limit);
 		} catch (err) {
 			const error = new InternalServerError('failed during search/related route', err, {
 				itemId,

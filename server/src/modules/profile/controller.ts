@@ -1,6 +1,6 @@
 import { remove, uniq } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
 import { SpecialUserGroup } from '../auth/consts';

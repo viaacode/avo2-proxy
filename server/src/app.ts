@@ -5,6 +5,7 @@ import { Server } from 'typescript-rest';
 
 import { default as config } from './config';
 import { IConfig } from './config/config.types';
+import { CustomError } from './shared/helpers/error';
 import { logger, logIfNotTestEnv } from './shared/helpers/logger';
 import { Validator } from './shared/helpers/validation';
 
@@ -45,10 +46,10 @@ import AssetService from './modules/assets/service';
 import OrganisationService from './modules/organization/service';
 import ZendeskService from './modules/zendesk/service';
 import MamSyncratorRoute from './modules/mam-syncrator/mam-syncrator.route';
+import SubtitleRoute from './modules/subtitles/subtitles.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
-import { CustomError } from './shared/helpers/error';
 // tslint:enable
 
 export class App {
@@ -165,6 +166,7 @@ export class App {
 			CollectionsRoute,
 			SitemapRoutes,
 			MamSyncratorRoute,
+			SubtitleRoute,
 
 			FallbackRoute
 		);

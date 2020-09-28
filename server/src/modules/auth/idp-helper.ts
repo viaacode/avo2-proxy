@@ -1,14 +1,14 @@
 import { Request } from 'express';
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 
 import { GET_IDP_MAP, INSERT_IDP_MAP } from './queries.gql';
 import { AuthService } from './service';
-import { IdpMap, IdpType } from './types';
+import { IdpMap } from './types';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
 const AVO_USER_INFO_PATH = 'session.avoUserInfo';
@@ -23,7 +23,7 @@ export class IdpHelper {
 	public static setIdpUserInfoOnSession(
 		request: Express.Request,
 		idpUserInfo: any | null,
-		idpType: IdpType | null
+		idpType: Avo.Auth.IdpType | null
 	): void {
 		if (request.session) {
 			_.set(request, `${IDP_USER_INFO_PATH}.${idpType}`, idpUserInfo);
@@ -38,8 +38,8 @@ export class IdpHelper {
 	}
 
 	public static clearAllIdpUserInfosFromSession(request: Express.Request) {
-		const idpTypes: IdpType[] = ['HETARCHIEF', 'SMARTSCHOOL', 'KLASCEMENT'];
-		idpTypes.forEach((idpType: IdpType) => {
+		const idpTypes: Avo.Auth.IdpType[] = ['HETARCHIEF', 'SMARTSCHOOL', 'KLASCEMENT'];
+		idpTypes.forEach((idpType: Avo.Auth.IdpType) => {
 			IdpHelper.setIdpUserInfoOnSession(request, null, idpType);
 		});
 	}
@@ -87,7 +87,7 @@ export class IdpHelper {
 		}
 	}
 
-	public static getIdpTypeFromSession(request: Request): IdpType | null {
+	public static getIdpTypeFromSession(request: Request): Avo.Auth.IdpType | null {
 		// Check if the avo session is expired
 		if (IdpHelper.isSessionExpired(request)) {
 			return null;
@@ -105,7 +105,7 @@ export class IdpHelper {
 		IdpHelper.setAvoUserInfoOnSession(req, null);
 	}
 
-	public static async createIdpMap(idpType: IdpType, idpUserId: string, localUserId: string) {
+	public static async createIdpMap(idpType: Avo.Auth.IdpType, idpUserId: string, localUserId: string) {
 		try {
 			const idpMap: Partial<IdpMap> = {
 				idp: idpType,

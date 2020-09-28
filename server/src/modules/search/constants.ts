@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 // Max number of search results to return to the client
 export const MAX_NUMBER_SEARCH_RESULTS = 2000;
