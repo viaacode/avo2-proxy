@@ -8,7 +8,7 @@ import {
 	ServiceContext,
 } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError, NotFoundError, UnauthorizedError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';

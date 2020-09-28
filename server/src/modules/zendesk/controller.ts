@@ -1,6 +1,6 @@
 import { Requests } from 'node-zendesk';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import ZendeskService from './service';
 

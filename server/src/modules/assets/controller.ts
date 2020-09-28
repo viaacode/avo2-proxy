@@ -3,7 +3,7 @@ import _ from 'lodash';
 import * as path from 'path';
 import getUuid from 'uuid/v1';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError } from '../../shared/helpers/error';
 import DataService from '../data/service';

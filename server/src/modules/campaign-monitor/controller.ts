@@ -1,7 +1,7 @@
 import * as promiseUtils from 'blend-promise-utils';
 import { compact, fromPairs, get, map, toPairs, uniq, values } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';

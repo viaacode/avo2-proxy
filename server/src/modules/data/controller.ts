@@ -1,7 +1,7 @@
 import { IncomingHttpHeaders } from 'http';
 import { compact, get } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import DataService from './service';
 

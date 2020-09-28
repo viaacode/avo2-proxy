@@ -1,6 +1,6 @@
 import { keys } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 export const NEWSLETTER_LISTS = {
 	newsletter: process.env.CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID,

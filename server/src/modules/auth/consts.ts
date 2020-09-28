@@ -1,4 +1,4 @@
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import isLoggedInHetArchief from './idps/hetarchief/is-logged-in';
 import isLoggedInKlascement from './idps/klascement/is-logged-in';

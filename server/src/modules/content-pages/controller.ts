@@ -2,7 +2,7 @@ import * as promiseUtils from 'blend-promise-utils';
 import { Request } from 'express';
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';

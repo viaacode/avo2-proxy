@@ -1,7 +1,7 @@
 import { Requests } from 'node-zendesk';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';

@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { get, toPairs } from 'lodash';
 import * as queryString from 'query-string';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';

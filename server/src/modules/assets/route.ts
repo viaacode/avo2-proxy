@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types/types/index';
 
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';

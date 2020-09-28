@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 export interface IdpMap {
 	id: number;

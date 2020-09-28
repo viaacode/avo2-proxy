@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { get } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';

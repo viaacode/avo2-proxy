@@ -1,7 +1,7 @@
 import { isArray } from 'lodash';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError } from '../../shared/helpers/error';
 

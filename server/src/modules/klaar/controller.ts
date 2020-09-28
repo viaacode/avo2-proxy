@@ -3,7 +3,7 @@ import moment from 'moment';
 import * as queryString from 'querystring';
 import stripHtml from 'string-strip-html';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, NotFoundError } from '../../shared/helpers/error';
 import ContentPageController from '../content-pages/controller';

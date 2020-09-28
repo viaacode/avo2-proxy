@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';

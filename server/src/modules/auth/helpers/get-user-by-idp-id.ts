@@ -1,6 +1,6 @@
 import { get } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import DataService from '../../data/service';
 import { GET_USER_BY_IDP_ID } from '../queries.gql';

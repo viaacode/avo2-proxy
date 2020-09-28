@@ -1,4 +1,4 @@
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 import axios from 'axios';
 import _ from 'lodash';
 import zendesk, { Client, Requests } from 'node-zendesk';

@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError } from '../../shared/helpers/error';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
