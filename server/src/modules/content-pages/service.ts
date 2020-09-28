@@ -1,9 +1,9 @@
 import { fromPairs, get } from 'lodash';
+import moment from 'moment';
 
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
-import { AuthService } from '../auth/service';
 import { SpecialPermissionGroups } from '../auth/types';
 import DataService from '../data/service';
 import SearchController from '../search/controller';
@@ -17,6 +17,7 @@ import {
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
 	GET_PUBLIC_CONTENT_PAGES,
+	UPDATE_CONTENT_PAGE_PUBLISH_DATES,
 } from './queries.gql';
 import { ContentPageOverviewResponse } from './types';
 
@@ -207,6 +208,27 @@ export default class ContentPageService {
 			return get(response, 'data.app_content') || [];
 		} catch (err) {
 			throw new InternalServerError('Failed to fetch all public content pages');
+		}
+	}
+
+	static async updatePublishDates(): Promise<{ published: number; unpublished: number }> {
+		try {
+			const response = await DataService.execute(UPDATE_CONTENT_PAGE_PUBLISH_DATES, {
+				now: new Date().toISOString(),
+				publishedAt: moment()
+					.hours(7)
+					.minutes(0)
+					.toISOString(),
+			});
+			if (response.errors) {
+				throw new InternalServerError('Graphql mutation returned errors', response);
+			}
+			return {
+				published: get(response, 'data.publish_content_pages.affected_rows', 0),
+				unpublished: get(response, 'data.unpublish_content_pages.affected_rows', 0),
+			};
+		} catch (err) {
+			throw new InternalServerError('Failed to update content page publish dates', err);
 		}
 	}
 }
