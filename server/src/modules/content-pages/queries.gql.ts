@@ -70,6 +70,11 @@ export const GET_ITEM_TILE_BY_ID = `
 				label
 				id
 			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
+			}
 			view_counts_aggregate {
 				aggregate {
 					sum {
@@ -95,6 +100,11 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 			}
 			type {
 				label
+			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
 			}
 		}
 	}

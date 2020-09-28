@@ -123,6 +123,11 @@ export const GET_ITEMS_BY_IDS = `
 			relations(where: {predicate: {_eq: "REPLACES"}}) {
 				created_at
 			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
+			}
 		}
 	}
 `;
