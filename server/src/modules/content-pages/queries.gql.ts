@@ -31,8 +31,9 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 			user_group_ids
 			content_content_labels {
 				content_label {
-					label
 					id
+					label
+					link_to
 				}
 			}
 			contentBlockssBycontentId(order_by: { position: asc }) {
@@ -173,8 +174,9 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 			updated_at
 			content_content_labels {
 				content_label {
-					label
 					id
+					label
+					link_to
 				}
 			}
 			contentBlockssBycontentId(order_by: { position: asc }) {
@@ -246,8 +248,9 @@ export const GET_CONTENT_PAGES = `
 			user_profile_id
 			content_content_labels {
 				content_label {
-					label
 					id
+					label
+					link_to
 				}
 			}
 		}
