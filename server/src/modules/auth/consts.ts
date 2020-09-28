@@ -1,14 +1,16 @@
+import { Avo } from '@viaa/avo2-types';
+
 import isLoggedInHetArchief from './idps/hetarchief/is-logged-in';
 import isLoggedInKlascement from './idps/klascement/is-logged-in';
 import { KlascementUserInfo } from './idps/klascement/service';
 import isLoggedInSmartschool from './idps/smartschool/is-logged-in';
 import { SmartschoolUserInfo } from './idps/smartschool/service';
-import { IdpInterface, IdpType } from './types';
+import { IdpInterface } from './types';
 
 export const ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS =
 	'ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS';
 
-export const IDP_ADAPTERS: { [idpType in IdpType]: IdpInterface } = {
+export const IDP_ADAPTERS: { [idpType in Exclude<Avo.Auth.IdpType, 'VIAA'>]: IdpInterface } = {
 	HETARCHIEF: {
 		isLoggedIn: isLoggedInHetArchief,
 		logoutPath: 'auth/hetarchief/logout',

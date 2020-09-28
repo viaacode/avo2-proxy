@@ -1,8 +1,9 @@
 import { get, sortBy, uniqBy } from 'lodash';
 
+import { Avo } from '@viaa/avo2-types';
+
 import { InternalServerError } from '../../shared/helpers/error';
 
-import { ClientEducationOrganization } from './route';
 import EducationOrganizationsService, {
 	LdapEducationOrganization,
 	LdapEducationOrganizationWithUnits,
@@ -18,7 +19,7 @@ export default class EducationOrganizationsController {
 	public static async getOrganizations(
 		city: string | undefined,
 		zipCode: string | undefined
-	): Promise<ClientEducationOrganization[]> {
+	): Promise<Avo.EducationOrganization.Organization[]> {
 		try {
 			let orgs: LdapEducationOrganization[] = await EducationOrganizationsService.getOrganizations(
 				city,
@@ -38,15 +39,15 @@ export default class EducationOrganizationsController {
 			}
 
 			// Map ldap orgs to client ldap orgs so less data has to be sent to the client
-			const simplifiedOrgs: ClientEducationOrganization[] = orgs.map(org => {
+			const simplifiedOrgs: Avo.EducationOrganization.Organization[] = orgs.map((org) => {
 				return {
 					organizationId: org.or_id,
 					unitId: null,
 					label: `${org.name}`,
 				};
 			});
-			const simplifiedUnits: ClientEducationOrganization[] = units.map(
-				(unit: LdapEduOrgUnit): ClientEducationOrganization => ({
+			const simplifiedUnits: Avo.EducationOrganization.Organization[] = units.map(
+				(unit: LdapEduOrgUnit): Avo.EducationOrganization.Organization => ({
 					organizationId: unit.or_id,
 					unitId: unit.ou_id,
 					label: `${unit.name} - ${unit.address}`,
@@ -74,7 +75,7 @@ export default class EducationOrganizationsController {
 			return null;
 		}
 		const unitAddress = get(
-			(ldapOrg.units || []).find(unit => unit.id === unitId),
+			(ldapOrg.units || []).find((unit) => unit.id === unitId),
 			'address',
 			null
 		);

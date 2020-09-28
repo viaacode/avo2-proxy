@@ -1,14 +1,15 @@
 import axios, { AxiosResponse } from 'axios';
-import * as _ from 'lodash';
-import { get } from 'lodash';
+import { get, toPairs } from 'lodash';
 import * as queryString from 'query-string';
+
+import { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
-import { CustomFields, EmailInfo, NewsletterPreferences } from './types';
+import { CustomFields, EmailInfo } from './types';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
@@ -71,7 +72,7 @@ export default class CampaignMonitorService {
 				},
 			});
 
-			return _.get(response, 'data.State') === 'Active';
+			return get(response, 'data.State') === 'Active';
 		} catch (err) {
 			if (err.response.data.Code === 203) {
 				return false;
@@ -85,10 +86,12 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async fetchNewsletterPreferences(email: string): Promise<NewsletterPreferences> {
+	public static async fetchNewsletterPreferences(
+		email: string
+	): Promise<Avo.Newsletter.Preferences> {
 		try {
 			const responses = await axios.all(
-				NEWSLETTERS_TO_FETCH.map(list =>
+				NEWSLETTERS_TO_FETCH.map((list) =>
 					CampaignMonitorService.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
 				)
 			);
@@ -142,7 +145,7 @@ export default class CampaignMonitorService {
 				Name: name,
 				Resubscribe: true,
 				ConsentToTrack: 'Yes',
-				CustomFields: _.toPairs(customFields).map(pair => ({
+				CustomFields: toPairs(customFields).map((pair) => ({
 					Key: pair[0],
 					Value: pair[1],
 				})),
