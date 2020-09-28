@@ -5,7 +5,7 @@ import { Avo } from '@viaa/avo2-types';
 export interface IdpMap {
 	id: number;
 	local_user_id: string; // uuid
-	idp: IdpType; // enum
+	idp: Avo.Auth.IdpType; // enum
 	idp_user_id: string;
 }
 
@@ -83,7 +83,7 @@ export interface SharedUser {
 	uid: string;
 	updated_at: string;
 	mail: string;
-	idpmaps: { idp: IdpType }[];
+	idpmaps: { idp: Avo.Auth.IdpType }[];
 	profile_classifications: {
 		key: string;
 	}[];
@@ -122,8 +122,6 @@ export interface Profile {
 		};
 	}[];
 }
-
-export type IdpType = 'HETARCHIEF' | 'SMARTSCHOOL' | 'KLASCEMENT'; // TODO switch to typings library
 
 export interface IdpMetaData {
 	'md:EntityDescriptor': {

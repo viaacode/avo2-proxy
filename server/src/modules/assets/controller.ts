@@ -3,11 +3,12 @@ import _ from 'lodash';
 import * as path from 'path';
 import getUuid from 'uuid/v1';
 
+import { Avo } from '@viaa/avo2-types';
+
 import { BadRequestError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 
 import { DELETE_CONTENT_ASSET, INSERT_CONTENT_ASSET } from './queries.gql';
-import { UploadAssetInfo } from './route';
 import AssetService from './service';
 
 const VALID_MIME_TYPES: string[] = [
@@ -32,7 +33,7 @@ export default class AssetController {
 	 * @param files
 	 */
 	public static async upload(
-		uploadAssetInfo: UploadAssetInfo,
+		uploadAssetInfo: Avo.FileUpload.UploadAssetInfo,
 		files: Express.Multer.File[]
 	): Promise<string> {
 		const parsedFilename = path.parse(uploadAssetInfo.filename);

@@ -111,7 +111,7 @@ export default class ContentPageController {
 		request: Request
 	) {
 		const mediaGridBlocks = contentPage.contentBlockssBycontentId.filter(
-			contentBlock => contentBlock.content_block_type === 'MEDIA_GRID'
+			(contentBlock) => contentBlock.content_block_type === 'MEDIA_GRID'
 		);
 		if (mediaGridBlocks.length) {
 			await promiseUtils.mapLimit(mediaGridBlocks, 2, async (mediaGridBlock: any) => {
@@ -152,7 +152,7 @@ export default class ContentPageController {
 		contentPage: Avo.ContentPage.Page,
 		request: Request
 	) {
-		const mediaPlayerBlocks = contentPage.contentBlockssBycontentId.filter(contentBlock =>
+		const mediaPlayerBlocks = contentPage.contentBlockssBycontentId.filter((contentBlock) =>
 			_.keys(MEDIA_PLAYER_BLOCKS).includes(contentBlock.content_block_type)
 		);
 		if (mediaPlayerBlocks.length) {
@@ -182,7 +182,7 @@ export default class ContentPageController {
 							['description', 'setDescriptionPath'],
 							['issued', 'setIssuedPath'],
 							['organisation', 'setOrganisationPath'],
-						].forEach(props => {
+						].forEach((props) => {
 							if (
 								itemInfo &&
 								(itemInfo as any)[props[0]] &&
@@ -238,7 +238,7 @@ export default class ContentPageController {
 			let searchResults: any[] = [];
 
 			// Check for items/collections
-			const nonEmptyMediaItems = mediaItems.filter(mediaItem => !_.isEmpty(mediaItem));
+			const nonEmptyMediaItems = mediaItems.filter((mediaItem) => !_.isEmpty(mediaItem));
 			if (nonEmptyMediaItems.length) {
 				manualResults = await promiseUtils.mapLimit(
 					nonEmptyMediaItems,
@@ -292,7 +292,7 @@ export default class ContentPageController {
 				searchResults = await promiseUtils.mapLimit(
 					searchResponse.results || [],
 					8,
-					result =>
+					(result) =>
 						ContentPageController.mapSearchResultToItemOrCollection(result, request)
 				);
 			}

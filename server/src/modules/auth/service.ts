@@ -6,7 +6,6 @@ import { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
-import { ClientEducationOrganization } from '../education-organizations/route';
 import EducationOrganizationsService, {
 	LdapEducationOrganizationWithUnits,
 	SimpleOrgInfo,
@@ -92,24 +91,24 @@ export class AuthService {
 			});
 			(user as any).profile.userGroupIds = userGroupIds;
 			(user as any).profile.permissions = Array.from(permissions);
-			(user as any).idpmaps = uniq((user.idpmaps || []).map(obj => obj.idp));
+			(user as any).idpmaps = uniq((user.idpmaps || []).map((obj) => obj.idp));
 			delete user.profiles;
 			delete (user as any).profile.profile_user_groups;
 
 			// Simplify linked objects
 			(user as any).profile.educationLevels = (get(user, 'profile.profile_contexts', []) as {
 				key: string;
-			}[]).map(context => context.key);
+			}[]).map((context) => context.key);
 			(user as any).profile.subjects = uniq(
 				(get(user, 'profile.profile_classifications', []) as {
 					key: string;
-				}[]).map(classification => classification.key)
+				}[]).map((classification) => classification.key)
 			);
 			(user as any).profile.organizations = compact(
 				await promiseUtils.mapLimit(
 					get(user, 'profile.profile_organizations', []),
 					5,
-					async (org): Promise<ClientEducationOrganization> => {
+					async (org): Promise<Avo.EducationOrganization.Organization> => {
 						const ldapOrg: LdapEducationOrganizationWithUnits = await EducationOrganizationsService.getOrganization(
 							org.organization_id,
 							org.unit_id
@@ -118,7 +117,7 @@ export class AuthService {
 							return null;
 						}
 						const unitAddress = get(
-							(ldapOrg.units || []).find(unit => unit.id === org.unit_id),
+							(ldapOrg.units || []).find((unit) => unit.id === org.unit_id),
 							'address',
 							null
 						);
@@ -142,7 +141,7 @@ export class AuthService {
 	static async addUserGroupsToProfile(userGroupIds: number[], profileId: string) {
 		try {
 			const response = await DataService.execute(LINK_USER_GROUPS_TO_PROFILE, {
-				objects: userGroupIds.map(userGroupId => ({
+				objects: userGroupIds.map((userGroupId) => ({
 					user_group_id: userGroupId,
 					user_profile_id: profileId,
 				})),
@@ -252,7 +251,7 @@ export class AuthService {
 					if (fullOrgInfo) {
 						orgUuids.push(fullOrgInfo.id);
 						const unitUuid = get(
-							fullOrgInfo.units.find(unit => unit.ou_id === simpleOrgInfo.unitId),
+							fullOrgInfo.units.find((unit) => unit.ou_id === simpleOrgInfo.unitId),
 							'id'
 						);
 						if (unitUuid) {
