@@ -10,7 +10,11 @@ import {
 
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
+import {
+	hasPermissionRouteGuard,
+	isAuthenticatedRouteGuard,
+	multiGuard,
+} from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
 import EventLoggingController from '../event-logging/controller';
@@ -18,6 +22,7 @@ import EventLoggingController from '../event-logging/controller';
 import { templateIds } from './const';
 import CampaignMonitorController from './controller';
 import { EmailInfo } from './types';
+import { PermissionName } from '../../shared/permissions';
 
 @Path('/campaign-monitor')
 export default class CampaignMonitorRoute {
@@ -92,7 +97,12 @@ export default class CampaignMonitorRoute {
 	 */
 	@Path('preferences')
 	@GET
-	@PreProcessor(isAuthenticatedRouteGuard)
+	@PreProcessor(
+		multiGuard(
+			isAuthenticatedRouteGuard,
+			hasPermissionRouteGuard(PermissionName.VIEW_NEWSLETTERS_PAGE)
+		)
+	)
 	async fetchNewsletterPreferences(@QueryParam('email') email: string) {
 		try {
 			return await CampaignMonitorController.fetchNewsletterPreferences(email);

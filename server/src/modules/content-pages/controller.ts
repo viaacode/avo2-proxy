@@ -225,11 +225,11 @@ export default class ContentPageController {
 		searchQueryLimit: string | undefined,
 		mediaItems:
 			| {
-					mediaItem: {
-						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-						value: string;
-					};
-			  }[]
+			mediaItem: {
+				type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+				value: string;
+			};
+		}[]
 			| undefined,
 		request: Request
 	): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {

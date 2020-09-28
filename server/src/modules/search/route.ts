@@ -5,7 +5,12 @@ import { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
+import {
+	hasPermissionRouteGuard,
+	isAuthenticatedRouteGuard,
+	multiGuard,
+} from '../../shared/middleware/is-authenticated';
+import { PermissionName } from '../../shared/permissions';
 
 import SearchController, { EsIndex } from './controller';
 
@@ -17,7 +22,9 @@ export default class SearchRoute {
 	 */
 	@Path('')
 	@POST
-	@PreProcessor(isAuthenticatedRouteGuard)
+	@PreProcessor(
+		multiGuard(isAuthenticatedRouteGuard, hasPermissionRouteGuard(PermissionName.SEARCH))
+	)
 	async search(searchRequest: any): Promise<any> {
 		if (isNil(searchRequest.size)) {
 			throw new BadRequestError('size parameter is required', null, { searchRequest });
