@@ -4,7 +4,7 @@ import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-import SubtitlesController from './Subtitles.controller';
+import SubtitlesController from './subtitles.controller';
 
 @Path('/subtitles')
 export default class SubtitleRoute {
