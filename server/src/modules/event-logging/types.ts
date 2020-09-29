@@ -1,15 +1,14 @@
-import { EventAction, EventObjectType, EventSubjectType } from './controller';
+import type { Avo } from '@viaa/avo2-types';
 
-// TODO switch subtypes to typings repo after update to typings v2.22.0
 export interface LogEvent {
 	id?: string;
 	component: 'webapp' | 'server';
 	parent_id: string | null;
 	namespace: 'avo';
-	action: EventAction;
-	object_type: EventObjectType;
+	action: Avo.EventLogging.Action;
+	object_type: Avo.EventLogging.ObjectType;
 	object: string | null;
-	subject_type: EventSubjectType;
+	subject_type: Avo.EventLogging.SubjectType;
 	subject: string; // entity doing the modification
 	subject_ip: string | null;
 	source_url: string; // eg: url when the event was triggered

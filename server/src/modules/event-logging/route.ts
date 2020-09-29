@@ -1,9 +1,11 @@
-import _ from 'lodash';
+import { isArray } from 'lodash';
 import { Context, Path, POST, ServiceContext } from 'typescript-rest';
+
+import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError } from '../../shared/helpers/error';
 
-import EventLoggingController, { ClientEvent } from './controller';
+import EventLoggingController from './controller';
 
 @Path('/event-logging')
 export default class EventLoggingRoute {
@@ -15,11 +17,13 @@ export default class EventLoggingRoute {
 	 */
 	@Path('')
 	@POST
-	async insertEvent(clientEvents: ClientEvent | ClientEvent[] | null): Promise<void> {
+	async insertEvent(
+		clientEvents: Avo.EventLogging.Event | Avo.EventLogging.Event[] | null
+	): Promise<void> {
 		if (!clientEvents) {
 			throw new BadRequestError('body must contain the event you want to log');
 		}
-		const clientEventArray: ClientEvent[] = _.isArray(clientEvents)
+		const clientEventArray: Avo.EventLogging.Event[] = isArray(clientEvents)
 			? clientEvents
 			: [clientEvents];
 		EventLoggingController.insertEvents(clientEventArray, this.context.request);

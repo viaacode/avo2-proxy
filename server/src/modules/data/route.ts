@@ -1,10 +1,7 @@
-import { isString } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { mapDeep } from '../../shared/helpers/map-deep';
-import { sanitizeHtml } from '../../shared/helpers/sanitize';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
@@ -29,17 +26,9 @@ export default class DataRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async post(body: DataQuery): Promise<any> {
 		try {
-			const variables = body.variables;
-
-			const sanitizedVariables = mapDeep(variables, (obj: any, key: string, value: any) => {
-				if (isString(value)) {
-					obj[key] = sanitizeHtml(value, 'full');
-				}
-			});
-
 			return await DataController.execute(
 				body.query,
-				sanitizedVariables,
+				body.variables,
 				this.context.request.headers,
 				IdpHelper.getAvoUserInfoFromSession(this.context.request)
 			);

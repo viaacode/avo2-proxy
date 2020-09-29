@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import {
 	BadRequestError,

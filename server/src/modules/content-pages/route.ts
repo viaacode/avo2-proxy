@@ -8,11 +8,19 @@ import {
 	ServiceContext,
 } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
-import { InternalServerError, NotFoundError, UnauthorizedError } from '../../shared/helpers/error';
+import {
+	CustomError,
+	InternalServerError,
+	NotFoundError,
+	UnauthorizedError,
+} from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
+import {
+	checkApiKeyRouteGuard,
+	isAuthenticatedRouteGuard,
+} from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
@@ -88,11 +96,11 @@ export default class ContentPagesRoute {
 		searchQueryLimit: string | undefined;
 		mediaItems:
 			| {
-			mediaItem: {
-				type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-				value: string;
-			};
-		}[]
+					mediaItem: {
+						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+						value: string;
+					};
+			  }[]
 			| undefined;
 	}): Promise<any[]> {
 		try {
@@ -114,6 +122,22 @@ export default class ContentPagesRoute {
 				err,
 				{ body }
 			);
+		}
+	}
+
+	@Path('update-published-dates')
+	@POST
+	@PreProcessor(checkApiKeyRouteGuard)
+	async updatePublishDates(): Promise<any> {
+		try {
+			const response = await ContentPageController.updatePublishDates();
+			return {
+				message: `content page publish dates have been updated, ${response.published} published, ${response.unpublished} unpublished`,
+			};
+		} catch (err) {
+			const error = new CustomError('Failed to update content page publish dates', err);
+			logger.error(error);
+			throw new InternalServerError(error.message);
 		}
 	}
 }

@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { get, uniqBy } from 'lodash';
 import cron from 'node-cron';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';

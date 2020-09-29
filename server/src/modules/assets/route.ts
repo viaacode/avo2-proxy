@@ -1,27 +1,13 @@
 import _ from 'lodash';
 import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
+import type { Avo } from '@viaa/avo2-types/types/index';
+
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
 import AssetController from './controller';
-
-export type AssetType =
-	| 'BUNDLE_COVER'
-	| 'COLLECTION_COVER'
-	| 'CONTENT_PAGE_IMAGE'
-	| 'PROFILE_AVATAR'
-	| 'ITEM_SUBTITLE';
-
-export interface UploadAssetInfo {
-	// TODO use typings version
-	filename: string;
-	content: string;
-	mimeType: string;
-	type: AssetType; // Used to put the asset inside a folder structure inside the bucket
-	ownerId: string;
-}
 
 @Path('/assets')
 export default class AssetRoute {
@@ -34,11 +20,13 @@ export default class AssetRoute {
 	@Path('upload')
 	@POST
 	@PreProcessor(isAuthenticatedRouteGuard)
-	async uploadAsset(assetInfo: UploadAssetInfo): Promise<{ url: string } | BadRequestError> {
+	async uploadAsset(
+		assetInfo: Avo.FileUpload.UploadAssetInfo
+	): Promise<{ url: string } | BadRequestError> {
 		if (!assetInfo || !assetInfo.filename || !assetInfo.type) {
 			throw new BadRequestError(
 				'the body must contain the filename, content and type (' +
-					"'BUNDLE_COVER','COLLECTION_COVER','CONTENT_PAGE_IMAGE','PROFILE_AVATAR','ITEM_SUBTITLE'"
+				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\''
 			);
 		}
 

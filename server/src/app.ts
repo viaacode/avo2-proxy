@@ -5,6 +5,7 @@ import { Server } from 'typescript-rest';
 
 import { default as config } from './config';
 import { IConfig } from './config/config.types';
+import { CustomError } from './shared/helpers/error';
 import { logger, logIfNotTestEnv } from './shared/helpers/logger';
 import { Validator } from './shared/helpers/validation';
 
@@ -45,6 +46,7 @@ import AssetService from './modules/assets/service';
 import OrganisationService from './modules/organization/service';
 import ZendeskService from './modules/zendesk/service';
 import MamSyncratorRoute from './modules/mam-syncrator/mam-syncrator.route';
+import SubtitleRoute from './modules/subtitles/subtitles.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -56,22 +58,26 @@ export class App {
 	public server: http.Server;
 
 	constructor(start: boolean = true) {
-		Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
+		try {
+			Validator.validate(process.env, corePresets.env, 'Invalid environment variables');
 
-		// One time initialization of objects needed for operation of the api
-		OrganisationService.initialize();
-		HetArchiefService.initialize();
-		SmartschoolService.initialize();
-		KlascementService.initialize();
-		ZendeskService.initialize();
-		AssetService.initialize();
+			// One time initialization of objects needed for operation of the api
+			OrganisationService.initialize();
+			HetArchiefService.initialize();
+			SmartschoolService.initialize();
+			KlascementService.initialize();
+			ZendeskService.initialize();
+			AssetService.initialize();
 
-		this.loadMiddleware();
-		this.loadModules();
-		this.loadErrorHandling();
+			this.loadMiddleware();
+			this.loadModules();
+			this.loadErrorHandling();
 
-		if (start) {
-			this.start();
+			if (start) {
+				this.start();
+			}
+		} catch (err) {
+			throw new CustomError(`Failed to start server: ${JSON.stringify(err)}`);
 		}
 	}
 
@@ -160,6 +166,7 @@ export class App {
 			CollectionsRoute,
 			SitemapRoutes,
 			MamSyncratorRoute,
+			SubtitleRoute,
 
 			FallbackRoute
 		);

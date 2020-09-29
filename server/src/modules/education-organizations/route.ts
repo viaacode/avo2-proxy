@@ -1,17 +1,12 @@
 import { GET, Path, QueryParam } from 'typescript-rest';
 
+import type { Avo } from '@viaa/avo2-types';
+
 import { BadRequestError, CustomError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
 import { CITIES } from './cities';
 import EducationOrganizationsController from './controller';
-
-export interface ClientEducationOrganization {
-	// TODO move to typings repo
-	organizationId: string;
-	unitId: string;
-	label: string; // org.name + ' - ' + unit.address
-}
 
 @Path('/education-organisations')
 export default class EducationOrganizationsRoute {
@@ -29,7 +24,7 @@ export default class EducationOrganizationsRoute {
 	async getOrganizationsByCity(
 		@QueryParam('city') city: string,
 		@QueryParam('zipCode') zipCode: string
-	): Promise<ClientEducationOrganization[]> {
+	): Promise<Avo.EducationOrganization.Organization[]> {
 		if (!zipCode && !city) {
 			throw new BadRequestError(
 				'Failed to get organisations because neither the city nor the zipCode queryParams were provided'

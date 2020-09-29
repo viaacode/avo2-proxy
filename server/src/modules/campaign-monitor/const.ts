@@ -1,6 +1,6 @@
 import { keys } from 'lodash';
 
-import { NewsletterKey } from './types';
+import type { Avo } from '@viaa/avo2-types';
 
 export const NEWSLETTER_LISTS = {
 	newsletter: process.env.CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID,
@@ -9,7 +9,7 @@ export const NEWSLETTER_LISTS = {
 	allActiveUsers: process.env.CAMPAIGN_MONITOR_ALL_ACTIVE_USERS_LIST_ID,
 };
 
-export const NEWSLETTERS_TO_FETCH = keys(NEWSLETTER_LISTS) as NewsletterKey[];
+export const NEWSLETTERS_TO_FETCH = keys(NEWSLETTER_LISTS) as Avo.Newsletter.PreferencesKey[];
 
 export const templateIds = {
 	item: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_ITEM,

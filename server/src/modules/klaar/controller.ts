@@ -3,7 +3,7 @@ import moment from 'moment';
 import * as queryString from 'querystring';
 import stripHtml from 'string-strip-html';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, NotFoundError } from '../../shared/helpers/error';
 import ContentPageController from '../content-pages/controller';
@@ -98,13 +98,11 @@ export default class KlaarController {
 				// Avoid issues with different timezones in the ibm server
 				// eg: 21/04/2020 Belgium time is 20/04/2020 22:00:00 UTC time
 				// By adding 12 hours we always extract the correct date that was intended
-				uuid: moment(subjectAndDate.date)
-					.add(12, 'hours')
-					.format('YYYYMMDD'),
+				uuid: moment(subjectAndDate.date).add(12, 'hours').format('YYYYMMDD'),
 				timestamp: klaarNewsLetterContentPage.updated_at,
 				message: {
 					subject: subjectAndDate.subject || klaarNewsLetterContentPage.title,
-					body: (klaarNewsLetterContentPage as any).meta_description, // TODO remove cast after update to typings v2.23.0
+					body: klaarNewsLetterContentPage.meta_description,
 					avo_link: `${process.env.CLIENT_HOST}/klaar`,
 					assets: await KlaarController.extractMediaItems(klaarNewsLetterContentPage),
 				},
@@ -125,7 +123,7 @@ export default class KlaarController {
 		contentPage: Avo.ContentPage.Page
 	): { date: string; subject: string } {
 		const klaarBlocks: KlaarBlock[] = (contentPage.contentBlockssBycontentId.filter(
-			block => block.content_block_type === 'KLAAR'
+			(block) => block.content_block_type === 'KLAAR'
 		) as unknown) as KlaarBlock[];
 		if (!klaarBlocks.length) {
 			throw new CustomError(
@@ -149,10 +147,10 @@ export default class KlaarController {
 	): Promise<KlaarNewsletterItem[]> {
 		try {
 			const itemBlocks: MediaPlayerTitleTextButtonBlock[] = (contentPage.contentBlockssBycontentId.filter(
-				block => block.content_block_type === 'MEDIA_PLAYER_TITLE_TEXT_BUTTON'
+				(block) => block.content_block_type === 'MEDIA_PLAYER_TITLE_TEXT_BUTTON'
 			) as unknown) as MediaPlayerTitleTextButtonBlock[];
 			const externalIds = _.compact(
-				itemBlocks.map(item => _.get(item, 'variables.componentState.mediaItem.value'))
+				itemBlocks.map((item) => _.get(item, 'variables.componentState.mediaItem.value'))
 			);
 			const thumbnails = await this.getItemThumbnails(externalIds);
 			return itemBlocks.map(

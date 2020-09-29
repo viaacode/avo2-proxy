@@ -3,11 +3,11 @@ import _ from 'lodash';
 import zendesk, { Client, Requests } from 'node-zendesk';
 import * as queryString from 'querystring';
 
+import type { Avo } from '@viaa/avo2-types';
+
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-
-import { ZendeskFileInfo } from './route';
 
 export default class ZendeskService {
 	private static client: Client;
@@ -48,7 +48,9 @@ export default class ZendeskService {
 		});
 	}
 
-	static async uploadAttachment(fileInfo: ZendeskFileInfo): Promise<{ url: string; id: number }> {
+	static async uploadAttachment(
+		fileInfo: Avo.FileUpload.ZendeskFileInfo
+	): Promise<{ url: string; id: number }> {
 		try {
 			const base64Code = (fileInfo.base64.split(';base64,').pop() || '').trim();
 			if (!base64Code) {

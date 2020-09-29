@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { SpecialPermissionGroups } from '../types';
 

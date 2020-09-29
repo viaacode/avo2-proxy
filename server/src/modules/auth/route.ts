@@ -11,7 +11,7 @@ import {
 	ServiceContext,
 } from 'typescript-rest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-client';
@@ -25,12 +25,11 @@ import i18n from '../../shared/translations/i18n';
 
 import AuthController from './controller';
 import { IdpHelper } from './idp-helper';
-import { IdpType } from './types';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
 
 export interface LinkAccountInfo {
-	type: IdpType;
+	type: Avo.Auth.IdpType;
 	userObject: any;
 }
 
@@ -89,7 +88,7 @@ export default class AuthRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async linkAccount(
 		@QueryParam('returnToUrl') returnToUrl: string,
-		@QueryParam('idpType') idpType: IdpType
+		@QueryParam('idpType') idpType: Avo.Auth.IdpType
 	): Promise<any> {
 		return AuthController.redirectToIdpLoginForLinkingAccounts(
 			this.context.request,
@@ -136,7 +135,7 @@ export default class AuthRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async unlinkAccount(
 		@QueryParam('returnToUrl') returnToUrl: string,
-		@QueryParam('idpType') idpType: IdpType
+		@QueryParam('idpType') idpType: Avo.Auth.IdpType
 	): Promise<any> {
 		try {
 			await AuthController.unlinkAccounts(this.context.request, idpType);
@@ -162,6 +161,7 @@ export default class AuthRoute {
 	async clearSessions(): Promise<any> {
 		try {
 			await clearRedis();
+			return { message: 'User sessions have been cleared' };
 		} catch (err) {
 			logger.error(new CustomError('Failed to clear redis sessions', err));
 		}

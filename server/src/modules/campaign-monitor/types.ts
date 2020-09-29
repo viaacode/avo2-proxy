@@ -1,14 +1,4 @@
-import { Avo } from '@viaa/avo2-types';
-
-// TODO: Implement in typings
 import { templateIds } from './const';
-
-export interface NewsletterPreferences {
-	newsletter: boolean;
-	workshop: boolean;
-	ambassador: boolean;
-	allActiveUsers: boolean;
-}
 
 export interface CustomFields {
 	gebruikersgroep: string;
@@ -24,8 +14,6 @@ export interface CustomFields {
 	school_campus_ids: string;
 	school_namen: string;
 }
-
-export type NewsletterKey = keyof NewsletterPreferences;
 
 export interface EmailInfo {
 	// TODO use typings version

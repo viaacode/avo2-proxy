@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import _ from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -143,7 +143,6 @@ export default class SearchService {
 				}
 			}
 
-			logger.info(`---------- query:\n${url}\n${JSON.stringify(searchQueryObject)}`);
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
 				method: 'post',

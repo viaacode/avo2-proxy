@@ -1,6 +1,6 @@
 import 'jest';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { AGGS_PROPERTIES } from './constants';
 import aggregations from './fixtures/aggregations.json';

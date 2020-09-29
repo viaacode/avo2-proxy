@@ -31,8 +31,9 @@ export const GET_CONTENT_PAGE_BY_PATH = `
 			user_group_ids
 			content_content_labels {
 				content_label {
-					label
 					id
+					label
+					link_to
 				}
 			}
 			contentBlockssBycontentId(order_by: { position: asc }) {
@@ -70,6 +71,11 @@ export const GET_ITEM_TILE_BY_ID = `
 				label
 				id
 			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
+			}
 			view_counts_aggregate {
 				aggregate {
 					sum {
@@ -95,6 +101,11 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 			}
 			type {
 				label
+			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
 			}
 		}
 	}
@@ -163,8 +174,9 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 			updated_at
 			content_content_labels {
 				content_label {
-					label
 					id
+					label
+					link_to
 				}
 			}
 			contentBlockssBycontentId(order_by: { position: asc }) {
@@ -236,8 +248,9 @@ export const GET_CONTENT_PAGES = `
 			user_profile_id
 			content_content_labels {
 				content_label {
-					label
 					id
+					label
+					link_to
 				}
 			}
 		}
@@ -266,4 +279,31 @@ export const GET_PUBLIC_CONTENT_PAGES = `
 			updated_at
 		}
 	}
+`;
+
+export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
+  mutation publishContentPages($now: timestamptz, $publishedAt: timestamptz) {
+    publish_content_pages: update_app_content(
+      where: {
+        _or: [
+          {publish_at: {_lte: $now, _is_null: false}, depublish_at: {_gte: $now, _is_null: false}},
+          {publish_at: {_lte: $now, _is_null: false}, depublish_at: {_is_null: true}},
+          {publish_at: {_is_null: true}, published_at: {_gte: $now, _is_null: false}}
+        ],
+        published_at: {_is_null: true}
+      },
+      _set: {published_at: $publishedAt}
+    ) {
+      affected_rows
+    }
+    unpublish_content_pages: update_app_content(
+      where: {
+        depublish_at: {_lt: $now, _is_null: false},
+        published_at: {_is_null: false}
+      },
+      _set: {published_at: null}
+    ) {
+      affected_rows
+    }
+  }
 `;

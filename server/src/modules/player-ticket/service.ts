@@ -64,6 +64,7 @@ export default class PlayerTicketService {
 				referer,
 				app: 'OR-avo2',
 				client: clientIp,
+				maxage: expire,
 			};
 
 			const response: AxiosResponse<any> = await axios(

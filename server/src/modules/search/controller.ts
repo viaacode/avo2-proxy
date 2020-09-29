@@ -1,6 +1,6 @@
 import { get } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
@@ -10,16 +10,13 @@ import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
 import QueryBuilder from './queryBuilder';
 import SearchService from './service';
 
-export type EsIndexType = 'items' | 'collections' | 'bundles'; // TODO replace with typings type after update to 2.14.0
-export type EsIndex = 'all' | EsIndexType;
-
 checkRequiredEnvs([
 	'ELASTICSEARCH_INDEX',
 	'ELASTICSEARCH_INDEX_ITEMS',
 	'ELASTICSEARCH_INDEX_COLLECTIONS',
 ]);
 
-const ES_INDEX_MAP: { [key in EsIndex]: string | undefined } = {
+const ES_INDEX_MAP: { [key in Avo.Search.EsIndex]: string | undefined } = {
 	all: process.env.ELASTICSEARCH_INDEX,
 	items: process.env.ELASTICSEARCH_INDEX_ITEMS,
 	collections: process.env.ELASTICSEARCH_INDEX_COLLECTIONS,
@@ -52,7 +49,7 @@ export default class SearchController {
 
 	public static async getRelatedItems(
 		id: string,
-		type: EsIndex,
+		type: Avo.Search.EsIndex,
 		limit: number = 5
 	): Promise<Avo.Search.Search> {
 		try {

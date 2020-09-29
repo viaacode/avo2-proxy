@@ -102,8 +102,8 @@ export const GET_COLLECTION_BY_ID = `
 `;
 
 export const GET_ITEMS_BY_IDS = `
-	query getCollectionsByIds($ids: [bpchar!]!) {
-		items: app_item_meta(where: { external_id: { _in: $ids } }) {
+	query getItemsByIds($ids: [bpchar!]!) {
+		items: app_item_meta(where: {external_id: {_in: $ids}}) {
 			id
 			uid
 			external_id
@@ -119,6 +119,14 @@ export const GET_ITEMS_BY_IDS = `
 			organisation {
 				name
 				logo_url
+			}
+			relations(where: {predicate: {_eq: "REPLACES"}}) {
+				created_at
+			}
+			item_collaterals(where: {description: {_eq: "subtitle"}}) {
+				path
+				description
+				external_id
 			}
 		}
 	}
