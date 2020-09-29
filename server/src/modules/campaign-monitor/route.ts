@@ -15,6 +15,7 @@ import {
 	isAuthenticatedRouteGuard,
 	multiGuard,
 } from '../../shared/middleware/is-authenticated';
+import { PermissionName } from '../../shared/permissions';
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
 import EventLoggingController from '../event-logging/controller';
@@ -22,7 +23,6 @@ import EventLoggingController from '../event-logging/controller';
 import { templateIds } from './const';
 import CampaignMonitorController from './controller';
 import { EmailInfo } from './types';
-import { PermissionName } from '../../shared/permissions';
 
 @Path('/campaign-monitor')
 export default class CampaignMonitorRoute {

@@ -1,10 +1,11 @@
-import _ from 'lodash';
+import { get, isNil, unset } from 'lodash';
 import * as queryString from 'querystring';
 import {
 	Context,
 	DELETE,
 	GET,
 	Path,
+	POST,
 	PreProcessor,
 	QueryParam,
 	Return,
@@ -18,12 +19,16 @@ import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-c
 import { logger } from '../../shared/helpers/logger';
 import {
 	checkApiKeyRouteGuard,
+	hasPermissionRouteGuard,
 	isAuthenticatedRouteGuard,
+	multiGuard,
 } from '../../shared/middleware/is-authenticated';
 import { clearRedis } from '../../shared/middleware/session';
+import { PermissionName } from '../../shared/permissions';
 import i18n from '../../shared/translations/i18n';
 
 import AuthController from './controller';
+import { UpdateDatabasePermissionsService } from './database-permissions/update-database-permissions.service';
 import { IdpHelper } from './idp-helper';
 
 export const LINK_ACCOUNT_PATH = 'request.session.linkAccountPath';
@@ -103,12 +108,12 @@ export default class AuthRoute {
 	async linkAccountCallback(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		// The link-account path already made the user login to the idp
 		// This flow has set the idp user object on the session, so we can access it here
-		const idpUserInfo: LinkAccountInfo = _.get(this.context, LINK_ACCOUNT_PATH);
+		const idpUserInfo: LinkAccountInfo = get(this.context, LINK_ACCOUNT_PATH);
 		if (!idpUserInfo || !idpUserInfo.type || !idpUserInfo.userObject) {
 			const error = new CustomError(
 				'Failed to link account in link-account-callback route',
 				null,
-				{ idpUserInfo, session: _.get(this.context, 'request.session') }
+				{ idpUserInfo, session: get(this.context, 'request.session') }
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
@@ -125,7 +130,7 @@ export default class AuthRoute {
 		);
 
 		// Remove idp user object, since we're done with it
-		_.unset(this.context, LINK_ACCOUNT_PATH);
+		unset(this.context, LINK_ACCOUNT_PATH);
 
 		return redirectResponse;
 	}
@@ -152,6 +157,50 @@ export default class AuthRoute {
 				['home', 'helpdesk'],
 				error.identifier
 			);
+		}
+	}
+
+	@Path('update-database-permissions')
+	@GET
+	@PreProcessor(
+		multiGuard(
+			isAuthenticatedRouteGuard,
+			hasPermissionRouteGuard(PermissionName.EDIT_USER_GROUPS)
+		)
+	)
+	async getUpdateDatabasePermissionsProgress(): Promise<any> {
+		try {
+			return { progress: UpdateDatabasePermissionsService.getProgress() };
+		} catch (err) {
+			logger.error(
+				new CustomError('Failed to get progress for update-database-permissions', err)
+			);
+		}
+	}
+
+	@Path('update-database-permissions')
+	@POST
+	@PreProcessor(
+		multiGuard(
+			isAuthenticatedRouteGuard,
+			hasPermissionRouteGuard(PermissionName.EDIT_USER_GROUPS)
+		)
+	)
+	async updateDatabasePermissions(): Promise<any> {
+		try {
+			if (!isNil(UpdateDatabasePermissionsService.getProgress())) {
+				return { error: 'Already in progress' };
+			}
+			logger.info('[PERMISSIONS] updating permissions: ...');
+			UpdateDatabasePermissionsService.updateRowPermissions().then(() => {
+				logger.info('[PERMISSIONS] updating permissions: ... success');
+			}).catch((err) => {
+				logger.error(new CustomError('[PERMISSIONS] updating permissions: ... Failed', err));
+			});
+
+			return { message: 'started' };
+		} catch (err) {
+			logger.error(new CustomError('[PERMISSIONS] updating permissions: ... Failed', err));
 		}
 	}
 
