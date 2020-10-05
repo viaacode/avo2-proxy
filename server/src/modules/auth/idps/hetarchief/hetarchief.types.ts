@@ -22,8 +22,8 @@ export interface LdapPerson {
 	objectclass: string[];
 	apps: App[];
 	groups: Group[];
-	unit: Partial<Unit>;
-	organization: Partial<Organization>;
+	educationalOrganisationUnitIds: string[];
+	educationalOrganisationIds: string[];
 	confirmed: boolean;
 	edu_typename: string[];
 	edu_typecode: string[];
