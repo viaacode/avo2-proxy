@@ -43,6 +43,9 @@ export default class QueryBuilder {
 			const max = Math.max(0, MAX_COUNT_SEARCH_RESULTS - queryObject.size);
 			queryObject.from = _.clamp(searchRequest.from || 0, 0, max);
 
+			// Add the filters and search terms to the query object
+			_.set(queryObject, 'query', this.buildFilterObject(searchRequest.filters));
+
 			if (searchRequest.size) {
 				// Provide the ordering to the query object
 				_.set(
@@ -50,9 +53,6 @@ export default class QueryBuilder {
 					'sort',
 					this.buildSortArray(searchRequest.orderProperty, searchRequest.orderDirection)
 				);
-
-				// Add the filters and search terms to the query object
-				_.set(queryObject, 'query', this.buildFilterObject(searchRequest.filters));
 
 				// If search terms are passed, we're only interested in items with a score > 0
 				// If only filters are passed, and no search terms, then score 0 items are also accepted
@@ -157,7 +157,7 @@ export default class QueryBuilder {
 		return {
 			bool: {
 				should: [
-					values.map(value => ({
+					values.map((value) => ({
 						term: {
 							[elasticKey + this.suffix(readableKey)]: value,
 						},
@@ -185,7 +185,7 @@ export default class QueryBuilder {
 			// Replace {{query}} in the template with the escaped search terms
 			const textQueryObjectArray = _.cloneDeep(textQueryObjectTemplate);
 			const escapedQueryString = stringQuery;
-			_.forEach(textQueryObjectArray, matchObj => {
+			_.forEach(textQueryObjectArray, (matchObj) => {
 				_.set(matchObj, 'multi_match.query', escapedQueryString);
 			});
 
@@ -274,11 +274,11 @@ export default class QueryBuilder {
 	 *   "key": "afbetaling",
 	 *   "doc_count": 1
 	 * }
-	 * @param filterOptionSearch
+	 * @param searchRequest
 	 */
 	private static buildAggsObject(searchRequest: Avo.Search.Request | undefined): any {
 		const aggs: any = {};
-		_.forEach((searchRequest as any).requestedAggs || AGGS_PROPERTIES, aggProperty => {
+		_.forEach((searchRequest as any).requestedAggs || AGGS_PROPERTIES, (aggProperty) => {
 			const elasticProperty =
 				READABLE_TO_ELASTIC_FILTER_NAMES[aggProperty as Avo.Search.FilterProp];
 			if (!elasticProperty) {
