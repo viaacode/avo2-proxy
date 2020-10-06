@@ -1,8 +1,9 @@
-import type { Avo } from '@viaa/avo2-types';
 import axios from 'axios';
 import _ from 'lodash';
 import zendesk, { Client, Requests } from 'node-zendesk';
 import * as queryString from 'querystring';
+
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, CustomError, ExternalServerError } from '../../shared/helpers/error';
