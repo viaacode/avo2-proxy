@@ -8,7 +8,6 @@ import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 import { CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
-import DataService from '../data/service';
 import OrganisationService from '../organization/service';
 import PlayerTicketController from '../player-ticket/controller';
 import PlayerTicketRoute from '../player-ticket/route';

@@ -1,9 +1,11 @@
+import { snakeCase } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
+import { AuthService } from '../auth/service';
 
 import DataController from './controller';
 
@@ -26,11 +28,25 @@ export default class DataRoute {
 	@PreProcessor(isAuthenticatedRouteGuard)
 	async post(body: DataQuery): Promise<any> {
 		try {
+			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			const allUserGroups = await AuthService.getAllUserGroups();
+			const userGroup = allUserGroups.find(userGroup => userGroup.id === avoUser.profile.userGroupIds[0]);
+			if (!userGroup) {
+				throw new InternalServerError(
+					'Failed to find user group for user group id',
+					null,
+					{ allUserGroups, userGroupId: avoUser.profile.userGroupIds[0] }
+				);
+			}
+			const userGroupLabel = snakeCase(userGroup.label);
 			return await DataController.execute(
 				body.query,
 				body.variables,
-				this.context.request.headers,
-				IdpHelper.getAvoUserInfoFromSession(this.context.request)
+				{
+					...this.context.request.headers,
+					'X-Hasura-Role': userGroupLabel,
+				},
+				avoUser,
 			);
 		} catch (err) {
 			logger.error(
