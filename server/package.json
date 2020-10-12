@@ -24,6 +24,7 @@
     "test": "jest --config jest.config.js --runInBand",
     "test:watch": "npm run test -- --watchAll",
     "posttest": "npm run lint",
+    "preinstall": "npx npm-force-resolutions",
     "clean:build": "rm -rf ./dist",
     "clean:coverage": "rm -rf ./test/coverage",
     "open:coverage": "open ./test/coverage/lcov-report/index.html",
@@ -113,7 +114,6 @@
     "@types/uuid": "^3.4.5",
     "dotenv": "^8.1.0",
     "dotenv-cli": "^3.1.0",
-    "fetch-poeditor": "^0.5.2",
     "glob": "^7.1.6",
     "jest": "24.8.0",
     "jest-extended": "0.11.2",
@@ -122,13 +122,16 @@
     "sinon-express-mock": "2.2.1",
     "sort-object-keys": "^1.1.3",
     "supertest": "4.0.2",
-    "ts-jest": "24.0.2",
+    "ts-jest": "^26.4.1",
     "ts-node-dev": "1.0.0-pre.63",
     "tslint": "5.18.0",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
     "typescript": "4.0.2"
+  },
+  "resolutions": {
+    "xml-encryption": "^1.2.1"
   },
   "license": "ISC"
 }
