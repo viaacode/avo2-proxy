@@ -15,7 +15,7 @@ export default class SubtitleRoute {
 	@GET
 	async convertSrtToVtt(): Promise<void> {
 		try {
-			checkRequiredEnvs(['archief-media']);
+			checkRequiredEnvs(['ARCHIEF_MEDIA']);
 
 			const path: string = this.context.request.originalUrl
 				.split('/convert-srt-to-vtt/')
@@ -25,7 +25,7 @@ export default class SubtitleRoute {
 					'You must specify the srt file path in the url. eg: /subtitles/convert-srt-to-vtt/meemoo/test.srt'
 				);
 			}
-			const subtitleUrl: string = `${process.env['archief-media']}/${path}`;
+			const subtitleUrl: string = `${process.env.ARCHIEF_MEDIA}/${path}`;
 			const vttContent: string = await SubtitlesController.convertSrtToVtt(subtitleUrl);
 
 			this.context.response.status(200);
