@@ -35,7 +35,7 @@ export default class AuthController {
 			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(
 				userInfo
 			);
-			AuthService.updateUserLastAccessDate(userInfo.uid).catch(err => {
+			AuthService.updateUserLastAccessDate(userInfo.uid).catch((err) => {
 				logger.error(
 					new CustomError('Failed to update user last access date', err, {
 						userId: userInfo.uid,
@@ -106,7 +106,7 @@ export default class AuthController {
 		return get(response, 'data.users_notifications[0].through_platform', false);
 	}
 
-	private static async getRoleId(roleName: string): Promise<number> {
+	public static async getRoleId(roleName: string): Promise<number> {
 		try {
 			const response = await DataService.execute(GET_USER_ROLE_BY_NAME, {
 				roleName,
@@ -128,7 +128,7 @@ export default class AuthController {
 		try {
 			const { roles, ...user } = ldapUser;
 			const avoUser: Partial<Avo.User.User> = user;
-			avoUser.role_id = await this.getRoleId(ldapUser.roles[0]);
+			avoUser.role_id = await AuthController.getRoleId(ldapUser.roles[0]);
 			const response = await DataService.execute(INSERT_USER, { user });
 			if (!response) {
 				throw new InternalServerError('Response from insert request was undefined', null, {
@@ -215,7 +215,8 @@ export default class AuthController {
 			const idpTypeLowerCase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
 				// TODO rename this key so it doesn't include "smartschool"
-				i18n.t('modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
+				i18n.t(
+					'modules/auth/controller___je-account-is-reeds-gelinked-met-idp-type-unlink-je-account-eerst-van-je-andere-smartschool-account',
 					{ idpType: idpTypeLowerCase }
 				),
 				'link',
@@ -227,7 +228,8 @@ export default class AuthController {
 		const idpLoginPath: string | undefined = IDP_ADAPTERS[idpType].loginPath;
 		if (!idpLoginPath) {
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'
+				i18n.t(
+					'modules/auth/controller___dit-platform-kan-nog-niet-gelinked-worden-aan-uw-account'
 				),
 				'link',
 				['home', 'helpdesk']
@@ -275,7 +277,8 @@ export default class AuthController {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'
+				i18n.t(
+					'modules/auth/controller___het-linken-van-de-account-is-mislukt-database-error'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -300,7 +303,8 @@ export default class AuthController {
 			logger.error(error);
 			const idpTypeLowercase = idpType.toLowerCase();
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account',
+				i18n.t(
+					'modules/auth/controller___er-ging-iets-mis-bij-het-unlinken-van-de-idp-type-account',
 					{ idpType: idpTypeLowercase }
 				),
 				'alert-triangle',
