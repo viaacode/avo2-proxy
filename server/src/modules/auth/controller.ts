@@ -128,7 +128,7 @@ export default class AuthController {
 		try {
 			const { roles, ...user } = ldapUser;
 			const avoUser: Partial<Avo.User.User> = user;
-			avoUser.role_id = await this.getRoleId(ldapUser.roles[0]);
+			avoUser.role_id = await AuthController.getRoleId(ldapUser.roles[0]);
 			const response = await DataService.execute(INSERT_USER, { user });
 			if (!response) {
 				throw new InternalServerError('Response from insert request was undefined', null, {
