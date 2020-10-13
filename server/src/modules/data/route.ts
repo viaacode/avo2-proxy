@@ -1,4 +1,3 @@
-import { snakeCase } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { ClientError, InternalServerError } from '../../shared/helpers/error';
@@ -30,15 +29,16 @@ export default class DataRoute {
 		try {
 			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 			const allUserGroups = await AuthService.getAllUserGroups();
-			const userGroup = allUserGroups.find(userGroup => userGroup.id === avoUser.profile.userGroupIds[0]);
+			const userGroup = allUserGroups.find(
+				(userGroup) => userGroup.id === avoUser.profile.userGroupIds[0]
+			);
 			if (!userGroup) {
-				throw new InternalServerError(
-					'Failed to find user group for user group id',
-					null,
-					{ allUserGroups, userGroupId: avoUser.profile.userGroupIds[0] }
-				);
+				throw new InternalServerError('Failed to find user group for user group id', null, {
+					allUserGroups,
+					userGroupId: avoUser.profile.userGroupIds[0],
+				});
 			}
-			const userGroupLabel = snakeCase(userGroup.label);
+			const userGroupLabel = userGroup.label;
 			return await DataController.execute(
 				body.query,
 				body.variables,
@@ -46,7 +46,7 @@ export default class DataRoute {
 					...this.context.request.headers,
 					'X-Hasura-Role': userGroupLabel,
 				},
-				avoUser,
+				avoUser
 			);
 		} catch (err) {
 			logger.error(

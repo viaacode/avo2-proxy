@@ -9,7 +9,6 @@ import {
 	isNil,
 	isString,
 	map,
-	snakeCase,
 	sortBy,
 	uniq,
 	uniqWith,
@@ -282,7 +281,7 @@ export class UpdateDatabasePermissionsService {
 			type: `${createOrDrop}_${permission.operation}_permission`,
 			args: {
 				table: permission.table,
-				role: snakeCase(permission.userGroup),
+				role: permission.userGroup,
 				...(createOrDrop === 'create'
 					? {
 							permission: permissionBody,
