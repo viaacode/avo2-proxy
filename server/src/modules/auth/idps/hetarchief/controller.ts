@@ -230,6 +230,9 @@ export default class HetArchiefController {
 		newAvoUser.mail = get(ldapUserInfo, 'email[0]');
 		newAvoUser.first_name = get(ldapUserInfo, 'first_name');
 		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
+		newAvoUser.role_id = await AuthController.getRoleId(
+			get(ldapUserInfo, 'organizational_status[0]')
+		);
 		newAvoUser.profile.stamboek = get(ldapUserInfo, 'employee_nr[0]', null);
 		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
