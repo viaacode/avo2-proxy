@@ -24,6 +24,8 @@ export interface UpdateProfileValues {
 		unit_id: string | null;
 	}[];
 	company_id: string;
+	firstName: string;
+	lastName: string;
 	alias: string;
 	title: string | null;
 	alternativeEmail: string;
@@ -35,10 +37,11 @@ export interface UpdateProfileValues {
 
 export default class ProfileController {
 	public static async updateProfile(
-		profile: Avo.User.Profile,
+		user: Avo.User.User,
 		variables: Partial<UpdateProfileValues>
 	): Promise<UpdateProfileValues> {
 		try {
+			const profile = user.profile;
 			const completeVars: UpdateProfileValues = {
 				educationLevels: uniq(profile.educationLevels || ([] as string[])).map(
 					(eduLevel: string) => ({
@@ -46,7 +49,7 @@ export default class ProfileController {
 						key: eduLevel,
 					})
 				),
-				subjects: uniq(profile.subjects || ([] as string[])).map(subject => ({
+				subjects: uniq(profile.subjects || ([] as string[])).map((subject) => ({
 					profile_id: profile.id,
 					key: subject,
 				})),
@@ -59,6 +62,8 @@ export default class ProfileController {
 				),
 				company_id: variables.company_id || profile.company_id,
 				alias: profile.alias || profile.alternative_email,
+				firstName: user.first_name,
+				lastName: user.last_name,
 				title: profile.title,
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,
@@ -72,13 +77,14 @@ export default class ProfileController {
 			});
 			await DataService.execute(UPDATE_PROFILE_INFO, {
 				profileId: profile.id,
+				userUuid: user.uid,
 				...completeVars,
 			});
 
 			return completeVars;
 		} catch (err) {
 			throw new CustomError('Failed to update profile info', err, {
-				profile,
+				user,
 				variables,
 			});
 		}

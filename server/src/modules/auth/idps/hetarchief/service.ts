@@ -6,7 +6,10 @@ import convert = require('xml-js');
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
+import { LdapEducationOrganization } from '../../../education-organizations/service';
 import { IdpMetaData, LdapUser } from '../../types';
+
+import { LdapApiUserInfo } from './hetarchief.types';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -191,5 +194,39 @@ export default class HetArchiefService {
 
 	public static getLogoutUrl(): string | undefined {
 		return this.ssoLogoutUrl;
+	}
+
+	public static async setLdapUserInfo(
+		ldapUserId: string,
+		ldapUserInfo: Partial<LdapApiUserInfo>
+	): Promise<void> {
+		let url: string;
+		try {
+			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUserId}`;
+			const response: AxiosResponse<LdapApiUserInfo> = await axios(url, {
+				method: 'put',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+				data: ldapUserInfo,
+			});
+			if (response.status < 200 || response.status >= 400) {
+				throw new ExternalServerError('response status code was unexpected', null, {
+					response,
+				});
+			}
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed to set user info from the ldap api',
+				err,
+				{
+					url,
+					ldapUserId,
+				}
+			);
+			logger.error(error);
+			throw error;
+		}
 	}
 }

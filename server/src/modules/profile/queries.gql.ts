@@ -26,6 +26,9 @@ export const UPDATE_PROFILE_INFO = `
 		$bio: String
 		$stamboek: String
 		$is_exception: Boolean!
+		$userUuid: uuid!
+		$firstName: String
+		$lastName: String
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
 			affected_rows
@@ -51,5 +54,14 @@ export const UPDATE_PROFILE_INFO = `
 		) {
 			affected_rows
 		}
+		 update_shared_users(
+		 	where: {uid: {_eq: $userUuid}},
+		 	_set: {
+		 		first_name: $firstName,
+		 		last_name: $lastName
+		 	}
+		 ) {
+    	affected_rows
+  	}
 	}
 `;

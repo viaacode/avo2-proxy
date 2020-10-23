@@ -59,6 +59,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			mail
 			idpmaps {
 				idp
+				idp_user_id
 			}
 		}
 	}
@@ -125,6 +126,7 @@ export const GET_USER_INFO_BY_ID = `
 			mail
 			idpmaps {
 				idp
+				idp_user_id
 			}
 		}
 	}
@@ -192,6 +194,7 @@ export const GET_USER_BY_LDAP_UUID = `
 				mail
 				idpmaps {
 					idp
+					idp_user_id
 				}
 			}
 		}
