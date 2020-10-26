@@ -8,7 +8,6 @@ import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
-import { LdapUser } from '../auth/types';
 import EventLoggingController from '../event-logging/controller';
 
 import ProfileController, { UpdateProfileValues } from './controller';
@@ -26,7 +25,7 @@ export default class ProfileRoute {
 	@Path('')
 	@POST
 	@PreProcessor(isAuthenticatedRouteGuard)
-	async updateProfile(variables: UpdateProfileValues): Promise<any> {
+	async updateProfile(variables: UpdateProfileValues): Promise<void> {
 		try {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(
 				this.context.request
@@ -64,7 +63,7 @@ export default class ProfileRoute {
 			const updatedAvoUser = await AuthService.getAvoUserInfoById(user.uid);
 			// TODO remove any casts when updating to typings v2.25.0
 			const idpObject = (updatedAvoUser as any).idpmapObjects.find(
-				(idpObject: any) => idpObject.idp === 'HETARCHIEF'
+				(idpObject: { idp: Avo.Auth.IdpType }) => idpObject.idp === 'HETARCHIEF'
 			);
 			if (idpObject) {
 				const ldapEntryUuid = idpObject.idp_user_id;

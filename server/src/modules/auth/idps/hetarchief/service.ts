@@ -40,7 +40,7 @@ export default class HetArchiefService {
 	/**
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
-	public static async initialize() {
+	static async initialize() {
 		logIfNotTestEnv('caching idp info hetarchief...');
 		const url = process.env.SAML_IDP_META_DATA_ENDPOINT;
 		try {
@@ -118,7 +118,7 @@ export default class HetArchiefService {
 		}
 	}
 
-	public static createLoginRequestUrl(returnToUrl: string) {
+	static createLoginRequestUrl(returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_login_request_url(
 				HetArchiefService.identityProvider,
@@ -141,7 +141,7 @@ export default class HetArchiefService {
 		});
 	}
 
-	public static assertSamlResponse(requestBody: SamlCallbackBody): Promise<LdapUser> {
+	static assertSamlResponse(requestBody: SamlCallbackBody): Promise<LdapUser> {
 		return new Promise((resolve, reject) => {
 			this.serviceProvider.post_assert(
 				this.identityProvider,
@@ -164,7 +164,7 @@ export default class HetArchiefService {
 		});
 	}
 
-	public static createLogoutRequestUrl(nameId: string, returnToUrl: string) {
+	static createLogoutRequestUrl(nameId: string, returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_logout_request_url(
 				HetArchiefService.identityProvider,
@@ -188,15 +188,15 @@ export default class HetArchiefService {
 		});
 	}
 
-	public static getLoginUrl(): string | undefined {
+	static getLoginUrl(): string | undefined {
 		return this.ssoLoginUrl;
 	}
 
-	public static getLogoutUrl(): string | undefined {
+	static getLogoutUrl(): string | undefined {
 		return this.ssoLogoutUrl;
 	}
 
-	public static async setLdapUserInfo(
+	static async setLdapUserInfo(
 		ldapUserId: string,
 		ldapUserInfo: Partial<LdapApiUserInfo>
 	): Promise<void> {
