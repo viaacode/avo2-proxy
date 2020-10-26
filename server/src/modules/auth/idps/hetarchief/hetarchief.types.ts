@@ -85,4 +85,5 @@ export interface LdapApiUserInfo {
 	apps: string[];
 	groups: string[];
 	edu_levelname: string[];
+	external_id: string;
 }

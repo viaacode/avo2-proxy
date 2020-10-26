@@ -269,6 +269,7 @@ export class AuthService {
 				edu_levelname: educationLevels,
 				first_name: avoUser.first_name,
 				last_name: avoUser.last_name,
+				external_id: avoUser.uid,
 			});
 		} catch (err) {
 			throw new InternalServerError('Failed to update user info in ldap', err, {
