@@ -214,6 +214,7 @@ export class AuthService {
 			delete updatedUser.profile;
 			delete updatedUser.idpmaps;
 			delete updatedUser.role;
+			delete (updatedUser as any).idpmapObjects;
 			updatedUser.updated_at = new Date().toISOString();
 
 			const response = await DataService.execute(UPDATE_AVO_USER, {
