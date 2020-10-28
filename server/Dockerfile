@@ -9,6 +9,7 @@ ENV PORT $PORT
 
 # Install latest npm version
 RUN npm i --global --silent npm@latest
+RUN apk --no-cache add curl
 
 ### BUILDER STAGE ###
 FROM base as builder
