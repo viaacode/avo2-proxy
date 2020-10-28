@@ -6,8 +6,8 @@ export const BULK_DELETE_USERS = `
 	}
 `;
 
-export const BULK_DELETE_USERS_EXCEPT_NAME = `
-	mutation bulkDeleteUsersExceptName($profileIds: [uuid!]!) {
+export const BULK_STRIP_USERS = `
+	mutation bulkStripUsers($profileIds: [uuid!]!) {
 		delete_users_email_preferences(where: {profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
@@ -50,7 +50,6 @@ export const BULK_DELETE_USERS_EXCEPT_NAME = `
 			_set: {
 				expires_at: null,
 				is_blocked: null,
-				mail: "deleted.user@meemoo.be",
 				role_id: null,
 				type_label: null
 			}
@@ -60,9 +59,26 @@ export const BULK_DELETE_USERS_EXCEPT_NAME = `
 	}
 `;
 
+export const UPDATE_NAME_AND_MAIL = `
+	mutation updateNameAndMail($profileId: uuid!, $firstName: String!, $lastName: String!, $mail: String!) {
+		update_shared_users(where: {profile: {id: {_eq: $profileId}}}, _set: {first_name: $firstName, last_name: $lastName, mail: $mail}) {
+			affected_rows
+		}
+	}
+`;
+
+export const UPDATE_MAIL = `
+	mutation updateNameAndMail($profileId: uuid!, $mail: String!) {
+		update_shared_users(where: {profile: {id: {_eq: $profileId}}}, _set: {mail: $mail}) {
+			affected_rows
+		}
+	}
+`;
+
 export const BULK_GET_EMAIL_ADDRESSES = `
 	query getEmailAddresses($profileIds: [uuid!]!) {
 		shared_users(where: {profile: {id: {_in: $profileIds}}}) {
+			uid
 			mail
 		}
 	}

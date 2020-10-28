@@ -1,23 +1,36 @@
+import * as promiseUtils from 'blend-promise-utils';
 import { get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
+import i18n from '../../shared/translations/i18n';
 import DataService from '../data/service';
 
 import {
 	BULK_DELETE_USERS,
-	BULK_DELETE_USERS_EXCEPT_NAME, BULK_GET_EMAIL_ADDRESSES,
+	BULK_GET_EMAIL_ADDRESSES,
+	BULK_STRIP_USERS,
 	DELETE_PRIVATE_CONTENT_FOR_PROFILES,
 	DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 	TRANSFER_PRIVATE_CONTENT_FOR_PROFILES,
 	TRANSFER_PUBLIC_CONTENT_FOR_PROFILES,
+	UPDATE_MAIL,
+	UPDATE_NAME_AND_MAIL,
 } from './user.queries.gql';
 
 export default class UserService {
-	static async bulkDeleteUsersExceptName(profileIds: string[]): Promise<void> {
+	/**
+	 * Deletes all linked objects of the user account except content
+	 * eg: organisations, subjects, education levels, idp maps, roles
+	 * Also nulls any fields that are not the first_name or last_name of the user
+	 * Sets the email address to <user_id>@hetarchief.be
+	 * @param profileIds
+	 * @param anonymize if true, sets first_name to "Anonieme" and last_name to "gebruiker"
+	 */
+	static async stripUserAccount(profileIds: string[], anonymize: boolean): Promise<void> {
 		try {
-			const response = await DataService.execute(BULK_DELETE_USERS_EXCEPT_NAME, {
+			const response = await DataService.execute(BULK_STRIP_USERS, {
 				profileIds,
 			});
 
@@ -26,10 +39,49 @@ export default class UserService {
 					response,
 				});
 			}
+
+			if (anonymize) {
+				await promiseUtils.mapLimit(
+					profileIds,
+					10,
+					async (profileId: string) => await this.updateNameAndEmail(profileId, anonymize)
+				);
+			}
 		} catch (err) {
 			throw new CustomError('Failed to bulk delete users except their names', err, {
 				profileIds,
-				query: BULK_DELETE_USERS_EXCEPT_NAME,
+				query: BULK_STRIP_USERS,
+			});
+		}
+	}
+
+	static async updateNameAndEmail(profileId: string, anonymize: boolean): Promise<void> {
+		try {
+			const response = await DataService.execute(
+				anonymize ? UPDATE_NAME_AND_MAIL : UPDATE_MAIL,
+				anonymize
+					? {
+							profileId,
+							firstName: i18n.t('Anonieme'),
+							lastName: i18n.t('gebruiker'),
+							mail: `${profileId}@hetarchief.be`,
+					  }
+					: {
+							profileId,
+							mail: `${profileId}@hetarchief.be`,
+					  }
+			);
+
+			if (response.errors) {
+				throw new CustomError('graphql response contains errors', null, {
+					response,
+				});
+			}
+		} catch (err) {
+			throw new CustomError('Failed to update name and mail for profile id', err, {
+				profileId,
+				anonymize,
+				query: anonymize ? UPDATE_NAME_AND_MAIL : UPDATE_MAIL,
 			});
 		}
 	}

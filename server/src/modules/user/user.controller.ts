@@ -16,7 +16,7 @@ export default class UserController {
 		switch (deleteOption) {
 			case 'DELETE_PRIVATE_KEEP_NAME':
 				await UserService.deletePrivateContentForProfiles(profileIds);
-				await UserService.bulkDeleteUsersExceptName(profileIds);
+				await UserService.stripUserAccount(profileIds, false);
 				break;
 
 			case 'TRANSFER_PUBLIC':
@@ -26,18 +26,17 @@ export default class UserController {
 				break;
 
 			case 'TRANSFER_ALL':
+				await UserService.transferPublicContentForProfiles(profileIds, transferToProfileId);
 				await UserService.transferPrivateContentForProfiles(
 					profileIds,
 					transferToProfileId
 				);
-				await UserService.transferPublicContentForProfiles(profileIds, transferToProfileId);
 				await UserService.bulkDeleteUsers(profileIds);
 				break;
 
 			case 'ANONYMIZE_PUBLIC':
-				await UserService.transferPublicContentForProfiles(profileIds, transferToProfileId);
 				await UserService.deletePrivateContentForProfiles(profileIds);
-				await UserService.bulkDeleteUsers(profileIds);
+				await UserService.stripUserAccount(profileIds, true);
 				break;
 
 			case 'DELETE_ALL':
