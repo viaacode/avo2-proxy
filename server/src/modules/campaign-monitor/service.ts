@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import { get, toPairs } from 'lodash';
+import * as promiseUtils from 'blend-promise-utils';
+import { get, keys, toPairs } from 'lodash';
 import * as queryString from 'query-string';
 
 import type { Avo } from '@viaa/avo2-types';
@@ -227,5 +228,14 @@ export default class CampaignMonitorService {
 				newEmail,
 			});
 		}
+	}
+
+	static async bulkUnsubscribe(emailAddresses: string[]): Promise<void> {
+		await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
+			const newsletterListIds = keys(NEWSLETTER_LISTS);
+			await Promise.all(newsletterListIds.map(listId => {
+				return CampaignMonitorService.unsubscribeFromNewsletterList(listId, mail);
+			}));
+		});
 	}
 }
