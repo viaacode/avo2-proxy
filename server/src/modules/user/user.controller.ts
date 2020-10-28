@@ -44,6 +44,9 @@ export default class UserController {
 				await UserService.deletePublicContentForProfiles(profileIds);
 				await UserService.bulkDeleteUsers(profileIds);
 				break;
+
+			default:
+				break;
 		}
 	}
 }

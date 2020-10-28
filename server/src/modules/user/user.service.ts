@@ -41,10 +41,8 @@ export default class UserService {
 			}
 
 			if (anonymize) {
-				await promiseUtils.mapLimit(
-					profileIds,
-					10,
-					async (profileId: string) => await this.updateNameAndEmail(profileId, anonymize)
+				await promiseUtils.mapLimit(profileIds, 10, async (profileId: string) =>
+					UserService.updateNameAndEmail(profileId, anonymize)
 				);
 			}
 		} catch (err) {
