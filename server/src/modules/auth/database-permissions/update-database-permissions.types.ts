@@ -1,4 +1,4 @@
-import { RowPermission, TableOperation } from './row-permissions';
+import { RowPermission } from './row-permissions';
 
 export interface UsersGroup {
 	label: string;
