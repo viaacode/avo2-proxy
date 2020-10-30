@@ -73,3 +73,16 @@ export interface Organization {
 	type: string;
 	sector: string;
 }
+
+export interface LdapApiUserInfo {
+	email: string;
+	first_name: string;
+	last_name: string;
+	confirmed: boolean;
+	organizations: string[];
+	units: string[];
+	password: string;
+	apps: string[];
+	groups: string[];
+	edu_levelname: string[];
+}

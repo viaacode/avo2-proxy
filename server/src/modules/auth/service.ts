@@ -1,4 +1,3 @@
-import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
 import { cloneDeep, compact, get, uniq } from 'lodash';
 
@@ -12,6 +11,7 @@ import EducationOrganizationsService, {
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
 
+import HetArchiefService from './idps/hetarchief/service';
 import {
 	GET_USER_GROUPS,
 	GET_USER_INFO_BY_ID,
@@ -91,6 +91,7 @@ export class AuthService {
 			});
 			(user as any).profile.userGroupIds = userGroupIds;
 			(user as any).profile.permissions = Array.from(permissions);
+			(user as any).idpmapObjects = user.idpmaps;
 			(user as any).idpmaps = uniq((user.idpmaps || []).map((obj) => obj.idp));
 			delete user.profiles;
 			delete (user as any).profile.profile_user_groups;
@@ -225,7 +226,7 @@ export class AuthService {
 			}
 
 			// Update profile
-			await ProfileController.updateProfile(avoUser.profile, {});
+			await ProfileController.updateProfile(avoUser, {});
 		} catch (err) {
 			throw new CustomError('Failed to update avo user info', err, { avoUser });
 		}
@@ -261,30 +262,14 @@ export class AuthService {
 				});
 			}
 
-			const body = {
+			// Update first and last name
+			await HetArchiefService.setLdapUserInfo(ldapEntryUuid, {
 				organizations: orgUuids,
 				units: unitUuids,
 				edu_levelname: educationLevels,
-			};
-
-			const response: AxiosResponse<{}> = await axios(url, {
-				method: 'put',
-				auth: {
-					username: process.env.LDAP_API_USERNAME,
-					password: process.env.LDAP_API_PASSWORD,
-				},
-				data: body,
+				first_name: avoUser.first_name,
+				last_name: avoUser.last_name,
 			});
-
-			if (response.status < 200 || response.status >= 400) {
-				/* istanbul ignore next */
-				throw new InternalServerError('Status code indicates failure', null, {
-					url,
-					method: 'put',
-					status: response.status,
-					statusText: response.statusText,
-				});
-			}
 		} catch (err) {
 			throw new InternalServerError('Failed to update user info in ldap', err, {
 				url,

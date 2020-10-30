@@ -113,6 +113,9 @@ export default class CampaignMonitorService {
 		email: string
 	): Promise<void> {
 		try {
+			if (!email) {
+				return;
+			}
 			await axios(
 				`https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`,
 				{
@@ -141,6 +144,9 @@ export default class CampaignMonitorService {
 		customFields: CustomFields
 	) {
 		try {
+			if (!email) {
+				return;
+			}
 			const data = {
 				EmailAddress: email,
 				Name: name,
