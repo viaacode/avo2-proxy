@@ -214,6 +214,7 @@ export class AuthService {
 			delete updatedUser.profile;
 			delete updatedUser.idpmaps;
 			delete updatedUser.role;
+			delete (updatedUser as any).idpmapObjects;
 			updatedUser.updated_at = new Date().toISOString();
 
 			const response = await DataService.execute(UPDATE_AVO_USER, {
@@ -269,6 +270,7 @@ export class AuthService {
 				edu_levelname: educationLevels,
 				first_name: avoUser.first_name,
 				last_name: avoUser.last_name,
+				external_id: avoUser.uid,
 			});
 		} catch (err) {
 			throw new InternalServerError('Failed to update user info in ldap', err, {
