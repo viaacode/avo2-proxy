@@ -28,7 +28,7 @@ spec:
           - command:
             - /bin/sh
             - -c
-            - "curl -s -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $(PROXY_API_KEY)\" $(SVC_HOST)$(ORG_PATH)"
+            - "curl -s -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $(PROXY_API_KEY)\" $(SVC_PORT)$(ORG_PATH)"
             env:
             envFrom:
             - configMapRef:
