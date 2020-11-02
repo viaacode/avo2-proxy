@@ -128,7 +128,7 @@ export default class EducationOrganizationsService {
 
 	public static async getOrganization(
 		organizationId: string,
-		unitId: string
+		unitId: string | undefined
 	): Promise<LdapEducationOrganizationWithUnits | null> {
 		let url: string;
 		try {
