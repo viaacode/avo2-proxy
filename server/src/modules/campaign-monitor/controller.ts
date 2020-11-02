@@ -5,6 +5,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import { SpecialUserGroup } from '../auth/consts';
 import { AuthService } from '../auth/service';
 import EducationOrganizationsService, {
 	LdapEducationOrganization,
@@ -19,7 +20,7 @@ export default class CampaignMonitorController {
 	 * Send an email using the campaign monitor api
 	 * @param info
 	 */
-	public static async send(info: EmailInfo): Promise<void> {
+	static async send(info: EmailInfo): Promise<void> {
 		return CampaignMonitorService.send(info);
 	}
 
@@ -27,9 +28,7 @@ export default class CampaignMonitorController {
 	 * Retrieve email preferences from campaign monitor api
 	 * @param email
 	 */
-	public static async fetchNewsletterPreferences(
-		email: string
-	): Promise<Avo.Newsletter.Preferences> {
+	static async fetchNewsletterPreferences(email: string): Promise<Avo.Newsletter.Preferences> {
 		return CampaignMonitorService.fetchNewsletterPreferences(email);
 	}
 
@@ -38,7 +37,7 @@ export default class CampaignMonitorController {
 	 * @param user
 	 * @param preferences
 	 */
-	public static async updateNewsletterPreferences(
+	static async updateNewsletterPreferences(
 		user: Avo.User.User,
 		preferences: Partial<Avo.Newsletter.Preferences>
 	) {
@@ -61,10 +60,22 @@ export default class CampaignMonitorController {
 				'label'
 			);
 
-			const oormerk = get(user, 'profile.business_category');
+			const isBlocked = get(user, 'is_blocked');
+			const createdAt = get(user, 'created_at');
+			const lastAccessAt = get(user, 'last_access_at');
+
+			const businessCategory = get(user, 'profile.business_category');
 			const isExceptionAccount = get(user, 'profile.is_exception') || false;
 			const stamboekNumber = get(user, 'profile.stamboek');
 			const educationLevels: string[] = get(user, 'profile.educationLevels');
+			const {
+				hasPublicCollections,
+				hasPrivateCollections,
+				hasAssignments,
+			} = await CampaignMonitorService.getContentCounts(user.profile.id);
+			const hasHetArchiefLink = (user.idpmaps || []).includes('HETARCHIEF');
+			const hasSmartschoolLink = (user.idpmaps || []).includes('SMARTSCHOOL');
+			const hasKlascementLink = (user.idpmaps || []).includes('KLASCEMENT');
 
 			const schoolZipcodes: string[] = [];
 			const schoolIds: string[] = [];
@@ -111,10 +122,20 @@ export default class CampaignMonitorController {
 						email,
 						name,
 						{
-							oormerk,
+							is_geblokkeerd: isBlocked,
+							aangemaakt_op: createdAt,
+							laatst_ingelogd_op: lastAccessAt,
+							heeft_publieke_collecties: hasPublicCollections,
+							heeft_prive_collecties: hasPrivateCollections,
+							heeft_opdrachten: hasAssignments,
+							heeft_hetarchief_link: hasHetArchiefLink,
+							heeft_smartschool_link: hasSmartschoolLink,
+							heeft_klascement_link: hasKlascementLink,
+							is_profiel_compleet: CampaignMonitorController.isProfileComplete(user),
 							gebruikersgroep: userGroup,
 							stamboeknummer: stamboekNumber,
 							is_uitzondering: isExceptionAccount ? 'true' : 'false',
+							oormerk: businessCategory,
 							firstname: firstName,
 							lastname: lastName,
 							onderwijsniveaus: educationLevels.join(),
@@ -140,7 +161,34 @@ export default class CampaignMonitorController {
 		}
 	}
 
-	public static async refreshNewsletterPreferences(
+	private static isProfileComplete(user: Avo.User.User): boolean {
+		const profile = get(user, 'profile');
+
+		// Only teachers have to fill in their profile for now
+		const userGroupId = get(user, 'profile.userGroupIds[0]');
+		if (
+			userGroupId !== SpecialUserGroup.Teacher &&
+			userGroupId !== SpecialUserGroup.TeacherSecondary
+		) {
+			return true;
+		}
+
+		if (!!profile && profile.is_exception) {
+			return true;
+		}
+
+		return (
+			!!profile &&
+			!!profile.organizations &&
+			!!profile.organizations.length &&
+			!!profile.educationLevels &&
+			!!profile.educationLevels.length &&
+			!!profile.subjects &&
+			!!profile.subjects.length
+		);
+	}
+
+	static async refreshNewsletterPreferences(
 		avoUser: Avo.User.User,
 		oldAvoUser?: Avo.User.User
 	): Promise<void> {
