@@ -15,13 +15,20 @@ export interface CustomFields {
 	school_namen: string;
 }
 
+export interface SharedContentData {
+	username?: string; // The server will fill this in, client doesn't need to provide this (security)
+	mainLink: string;
+	mainTitle: string;
+}
+
+export interface EmailUserInfo {
+	email: string;
+	UserGroup: string;
+}
+
 export interface EmailInfo {
 	// TODO use typings version
 	template: keyof typeof templateIds;
 	to: string;
-	data: {
-		username?: string; // The server will fill this in, client doesn't need to provide this (security)
-		mainLink: string;
-		mainTitle: string;
-	};
+	data: SharedContentData | EmailUserInfo;
 }

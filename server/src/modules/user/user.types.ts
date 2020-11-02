@@ -10,3 +10,8 @@ export interface BulkDeleteUsersBody {
 	deleteOption: UserDeleteOption;
 	transferToProfileId?: string;
 }
+
+export interface BulkBlockUsersBody {
+	profileIds: string[];
+	isBlocked: boolean;
+}

@@ -591,4 +591,21 @@ export const ROW_PERMISSIONS: { [permission in PermissionName]: RowPermission[] 
 			columns: ['user_profile_id'],
 		},
 	],
+	VIEW_USERS_IN_SAME_COMPANY: [
+		{
+			table: { name: 'users', schema: 'shared' },
+			operation: 'select',
+		},
+	],
+	DELETE_ANY_USER: [
+		{
+			table: { name: 'users', schema: 'shared' },
+			operation: 'delete',
+		},
+		{
+			table: { name: 'profiles', schema: 'users' },
+			operation: 'delete',
+		},
+		// TODO add all tables
+	],
 };

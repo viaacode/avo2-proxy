@@ -151,3 +151,31 @@ export const TRANSFER_PRIVATE_CONTENT_FOR_PROFILES = `
 		}
 	}
 `;
+
+export const BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS = `
+	mutation updateUserBlockedStatus($profileIds: [uuid!]!, $isBlocked: Boolean!) {
+		update_shared_users(
+			where: { profile: { id: { _in: $profileIds } } }
+			_set: { is_blocked: $isBlocked }
+		) {
+			affected_rows
+		}
+	}
+`;
+
+export const GET_EMAIL_USER_INFO = `
+	query getEmailUserInfo($profileIds: [uuid!]!) {
+		users_profiles(where: {id: {_in: $profileIds}}) {
+			id
+			user: usersByuserId {
+				mail
+			}
+			profile_user_group {
+				group {
+					label
+					id
+				}
+			}
+		}
+	}
+`;
