@@ -102,12 +102,13 @@ export default class ProfileController {
 		let newUserGroupId = userGroupId; // Only one user group should be set
 
 		// Add extra usergroup for lesgever secundair or student lesgever secundair
-		if (
-			educationLevels.includes('Secundair onderwijs') &&
-			(newUserGroupId === SpecialUserGroup.Teacher ||
-				newUserGroupId === SpecialUserGroup.StudentTeacher)
-		) {
-			newUserGroupId = SpecialUserGroup.TeacherSecondary;
+		if (educationLevels.includes('Secundair onderwijs')) {
+			if (newUserGroupId === SpecialUserGroup.Teacher) {
+				newUserGroupId = SpecialUserGroup.TeacherSecondary;
+			}
+			if (newUserGroupId === SpecialUserGroup.StudentTeacher) {
+				newUserGroupId = SpecialUserGroup.StudentTeacherSecondary;
+			}
 		}
 
 		await AuthService.addUserGroupsToProfile([newUserGroupId], profileId);

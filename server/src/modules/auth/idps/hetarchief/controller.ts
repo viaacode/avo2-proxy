@@ -11,7 +11,10 @@ import {
 import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/controller';
 import DataService from '../../../data/service';
-import EducationOrganizationsService from '../../../education-organizations/service';
+import EducationOrganizationsService, {
+	LdapEducationOrganisation,
+	LdapEduOrgUnit,
+} from '../../../education-organizations/service';
 import EventLoggingController from '../../../event-logging/controller';
 import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
@@ -243,8 +246,14 @@ export default class HetArchiefController {
 
 		newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
 
-		const orgIds: string[] = get(ldapUserInfo, 'educationalOrganisationIds', []);
-		const orgUnitIds = get(ldapUserInfo, 'educationalOrganisationUnitIds', []);
+		const orgIds: string[] =
+			get(ldapUserInfo, 'educationalOrganisationIds') ||
+			get(ldapUserInfo, 'organizations', []).map(
+				(org: LdapEducationOrganisation) => org.or_id
+			);
+		const orgUnitIds: string[] =
+			get(ldapUserInfo, 'educationalOrganisationUnitIds') ||
+			get(ldapUserInfo, 'units', []).map((org: LdapEduOrgUnit) => org.ou_id);
 		newAvoUser.profile.organizations = orgIds.map((orgId: string) => {
 			return {
 				organizationId: orgId,
