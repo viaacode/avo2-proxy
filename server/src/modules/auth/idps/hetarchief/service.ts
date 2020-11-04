@@ -6,7 +6,7 @@ import convert = require('xml-js');
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
-import { LdapEducationOrganization } from '../../../education-organizations/service';
+import { LdapEducationOrganisation } from '../../../education-organizations/service';
 import { IdpMetaData, LdapUser } from '../../types';
 
 import { LdapApiUserInfo } from './hetarchief.types';

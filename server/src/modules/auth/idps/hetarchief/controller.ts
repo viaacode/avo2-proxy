@@ -11,6 +11,10 @@ import {
 import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/controller';
 import DataService from '../../../data/service';
+import EducationOrganizationsService, {
+	LdapEducationOrganisation,
+	LdapEduOrgUnit,
+} from '../../../education-organizations/service';
 import EventLoggingController from '../../../event-logging/controller';
 import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
@@ -237,20 +241,37 @@ export default class HetArchiefController {
 		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
 		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
-		(newAvoUser.profile as any).business_category = get(ldapUserInfo, 'role[0]') || null;
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
 		newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
 
-		const orgIds: string[] = get(ldapUserInfo, 'educationalOrganisationIds', []);
-		const orgUnitIds = get(ldapUserInfo, 'educationalOrganisationUnitIds', []);
+		const orgIds: string[] =
+			get(ldapUserInfo, 'educationalOrganisationIds') ||
+			get(ldapUserInfo, 'organizations', []).map(
+				(org: LdapEducationOrganisation) => org.or_id
+			);
+		const orgUnitIds: string[] =
+			get(ldapUserInfo, 'educationalOrganisationUnitIds') ||
+			get(ldapUserInfo, 'units', []).map((org: LdapEduOrgUnit) => org.ou_id);
 		newAvoUser.profile.organizations = orgIds.map((orgId: string) => {
 			return {
 				organizationId: orgId,
 				unitId: orgUnitIds.find((orgUnitId) => orgUnitId.startsWith(orgId)) || null,
 			};
 		}) as any[];
+
+		if (orgIds.length === 1) {
+			// Check if org has type "School" or something else
+			// if something else => set that as the business category
+			const orgInfo = await EducationOrganizationsService.getOrganization(
+				orgIds[0],
+				orgUnitIds[0]
+			);
+			if (orgInfo.type !== 'School') {
+				(newAvoUser.profile as any).business_category = orgInfo.type;
+			}
+		}
 
 		if (!isEqual(newAvoUser, avoUserInfo)) {
 			// Something changes => save to database

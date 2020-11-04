@@ -5,7 +5,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { InternalServerError } from '../../shared/helpers/error';
 
 import EducationOrganizationsService, {
-	LdapEducationOrganization,
+	LdapEducationOrganisation,
 	LdapEducationOrganizationWithUnits,
 	LdapEduOrgUnit,
 } from './service';
@@ -21,7 +21,7 @@ export default class EducationOrganizationsController {
 		zipCode: string | undefined
 	): Promise<Avo.EducationOrganization.Organization[]> {
 		try {
-			let orgs: LdapEducationOrganization[] = await EducationOrganizationsService.getOrganizations(
+			let orgs: LdapEducationOrganisation[] = await EducationOrganizationsService.getOrganizations(
 				city,
 				null
 			);

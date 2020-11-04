@@ -33,6 +33,7 @@ export interface UpdateProfileValues {
 	bio: string | null;
 	stamboek: string | null;
 	is_exception: boolean;
+	business_category: string | null;
 }
 
 export default class ProfileController {
@@ -70,6 +71,7 @@ export default class ProfileController {
 				bio: profile.bio || null,
 				stamboek: profile.stamboek,
 				is_exception: profile.is_exception || false,
+				business_category: (profile as any).business_category || null, // TODO remove cast after update to typings v2.25.0
 				...variables, // Override current profile variables with the variables in the parameter
 			};
 			await DataService.execute(DELETE_PROFILE_OBJECTS, {
@@ -100,12 +102,13 @@ export default class ProfileController {
 		let newUserGroupId = userGroupId; // Only one user group should be set
 
 		// Add extra usergroup for lesgever secundair or student lesgever secundair
-		if (
-			educationLevels.includes('Secundair onderwijs') &&
-			(newUserGroupId === SpecialUserGroup.Teacher ||
-				newUserGroupId === SpecialUserGroup.StudentTeacher)
-		) {
-			newUserGroupId = SpecialUserGroup.TeacherSecondary;
+		if (educationLevels.includes('Secundair onderwijs')) {
+			if (newUserGroupId === SpecialUserGroup.Teacher) {
+				newUserGroupId = SpecialUserGroup.TeacherSecondary;
+			}
+			if (newUserGroupId === SpecialUserGroup.StudentTeacher) {
+				newUserGroupId = SpecialUserGroup.StudentTeacherSecondary;
+			}
 		}
 
 		await AuthService.addUserGroupsToProfile([newUserGroupId], profileId);
