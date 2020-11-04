@@ -9,7 +9,7 @@ import {
 	InternalServerError,
 } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
-import CampaignMonitorController from '../../../campaign-monitor/controller';
+import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
 import DataService from '../../../data/service';
 import EducationOrganizationsService, {
 	LdapEducationOrganisation,

@@ -11,6 +11,7 @@ import {
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import {
+	checkApiKeyRouteGuard,
 	hasPermissionRouteGuard,
 	isAuthenticatedRouteGuard,
 	multiGuard,
@@ -20,9 +21,9 @@ import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
 import EventLoggingController from '../event-logging/controller';
 
-import { templateIds } from './const';
-import CampaignMonitorController from './controller';
-import { EmailInfo } from './types';
+import { templateIds } from './campaign-monitor.const';
+import CampaignMonitorController from './campaign-monitor.controller';
+import { EmailInfo } from './campaign-monitor.types';
 
 @Path('/campaign-monitor')
 export default class CampaignMonitorRoute {
@@ -136,6 +137,24 @@ export default class CampaignMonitorRoute {
 				'Failed during update in campaign monitor preferences route',
 				err,
 				{ email: body.email }
+			);
+			logger.error(error);
+			throw error;
+		}
+	}
+
+	@Path('bulk-update')
+	@POST
+	@PreProcessor(checkApiKeyRouteGuard)
+	async bulkUpdate(body: { all: boolean }): Promise<void> {
+		try {
+			this.context.response.send({ message: 'started' });
+			await CampaignMonitorController.bulkUpdateInfo(body.all ? 'all' : 'active');
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed during bulk update subscriber info in campaign monitor',
+				err,
+				{ body }
 			);
 			logger.error(error);
 			throw error;
