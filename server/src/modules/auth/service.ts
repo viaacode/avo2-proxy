@@ -245,7 +245,7 @@ export class AuthService {
 			const orgUuids: string[] = [];
 			const unitUuids: string[] = [];
 			if (orgs.length) {
-				promiseUtils.mapLimit(orgs, 10, async (simpleOrgInfo: SimpleOrgInfo) => {
+				await promiseUtils.mapLimit(orgs, 10, async (simpleOrgInfo: SimpleOrgInfo) => {
 					const fullOrgInfo: LdapEducationOrganizationWithUnits | null = await EducationOrganizationsService.getOrganization(
 						simpleOrgInfo.organizationId,
 						simpleOrgInfo.unitId

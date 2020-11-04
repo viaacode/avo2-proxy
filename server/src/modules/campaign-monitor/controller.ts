@@ -7,7 +7,7 @@ import { ExternalServerError, InternalServerError } from '../../shared/helpers/e
 import { logger } from '../../shared/helpers/logger';
 import { AuthService } from '../auth/service';
 import EducationOrganizationsService, {
-	LdapEducationOrganization,
+	LdapEducationOrganisation,
 } from '../education-organizations/service';
 
 import { NEWSLETTER_LISTS } from './const';
@@ -77,7 +77,7 @@ export default class CampaignMonitorController {
 				const educationalOrganizationUnitId = get(org, 'unitId');
 				if (educationalOrganizationId) {
 					// Waiting for https://meemoo.atlassian.net/browse/AVO-939
-					const educationalOrganization: LdapEducationOrganization | null = await EducationOrganizationsService.getOrganization(
+					const educationalOrganization: LdapEducationOrganisation | null = await EducationOrganizationsService.getOrganization(
 						educationalOrganizationId,
 						educationalOrganizationUnitId
 					);
