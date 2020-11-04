@@ -8,9 +8,11 @@ import type { Avo } from '@viaa/avo2-types';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import DataService from '../data/service';
 
+import { HAS_CONTENT } from './campaign-monitor.gql';
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
-import { CustomFields, EmailInfo } from './types';
+import { CustomFields, EmailInfo, HasContent } from './types';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
@@ -239,9 +241,36 @@ export default class CampaignMonitorService {
 	static async bulkUnsubscribe(emailAddresses: string[]): Promise<void> {
 		await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
 			const newsletterListIds = keys(NEWSLETTER_LISTS);
-			await Promise.all(newsletterListIds.map(listId => {
-				return CampaignMonitorService.unsubscribeFromNewsletterList(listId, mail);
-			}));
+			await Promise.all(
+				newsletterListIds.map((listId) => {
+					return CampaignMonitorService.unsubscribeFromNewsletterList(listId, mail);
+				})
+			);
 		});
+	}
+
+	static async getContentCounts(profileId: string): Promise<HasContent> {
+		try {
+			const response = await DataService.execute(HAS_CONTENT, {
+				profileId,
+			});
+
+			if (response.errors) {
+				throw new CustomError('graphql response contains errors', null, {
+					response,
+				});
+			}
+
+			return {
+				hasPublicCollections: !!get(response, 'data.has_public_collections[0]'),
+				hasPrivateCollections: !!get(response, 'data.has_private_collections[0]'),
+				hasAssignments: !!get(response, 'data.has_assignments[0]'),
+			};
+		} catch (err) {
+			throw new CustomError('Failed to check if user has content for profile id', err, {
+				profileId,
+				query: HAS_CONTENT,
+			});
+		}
 	}
 }

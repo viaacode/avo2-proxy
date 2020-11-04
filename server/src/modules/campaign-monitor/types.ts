@@ -25,3 +25,9 @@ export interface EmailInfo {
 		mainTitle: string;
 	};
 }
+
+export interface HasContent {
+	hasPrivateCollections: boolean;
+	hasPublicCollections: boolean;
+	hasAssignments: boolean;
+}

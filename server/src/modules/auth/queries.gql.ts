@@ -49,6 +49,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			}
 			created_at
 			expires_at
+			last_access_at
 			external_uid
 			role {
 				label
@@ -116,6 +117,7 @@ export const GET_USER_INFO_BY_ID = `
 			}
 			created_at
 			expires_at
+			last_access_at
 			external_uid
 			role {
 				label
@@ -184,6 +186,7 @@ export const GET_USER_BY_LDAP_UUID = `
 				}
 				created_at
 				expires_at
+				last_access_at
 				external_uid
 				role {
 					label
