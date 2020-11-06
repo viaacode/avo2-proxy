@@ -70,10 +70,10 @@ export class AuthService {
 				return null;
 			}
 			// Simplify user object structure
-			(user as any).profile = user.profiles[0] || ({} as Avo.User.Profile);
+			((user as unknown) as Avo.User.User).profile = (user.profile || {}) as Avo.User.Profile;
 			const permissions = new Set<string>();
 			const userGroupIds: number[] = [];
-			get(user, 'profiles[0].profile_user_groups', []).forEach((profileUserGroup: any) => {
+			get(user, 'profile.profile_user_groups', []).forEach((profileUserGroup: any) => {
 				get(profileUserGroup, 'groups', []).forEach((userGroup: any) => {
 					userGroupIds.push(userGroup.id);
 					get(userGroup, 'group_user_permission_groups', []).forEach(
@@ -93,7 +93,7 @@ export class AuthService {
 			(user as any).profile.permissions = Array.from(permissions);
 			(user as any).idpmapObjects = user.idpmaps;
 			(user as any).idpmaps = uniq((user.idpmaps || []).map((obj) => obj.idp));
-			delete user.profiles;
+			delete user.profile;
 			delete (user as any).profile.profile_user_groups;
 
 			// Simplify linked objects

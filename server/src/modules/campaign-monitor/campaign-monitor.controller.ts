@@ -1,5 +1,5 @@
 import * as promiseUtils from 'blend-promise-utils';
-import { compact, fromPairs, get, map, toPairs, uniq, values } from 'lodash';
+import { compact, fromPairs, get, isNil, isString, keys, map, toPairs, uniq, values } from 'lodash';
 import moment from 'moment';
 
 import type { Avo } from '@viaa/avo2-types';
@@ -8,7 +8,7 @@ import { ExternalServerError, InternalServerError } from '../../shared/helpers/e
 import { logger } from '../../shared/helpers/logger';
 import { SpecialUserGroup } from '../auth/consts';
 import { AuthService } from '../auth/service';
-import { UserGroup } from '../auth/types';
+import { SharedUser, UserGroup, UsersProfile } from '../auth/types';
 import EducationOrganizationsService, {
 	LdapEducationOrganisation,
 } from '../education-organizations/service';
@@ -63,17 +63,14 @@ export default class CampaignMonitorController {
 				await CampaignMonitorService.bulkUpdateSubscriberInfo(userInfos);
 
 				logger.info(
-					`bulk update of Campaign monitor info: Finished syncing ${
-						Math.min(i * BULK_UPDATE_BATCH_SIZE, userCount)
-					} / ${userCount} users`
+					`bulk update of Campaign monitor info: Finished syncing ${Math.min(
+						(i + 1) * BULK_UPDATE_BATCH_SIZE,
+						userCount
+					)} / ${userCount} users`
 				);
 			}
 
-			logger.info(
-				`bulk update of Campaign monitor info: Finished syncing ${
-					userCount
-				} / ${userCount} users`
-			);
+			logger.info(`bulk update of Campaign monitor info: Finished syncing all users`);
 		} catch (err) {
 			throw new InternalServerError(
 				'Failed to bulk update custom fields for users in campaign monitor',
@@ -132,7 +129,7 @@ export default class CampaignMonitorController {
 	}
 
 	private static async mapUserToCustomFields(
-		user: Avo.User.User,
+		user: Avo.User.User | SharedUser,
 		allUserGroups: UserGroup[]
 	): Promise<CmUserInfo> {
 		const email = get(user, 'mail');
@@ -140,7 +137,10 @@ export default class CampaignMonitorController {
 		const lastName = get(user, 'last_name');
 		const name = [firstName, lastName].join(' ').trim();
 
-		const userGroupId = get(user, 'profile.userGroupIds[0]');
+		let userGroupId = get(user, 'profile.userGroupIds[0]');
+		if (isNil(userGroupId)) {
+			userGroupId = get(user, 'profile.profile_user_group.group.id');
+		}
 		const userGroup = get(
 			allUserGroups.find((group) => group.id === userGroupId),
 			'label'
@@ -153,25 +153,55 @@ export default class CampaignMonitorController {
 		const businessCategory = get(user, 'profile.business_category');
 		const isExceptionAccount = get(user, 'profile.is_exception') || false;
 		const stamboekNumber = get(user, 'profile.stamboek');
-		const educationLevels: string[] = get(user, 'profile.educationLevels');
-		const {
-			hasPublicCollections,
-			hasPrivateCollections,
-			hasAssignments,
-		} = await CampaignMonitorService.getContentCounts(user.profile.id);
-		const hasHetArchiefLink = (user.idpmaps || []).includes('HETARCHIEF');
-		const hasSmartschoolLink = (user.idpmaps || []).includes('SMARTSCHOOL');
-		const hasKlascementLink = (user.idpmaps || []).includes('KLASCEMENT');
+		const educationLevels: string[] =
+			get(user, 'profile.educationLevels') ||
+			(get(user, 'profile.profile_contexts') || []).map((context: any) => context.key);
+		const subjects =
+			get(user, 'profile.subjects') ||
+			(get(user, 'profile.profile_classifications') || []).map(
+				(classification: any) => classification.key
+			);
+
+		let hasPublicCollections: boolean;
+		let hasPrivateCollections: boolean;
+		let hasAssignments: boolean;
+		if (keys(user.profile).includes('has_public_collections')) {
+			// User was fetched specifically to update cm fields and already includes the first content items
+			hasPublicCollections = !!get(user, 'profile.hasPublicCollections[0]');
+			hasPrivateCollections = !!get(user, 'profile.hasPrivateCollections[0]');
+			hasAssignments = !!get(user, 'profile.hasAssignments[0]');
+		} else {
+			// The user was fetched as part of the login process and we still need to fetch the first content items
+			const content = await CampaignMonitorService.getContentCounts(
+				String(get(user, 'profile.id'))
+			);
+			hasPublicCollections = content.hasPublicCollections;
+			hasPrivateCollections = content.hasPrivateCollections;
+			hasAssignments = content.hasAssignments;
+		}
+
+		let idps: string[];
+		if (user.idpmaps && isString(user.idpmaps[0])) {
+			idps = (user as Avo.User.User).idpmaps;
+		} else {
+			idps = (((user.idpmaps || []) as unknown) as { idp: string }[]).map(
+				(idpObj: { idp: string }) => idpObj.idp
+			);
+		}
+		const hasHetArchiefLink = idps.includes('HETARCHIEF');
+		const hasSmartschoolLink = idps.includes('SMARTSCHOOL');
+		const hasKlascementLink = idps.includes('KLASCEMENT');
 
 		const schoolZipcodes: string[] = [];
 		const schoolIds: string[] = [];
 		const campusIds: string[] = [];
 		const schoolNames: string[] = [];
 		const educationalOrganizations: Avo.EducationOrganization.Organization[] =
-			get(user, 'profile.organizations') || [];
+			get(user, 'profile.organizations') || get(user, 'profile.profile_organizations') || [];
 		await promiseUtils.map(educationalOrganizations, async (org) => {
-			const educationalOrganizationId = get(org, 'organizationId');
-			const educationalOrganizationUnitId = get(org, 'unitId');
+			const educationalOrganizationId =
+				get(org, 'organizationId') || get(org, 'organization_id');
+			const educationalOrganizationUnitId = get(org, 'unitId') || get(org, 'unit_id');
 			if (educationalOrganizationId) {
 				// Waiting for https://meemoo.atlassian.net/browse/AVO-939
 				const educationalOrganization: LdapEducationOrganisation | null = await EducationOrganizationsService.getOrganization(
@@ -194,7 +224,7 @@ export default class CampaignMonitorController {
 			}
 		});
 
-		const subjects = get(user, 'profile.subjects');
+		const isProfileComplete = CampaignMonitorController.isProfileComplete(user);
 
 		return {
 			email,
@@ -209,9 +239,7 @@ export default class CampaignMonitorController {
 				heeft_hetarchief_link: hasHetArchiefLink ? 'true' : 'false',
 				heeft_smartschool_link: hasSmartschoolLink ? 'true' : 'false',
 				heeft_klascement_link: hasKlascementLink ? 'true' : 'false',
-				is_profiel_compleet: CampaignMonitorController.isProfileComplete(user)
-					? 'true'
-					: 'false',
+				is_profiel_compleet: isProfileComplete ? 'true' : 'false',
 				gebruikersgroep: userGroup,
 				stamboeknummer: stamboekNumber,
 				is_uitzondering: isExceptionAccount ? 'true' : 'false',
@@ -228,7 +256,7 @@ export default class CampaignMonitorController {
 		};
 	}
 
-	private static isProfileComplete(user: Avo.User.User): boolean {
+	private static isProfileComplete(user: Avo.User.User | SharedUser): boolean {
 		const profile = get(user, 'profile');
 
 		// Only teachers have to fill in their profile for now
@@ -244,14 +272,21 @@ export default class CampaignMonitorController {
 			return true;
 		}
 
+		// TODO keep every user object like the database format (SharedUser) and get values using getters
 		return (
 			!!profile &&
-			!!profile.organizations &&
-			!!profile.organizations.length &&
-			!!profile.educationLevels &&
-			!!profile.educationLevels.length &&
-			!!profile.subjects &&
-			!!profile.subjects.length
+			!!(profile as Avo.User.Profile).organizations &&
+			!!(profile as Avo.User.Profile).organizations.length &&
+			!!(profile as UsersProfile).profile_organizations &&
+			!!(profile as UsersProfile).profile_organizations.length &&
+			!!(profile as Avo.User.Profile).educationLevels &&
+			!!(profile as Avo.User.Profile).educationLevels.length &&
+			!!(profile as UsersProfile).profile_contexts &&
+			!!(profile as UsersProfile).profile_contexts.length &&
+			!!(profile as Avo.User.Profile).subjects &&
+			!!(profile as Avo.User.Profile).subjects.length &&
+			!!(profile as UsersProfile).profile_classifications &&
+			!!(profile as UsersProfile).profile_classifications.length
 		);
 	}
 

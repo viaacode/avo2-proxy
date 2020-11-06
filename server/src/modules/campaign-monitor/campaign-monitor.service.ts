@@ -329,19 +329,42 @@ export default class CampaignMonitorService {
 		try {
 			const listIds = values(NEWSLETTER_LISTS);
 			for (const listId of listIds) {
-				await axios(`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`, {
-					data: userInfos.map(userInfo => this.getCmSubscriberData(userInfo, false)),
-					method: 'POST',
-					auth: {
-						username: process.env.CAMPAIGN_MONITOR_API_KEY,
-						password: '.',
-					},
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				});
+				const subscriberInfos = userInfos.map((userInfo) =>
+					this.getCmSubscriberData(userInfo, false)
+				);
+				const data = {
+					Subscribers: subscriberInfos,
+					Resubscribe: false,
+				};
+				await axios(
+					`https://api.createsend.com/api/v3.2/subscribers/${listId}/import.json`,
+					{
+						data,
+						method: 'POST',
+						auth: {
+							username: process.env.CAMPAIGN_MONITOR_API_KEY,
+							password: '.',
+						},
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					}
+				);
 			}
 		} catch (err) {
+			const responseData = get(err, 'response.data');
+			if (JSON.stringify(responseData).includes('Subscriber Import had some failures')) {
+				// Do not log errors regarding users not being updated when they are in the unsubscribe list
+				const seriousErrors = get(responseData, 'ResultData.FailureDetails', []).filter((error: any) => error.Code !== 206);
+				if (seriousErrors.length) {
+					logger.error(
+						new CustomError('Failed to import some users into CM', err, {
+							responseData,
+						})
+					);
+				}
+				return;
+			}
 			throw new CustomError('Failed to bulk update subscriber info in campaign monitor', err);
 		}
 	}
