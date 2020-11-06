@@ -1,4 +1,4 @@
-import { Context, DELETE, Path, PreProcessor, ServiceContext } from 'typescript-rest';
+import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
@@ -10,7 +10,7 @@ import {
 import { PermissionName } from '../../shared/permissions';
 
 import UserController from './user.controller';
-import { BulkDeleteUsersBody } from './user.types';
+import { BulkBlockUsersBody, BulkDeleteUsersBody } from './user.types';
 
 @Path('/user')
 export default class UserRoute {
@@ -40,6 +40,27 @@ export default class UserRoute {
 			return { message: 'ok' };
 		} catch (err) {
 			const error = new InternalServerError('Failed to bulk delete users', err, { body });
+			logger.error(error);
+			throw new InternalServerError(error.message);
+		}
+	}
+
+	@Path('bulk-block')
+	@POST
+	@PreProcessor(
+		multiGuard(
+			isAuthenticatedRouteGuard,
+			hasPermissionRouteGuard(PermissionName.EDIT_BAN_USER_STATUS)
+		)
+	)
+	async bulkUpdateBlockStatus(body: BulkBlockUsersBody): Promise<{ message: 'ok' }> {
+		try {
+			await UserController.bulkUpdateBlockStatus(body.profileIds, body.isBlocked);
+			return { message: 'ok' };
+		} catch (err) {
+			const error = new InternalServerError('Failed to bulk block/unblock users', err, {
+				body,
+			});
 			logger.error(error);
 			throw new InternalServerError(error.message);
 		}

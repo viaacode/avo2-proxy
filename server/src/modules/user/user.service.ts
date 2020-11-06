@@ -11,13 +11,16 @@ import {
 	BULK_DELETE_USERS,
 	BULK_GET_EMAIL_ADDRESSES,
 	BULK_STRIP_USERS,
+	BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
 	DELETE_PRIVATE_CONTENT_FOR_PROFILES,
 	DELETE_PUBLIC_CONTENT_FOR_PROFILES,
+	GET_EMAIL_USER_INFO,
 	TRANSFER_PRIVATE_CONTENT_FOR_PROFILES,
 	TRANSFER_PUBLIC_CONTENT_FOR_PROFILES,
 	UPDATE_MAIL,
 	UPDATE_NAME_AND_MAIL,
 } from './user.queries.gql';
+import { EmailUserInfo } from '../campaign-monitor/types';
 
 export default class UserService {
 	/**
@@ -223,6 +226,63 @@ export default class UserService {
 					query: TRANSFER_PRIVATE_CONTENT_FOR_PROFILES,
 				}
 			);
+		}
+	}
+
+	static async updateBlockStatusByProfileIds(
+		profileIds: string[],
+		isBlocked: boolean
+	): Promise<void> {
+		try {
+			const response = await DataService.execute(
+				BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
+				{
+					profileIds,
+					isBlocked,
+				}
+			);
+
+			if (response.errors) {
+				throw new CustomError('Response from gragpql contains errors', null, {
+					response,
+				});
+			}
+		} catch (err) {
+			throw new CustomError(
+				'Failed to update is_blocked field for users in the database',
+				err,
+				{
+					profileIds,
+					isBlocked,
+					query: BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
+				}
+			);
+		}
+	}
+
+	static async getEmailUserInfo(profileIds: string[]): Promise<EmailUserInfo[]> {
+		try {
+			const response = await DataService.execute(GET_EMAIL_USER_INFO, {
+				profileIds,
+			});
+
+			if (response.errors) {
+				throw new CustomError('Response from gragpql contains errors', null, {
+					response,
+				});
+			}
+
+			return (get(response, 'data.users_profiles') || []).map(
+				(profile: any): EmailUserInfo => ({
+					email: get(profile, 'user.mail', '-'),
+					UserGroup: get(profile, 'profile_user_group.group.label', '-'),
+				})
+			);
+		} catch (err) {
+			throw new CustomError('Failed to get email user info for users in the database', err, {
+				profileIds,
+				query: GET_EMAIL_USER_INFO,
+			});
 		}
 	}
 }
