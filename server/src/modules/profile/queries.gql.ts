@@ -29,6 +29,7 @@ export const UPDATE_PROFILE_INFO = `
 		$userUuid: uuid!
 		$firstName: String
 		$lastName: String
+		$business_category: String
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
 			affected_rows
@@ -50,6 +51,7 @@ export const UPDATE_PROFILE_INFO = `
 				stamboek: $stamboek
 				company_id: $company_id
 				is_exception: $is_exception
+				business_category: $business_category
 			}
 		) {
 			affected_rows

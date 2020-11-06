@@ -3,8 +3,8 @@ import * as promiseUtils from 'blend-promise-utils';
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
-import CampaignMonitorService from '../campaign-monitor/service';
-import { EmailUserInfo } from '../campaign-monitor/types';
+import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
+import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
 
 import UserService from './user.service';
 import { UserDeleteOption } from './user.types';

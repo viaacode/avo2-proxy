@@ -49,31 +49,6 @@ export interface Group {
 	objectclass: string[];
 }
 
-export interface Unit {
-	id: string;
-	or_id: string;
-	ou_id: string;
-	name: string;
-	dn: string;
-	objectclass: string[];
-	address: string;
-	city: string;
-	postal_code: string;
-}
-
-export interface Organization {
-	id: string;
-	or_id: string;
-	name: string;
-	dn: string;
-	objectclass: string[];
-	address: string;
-	city: string;
-	postal_code: string;
-	type: string;
-	sector: string;
-}
-
 export interface LdapApiUserInfo {
 	email: string;
 	first_name: string;

@@ -6,10 +6,10 @@ import type { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 
+import HetArchiefService from './idps/hetarchief/service';
 import { GET_IDP_MAP, INSERT_IDP_MAP } from './queries.gql';
 import { AuthService } from './service';
 import { IdpMap } from './types';
-import HetArchiefService from './idps/hetarchief/service';
 
 const IDP_USER_INFO_PATH = 'session.idpUserInfo';
 const AVO_USER_INFO_PATH = 'session.avoUserInfo';

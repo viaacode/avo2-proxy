@@ -22,7 +22,7 @@ import KlascementService from './modules/auth/idps/klascement/service';
 import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
-import CampaignMonitorRoute from './modules/campaign-monitor/route';
+import CampaignMonitorRoute from './modules/campaign-monitor/campaign-monitor.route';
 import ContentPagesRoute from './modules/content-pages/route';
 import DataRoute from './modules/data/route';
 import EducationLevelsRoute from './modules/education-levels/route';
