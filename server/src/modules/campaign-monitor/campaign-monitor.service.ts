@@ -15,6 +15,7 @@ import { COUNT_ACTIVE_USERS, GET_ACTIVE_USERS, HAS_CONTENT } from './campaign-mo
 import { CmUserInfo, CustomFields, EmailInfo, HasContent } from './campaign-monitor.types';
 
 checkRequiredEnvs([
+	'CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT',
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
 	'CAMPAIGN_MONITOR_API_KEY',
 	'CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID',
@@ -61,9 +62,9 @@ export default class CampaignMonitorService {
 	public static async fetchNewsletterPreference(listId: string, email: string) {
 		let url: string;
 		try {
-			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
-				{ email }
-			)}`;
+			url = `${
+				process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT
+			}/${listId}.json/?${queryString.stringify({ email })}`;
 			const response: AxiosResponse<any> = await axios(url, {
 				method: 'GET',
 				auth: {
@@ -119,7 +120,7 @@ export default class CampaignMonitorService {
 				return;
 			}
 			await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`,
+				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}/unsubscribe.json`,
 				{
 					method: 'POST',
 					auth: {
@@ -158,7 +159,7 @@ export default class CampaignMonitorService {
 				return;
 			}
 
-			await axios(`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`, {
+			await axios(`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}.json`, {
 				data: this.getCmSubscriberData(cmUserInfo, true),
 				method: 'POST',
 				auth: {
@@ -185,9 +186,9 @@ export default class CampaignMonitorService {
 			};
 
 			const response = await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
-					{ email: oldEmail }
-				)}`,
+				`${
+					process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT
+				}/${listId}.json?${queryString.stringify({ email: oldEmail })}`,
 				{
 					data,
 					method: 'PUT',
@@ -336,26 +337,26 @@ export default class CampaignMonitorService {
 					Subscribers: subscriberInfos,
 					Resubscribe: false,
 				};
-				await axios(
-					`https://api.createsend.com/api/v3.2/subscribers/${listId}/import.json`,
-					{
-						data,
-						method: 'POST',
-						auth: {
-							username: process.env.CAMPAIGN_MONITOR_API_KEY,
-							password: '.',
-						},
-						headers: {
-							'Content-Type': 'application/json',
-						},
-					}
-				);
+				const url = `${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}/import.json`;
+				await axios(url, {
+					data,
+					method: 'POST',
+					auth: {
+						username: process.env.CAMPAIGN_MONITOR_API_KEY,
+						password: '.',
+					},
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
 			}
 		} catch (err) {
 			const responseData = get(err, 'response.data');
 			if (JSON.stringify(responseData).includes('Subscriber Import had some failures')) {
 				// Do not log errors regarding users not being updated when they are in the unsubscribe list
-				const seriousErrors = get(responseData, 'ResultData.FailureDetails', []).filter((error: any) => error.Code !== 206);
+				const seriousErrors = get(responseData, 'ResultData.FailureDetails', []).filter(
+					(error: any) => error.Code !== 206
+				);
 				if (seriousErrors.length) {
 					logger.error(
 						new CustomError('Failed to import some users into CM', err, {
