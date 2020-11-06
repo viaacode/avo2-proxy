@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
-import { get, keys, toPairs } from 'lodash';
+import { get, keys, toPairs, values } from 'lodash';
 import * as queryString from 'query-string';
 
 import type { Avo } from '@viaa/avo2-types';
@@ -10,11 +10,12 @@ import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import DataService from '../data/service';
 
-import { HAS_CONTENT } from './campaign-monitor.gql';
-import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './const';
-import { CustomFields, EmailInfo, HasContent } from './types';
+import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './campaign-monitor.const';
+import { COUNT_ACTIVE_USERS, GET_ACTIVE_USERS, HAS_CONTENT } from './campaign-monitor.gql';
+import { CmUserInfo, CustomFields, EmailInfo, HasContent } from './campaign-monitor.types';
 
 checkRequiredEnvs([
+	'CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT',
 	'CAMPAIGN_MONITOR_API_ENDPOINT',
 	'CAMPAIGN_MONITOR_API_KEY',
 	'CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID',
@@ -61,9 +62,9 @@ export default class CampaignMonitorService {
 	public static async fetchNewsletterPreference(listId: string, email: string) {
 		let url: string;
 		try {
-			url = `https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
-				{ email }
-			)}`;
+			url = `${
+				process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT
+			}/${listId}.json/?${queryString.stringify({ email })}`;
 			const response: AxiosResponse<any> = await axios(url, {
 				method: 'GET',
 				auth: {
@@ -93,7 +94,7 @@ export default class CampaignMonitorService {
 		email: string
 	): Promise<Avo.Newsletter.Preferences> {
 		try {
-			const responses = await axios.all(
+			const responses: boolean[] = await axios.all(
 				NEWSLETTERS_TO_FETCH.map((list) =>
 					CampaignMonitorService.fetchNewsletterPreference(NEWSLETTER_LISTS[list], email)
 				)
@@ -119,7 +120,7 @@ export default class CampaignMonitorService {
 				return;
 			}
 			await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}/unsubscribe.json`,
+				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}/unsubscribe.json`,
 				{
 					method: 'POST',
 					auth: {
@@ -139,29 +140,27 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	public static async subscribeToNewsletterList(
-		listId: string,
-		email: string,
-		name: string,
-		customFields: CustomFields
-	) {
+	private static getCmSubscriberData(cmUserInfo: CmUserInfo, resubscribe: boolean) {
+		return {
+			EmailAddress: cmUserInfo.email,
+			Name: cmUserInfo.name,
+			Resubscribe: resubscribe,
+			ConsentToTrack: resubscribe ? 'Yes' : 'Unchanged',
+			CustomFields: toPairs(cmUserInfo.customFields).map((pair) => ({
+				Key: pair[0],
+				Value: pair[1],
+			})),
+		};
+	}
+
+	public static async subscribeToNewsletterList(listId: string, cmUserInfo: CmUserInfo) {
 		try {
-			if (!email) {
+			if (!cmUserInfo.email) {
 				return;
 			}
-			const data = {
-				EmailAddress: email,
-				Name: name,
-				Resubscribe: true,
-				ConsentToTrack: 'Yes',
-				CustomFields: toPairs(customFields).map((pair) => ({
-					Key: pair[0],
-					Value: pair[1],
-				})),
-			};
 
-			await axios(`https://api.createsend.com/api/v3.2/subscribers/${listId}.json`, {
-				data,
+			await axios(`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}.json`, {
+				data: this.getCmSubscriberData(cmUserInfo, true),
 				method: 'POST',
 				auth: {
 					username: process.env.CAMPAIGN_MONITOR_API_KEY,
@@ -174,8 +173,7 @@ export default class CampaignMonitorService {
 		} catch (err) {
 			throw new CustomError('Failed to subscribe from newsletter list', err, {
 				listId,
-				name,
-				email,
+				cmUserInfo,
 			});
 		}
 	}
@@ -188,9 +186,9 @@ export default class CampaignMonitorService {
 			};
 
 			const response = await axios(
-				`https://api.createsend.com/api/v3.2/subscribers/${listId}.json?${queryString.stringify(
-					{ email: oldEmail }
-				)}`,
+				`${
+					process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT
+				}/${listId}.json?${queryString.stringify({ email: oldEmail })}`,
 				{
 					data,
 					method: 'PUT',
@@ -271,6 +269,104 @@ export default class CampaignMonitorService {
 				profileId,
 				query: HAS_CONTENT,
 			});
+		}
+	}
+
+	/**
+	 * Gets users from the database where their active date is past the provided date
+	 * @param activeDate when you pass null, all users will be returned
+	 * @param offset used for pagination
+	 * @param limit used for pagination
+	 */
+	static async getActiveUsers(
+		activeDate: string | null,
+		offset: number,
+		limit: number
+	): Promise<Avo.User.User[]> {
+		try {
+			const response = await DataService.execute(GET_ACTIVE_USERS, {
+				offset,
+				limit,
+				where: activeDate ? { last_access_at: { _gt: activeDate } } : {},
+			});
+
+			if (response.errors) {
+				throw new CustomError('graphql response contains errors', null, {
+					response,
+				});
+			}
+
+			return get(response, 'data.shared_users') || [];
+		} catch (err) {
+			throw new CustomError('Failed to get active users from the database', err, {
+				activeDate,
+				query: GET_ACTIVE_USERS,
+			});
+		}
+	}
+
+	static async countActiveUsers(activeDate: string | null): Promise<number> {
+		try {
+			const response = await DataService.execute(COUNT_ACTIVE_USERS, {
+				where: activeDate ? { last_access_at: { _gt: activeDate } } : {},
+			});
+
+			if (response.errors) {
+				throw new CustomError('graphql response contains errors', null, {
+					response,
+				});
+			}
+
+			return get(response, 'data.shared_users_aggregate.aggregate.count') || 0;
+		} catch (err) {
+			throw new CustomError('Failed to count active users from the database', err, {
+				activeDate,
+				query: COUNT_ACTIVE_USERS,
+			});
+		}
+	}
+
+	static async bulkUpdateSubscriberInfo(userInfos: CmUserInfo[]) {
+		try {
+			const listIds = values(NEWSLETTER_LISTS);
+			for (const listId of listIds) {
+				const subscriberInfos = userInfos.map((userInfo) =>
+					this.getCmSubscriberData(userInfo, false)
+				);
+				const data = {
+					Subscribers: subscriberInfos,
+					Resubscribe: false,
+				};
+				const url = `${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}/import.json`;
+				await axios(url, {
+					data,
+					method: 'POST',
+					auth: {
+						username: process.env.CAMPAIGN_MONITOR_API_KEY,
+						password: '.',
+					},
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+			}
+		} catch (err) {
+			const responseData = get(err, 'response.data');
+			if (JSON.stringify(responseData).includes('Subscriber Import had some failures')) {
+				// Do not log errors regarding users not being updated when they are in the unsubscribe list
+				const seriousErrors = get(responseData, 'ResultData.FailureDetails', []).filter(
+					(error: any) => error.Code !== 206
+				);
+				if (seriousErrors.length) {
+					logger.error(
+						new CustomError('Failed to import some users into CM', err, {
+							responseData,
+						})
+					);
+				}
+				return;
+			}
+			throw new CustomError('Failed to bulk update subscriber info in campaign monitor', err);
 		}
 	}
 }

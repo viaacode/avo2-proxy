@@ -9,7 +9,7 @@ import {
 	InternalServerError,
 } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
-import CampaignMonitorController from '../../../campaign-monitor/controller';
+import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
 import DataService from '../../../data/service';
 import EducationOrganizationsService, {
 	LdapEducationOrganisation,
@@ -288,6 +288,7 @@ export default class HetArchiefController {
 			newAvoUser
 		);
 
+		// TODO remove this once https://meemoo.atlassian.net/browse/DEV-1318 is implemented
 		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
 		// Also update existing users if their email changed
 		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);

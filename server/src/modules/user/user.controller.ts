@@ -1,4 +1,4 @@
-import CampaignMonitorService from '../campaign-monitor/service';
+import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
 
 import UserService from './user.service';
 import { UserDeleteOption } from './user.types';
