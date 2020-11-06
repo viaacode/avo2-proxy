@@ -288,6 +288,7 @@ export default class HetArchiefController {
 			newAvoUser
 		);
 
+		// TODO remove this once https://meemoo.atlassian.net/browse/DEV-1318 is implemented
 		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
 		// Also update existing users if their email changed
 		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);

@@ -93,7 +93,6 @@ export class AuthService {
 			(user as any).profile.permissions = Array.from(permissions);
 			(user as any).idpmapObjects = user.idpmaps;
 			(user as any).idpmaps = uniq((user.idpmaps || []).map((obj) => obj.idp));
-			delete user.profile;
 			delete (user as any).profile.profile_user_groups;
 
 			// Simplify linked objects
