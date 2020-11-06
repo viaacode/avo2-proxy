@@ -247,6 +247,9 @@ export default class HetArchiefRoute {
 	@POST
 	async logoutCallback(response: SamlCallbackBody): Promise<any> {
 		try {
+			// Remove the ldap user from the session
+			IdpHelper.logout(this.context.request);
+
 			const info: RelayState = JSON.parse(response.RelayState);
 			return new Return.MovedTemporarily(info.returnToUrl);
 		} catch (err) {
