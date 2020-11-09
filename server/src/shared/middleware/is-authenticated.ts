@@ -1,8 +1,9 @@
 import { Request } from 'express';
-import { get, some } from 'lodash';
+import { some } from 'lodash';
 
 import { IDP_ADAPTERS } from '../../modules/auth/consts';
 import { IdpHelper } from '../../modules/auth/idp-helper';
+import { AuthService } from '../../modules/auth/service';
 import { UnauthorizedError } from '../helpers/error';
 import { PermissionName } from '../permissions';
 
@@ -32,7 +33,7 @@ export function isAuthenticatedRouteGuard(req: Request): Request {
 export function hasPermissionRouteGuard(permission: PermissionName): GuardFunction {
 	return (req: Request) => {
 		const avoUser = IdpHelper.getAvoUserInfoFromSession(req);
-		if (!get(avoUser, 'profile.permissions', []).includes(permission)) {
+		if (!AuthService.hasPermission(avoUser, permission)) {
 			throw new UnauthorizedError(`You must be logged in for the route ${req.path}`);
 		}
 		return req;

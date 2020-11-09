@@ -5,6 +5,7 @@ import { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
 import i18n from '../../shared/translations/i18n';
+import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
 import DataService from '../data/service';
 
 import {
@@ -20,7 +21,6 @@ import {
 	UPDATE_MAIL,
 	UPDATE_NAME_AND_MAIL,
 } from './user.queries.gql';
-import { EmailUserInfo } from '../campaign-monitor/types';
 
 export default class UserService {
 	/**
@@ -62,15 +62,15 @@ export default class UserService {
 				anonymize ? UPDATE_NAME_AND_MAIL : UPDATE_MAIL,
 				anonymize
 					? {
-							profileId,
-							firstName: i18n.t('Anonieme'),
-							lastName: i18n.t('gebruiker'),
-							mail: `${profileId}@hetarchief.be`,
-					  }
+						profileId,
+						firstName: i18n.t('Anonieme'),
+						lastName: i18n.t('gebruiker'),
+						mail: `${profileId}@hetarchief.be`,
+					}
 					: {
-							profileId,
-							mail: `${profileId}@hetarchief.be`,
-					  }
+						profileId,
+						mail: `${profileId}@hetarchief.be`,
+					}
 			);
 
 			if (response.errors) {
