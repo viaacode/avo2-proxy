@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  SVC_PORT: http://avo2-proxy-ENV:8080
+  ORG_PATH: /organisations/update-cache
+  PROXY_API_KEY: XXXXX
+  PUB_DATE: /content-pages/update-published-dates
+  SES_PATH: /clear-sessions
+kind: ConfigMap
+metadata:
+  name: proxy-crons-ENV
+  namespace: sc-avo2
