@@ -22,6 +22,10 @@ checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_AMBASSADOR_LIST_ID',
 	'CAMPAIGN_MONITOR_WORKSHOP_LIST_ID',
 	'CAMPAIGN_MONITOR_ALL_ACTIVE_USERS_LIST_ID',
+	'CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_ITEM',
+	'CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_COLLECTION',
+	'CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_BUNDLE',
+	'CAMPAIGN_MONITOR_EMAIL_TEMPLATE_BLOCK_USER',
 ]);
 
 export default class CampaignMonitorService {
@@ -171,7 +175,7 @@ export default class CampaignMonitorService {
 				},
 			});
 		} catch (err) {
-			throw new CustomError('Failed to subscribe from newsletter list', err, {
+			throw new CustomError('Failed to subscribe to newsletter list', err, {
 				listId,
 				cmUserInfo,
 			});
