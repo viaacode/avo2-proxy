@@ -30,7 +30,6 @@ import { AuthService } from './service';
 export default class AuthController {
 	public static async getLoginResponse(req: Request): Promise<Avo.Auth.LoginResponse> {
 		if (isLoggedIn(req)) {
-			logger.info('check login: user is authenticated');
 			const userInfo = await IdpHelper.getUpdatedAvoUserInfoFromSession(req);
 			const acceptedConditions = await AuthController.getUserHasAcceptedUsageAndPrivacyDeclaration(
 				userInfo
@@ -74,7 +73,6 @@ export default class AuthController {
 					.toISOString(),
 			};
 		}
-		logger.info('check login: user is not authenticated');
 
 		return { message: 'LOGGED_OUT' };
 	}

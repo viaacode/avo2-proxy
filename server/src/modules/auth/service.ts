@@ -233,10 +233,7 @@ export class AuthService {
 	}
 
 	static async updateLdapUserInfo(avoUser: Avo.User.User, ldapEntryUuid: string): Promise<void> {
-		let url: string;
 		try {
-			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapEntryUuid}`;
-
 			const orgs: SimpleOrgInfo[] = get(avoUser, 'profile.organizations') || [];
 			const educationLevels = get(avoUser, 'profile.educationLevels') || [];
 
@@ -273,7 +270,6 @@ export class AuthService {
 			});
 		} catch (err) {
 			throw new InternalServerError('Failed to update user info in ldap', err, {
-				url,
 				avoUserId: get(avoUser, 'uid'),
 			});
 		}
