@@ -1,0 +1,49 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  labels:
+    action_name: update-org
+    app: avo2-proxy
+    ENV: prd
+    template: cronjob
+  name: avo2-proxy-update-org-prd
+  namespace: sc-avo2
+spec:
+  concurrencyPolicy: Allow
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            action_name: update-org
+            app: avo2-proxy
+            ENV: prd 
+            template: cronjob_job
+        spec:
+          containers:
+          - command:
+            - /bin/sh
+            - -c
+            - "curl -s -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $(PROXY_API_KEY)\" $(SVC_PORT)$(ORG_PATH)"
+            env:
+            envFrom:
+            - configMapRef:
+                name: proxy-crons-prd
+            image: docker-registry.default.svc:5000/sc-avo2/avo2-proxy:prd
+            imagePullPolicy: IfNotPresent
+            name: avo-crons
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+  schedule: 0 2 5 * *
+  successfulJobsHistoryLimit: 3
+  suspend: false

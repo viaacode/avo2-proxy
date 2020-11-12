@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import _ from 'lodash';
+import { get } from 'lodash';
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
 import convert = require('xml-js');
 
@@ -58,16 +58,20 @@ export default class HetArchiefService {
 				ignoreCdata: true,
 				ignoreDoctype: true,
 			}) as IdpMetaData;
-			const idpCertificatePath =
-				'md:EntityDescriptor.md:IDPSSODescriptor.md:KeyDescriptor[0].ds:KeyInfo.ds:X509Data.ds:X509Certificate._text';
+			const idpCertificatePath = 'md:EntityDescriptor.md:IDPSSODescriptor.md:KeyDescriptor';
 			const ssoLoginUrlPath =
 				'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleSignOnService._attributes.Location';
 			const ssoLogoutUrlPath =
 				'md:EntityDescriptor.md:IDPSSODescriptor.md:SingleLogoutService._attributes.Location';
-			const idpCertificate = _.get(metaData, idpCertificatePath);
-			this.ssoLoginUrl = _.get(metaData, ssoLoginUrlPath);
-			this.ssoLogoutUrl = _.get(metaData, ssoLogoutUrlPath);
-			if (!idpCertificate) {
+
+			// Get all signing certificates from the idp saml xml metadata
+			const rawIdpCertificates = get(metaData, idpCertificatePath);
+			const signingIdpCertificates = rawIdpCertificates
+				.filter((cert: any) => get(cert, '_attributes.use') === 'signing')
+				.map((cert: any) => get(cert, 'ds:KeyInfo.ds:X509Data.ds:X509Certificate._text'));
+			this.ssoLoginUrl = get(metaData, ssoLoginUrlPath);
+			this.ssoLogoutUrl = get(metaData, ssoLogoutUrlPath);
+			if (!signingIdpCertificates.length) {
 				throw new ExternalServerError('Failed to find certificate in idp metadata', null, {
 					metaData,
 					idpCertificatePath,
@@ -102,7 +106,7 @@ export default class HetArchiefService {
 			this.identityProvider = new saml2.IdentityProvider({
 				sso_login_url: this.ssoLoginUrl,
 				sso_logout_url: this.ssoLogoutUrl,
-				certificates: [idpCertificate],
+				certificates: signingIdpCertificates,
 				// force_authn: true, // TODO enable certificates once the app runs on https on qas/prd
 				sign_get_request: false,
 				allow_unencrypted_assertion: true,

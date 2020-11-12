@@ -33,9 +33,12 @@ pipeline {
                     echo "Running login script for the external docker agent"
                     sh '''#!/bin/bash
                     set -x
+                    set -e
                     login_oc.sh $ENDPOINT  > /dev/null 2>&1 && oc project sc-avo2 &&
                     oc create -f openshift/proxy-cfg-tmpl.yaml 2>/dev/null || oc replace  -f openshift/proxy-cfg-tmpl.yaml
                     echo template for config map added
+                    for job in $(find -name "proxy-crons*");do oc apply -f $job ;done
+                    echo cronjobs updated
                     '''
                 }
 
