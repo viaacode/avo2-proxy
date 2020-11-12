@@ -152,10 +152,6 @@ export default class HetArchiefService {
 				{
 					request_body: requestBody,
 					allow_unencrypted_assertion: true,
-
-					// https://github.com/Clever/saml2/issues/106
-					ignore_signature: process.env.NODE_ENV === 'local',
-					require_session_index: !(process.env.NODE_ENV === 'local'),
 				} as any,
 				(err, samlResponse: DecodedSamlResponse) => {
 					if (err) {
