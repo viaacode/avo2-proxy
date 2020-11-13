@@ -271,6 +271,38 @@ export default class HetArchiefRoute {
 	}
 
 	/**
+	 * This endpoint is called by the idp when the user signs out on a different platform, and should also be signed out of this platform (single sign out)
+	 * @param response
+	 */
+	@Path('idp-logout')
+	@POST
+	async idpInitiatedLogout(response: SamlCallbackBody): Promise<any> {
+		try {
+			// Remove the ldap user from the session
+			IdpHelper.logout(this.context.request);
+
+			return new Return.MovedTemporarily(
+				await HetArchiefService.createLogoutResponseUrl(response.RelayState)
+			);
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed during hetarchief auth idp-logout route',
+				err,
+				{
+					relayState: response.RelayState,
+				}
+			);
+			logger.error(error);
+			return redirectToClientErrorPage(
+				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
+				'alert-triangle',
+				['home', 'helpdesk'],
+				error.identifier
+			);
+		}
+	}
+
+	/**
 	 * Forward the client to the ssum registration page
 	 * This way we can avoid needing to set the ssum url in the client for every environment
 	 */
