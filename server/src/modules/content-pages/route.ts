@@ -1,3 +1,4 @@
+import { get, isString } from 'lodash';
 import {
 	Context,
 	GET,
@@ -33,8 +34,10 @@ export default class ContentPagesRoute {
 
 	@Path('')
 	@GET
-	async getContentPageByPath(@QueryParam('path') path: string): Promise<Avo.ContentPage.Page> {
-		let content: Avo.ContentPage.Page = null;
+	async getContentPageByPath(
+		@QueryParam('path') path: string
+	): Promise<Avo.ContentPage.Page | { error: string }> {
+		let content: Avo.ContentPage.Page | string = null;
 		try {
 			const user: Avo.User.User | null = IdpHelper.getAvoUserInfoFromSession(
 				this.context.request
@@ -45,6 +48,14 @@ export default class ContentPagesRoute {
 				this.context.request
 			);
 		} catch (err) {
+			if (get(err, 'innerException.additionalInfo.error') === 'CONTENT_PAGE_DEPUBLISHED') {
+				await this.context.response.status(403).json(
+					new NotFoundError('content page was depublished', null, {
+						...(err as CustomError).innerException.additionalInfo,
+					})
+				);
+				return;
+			}
 			logger.error(new InternalServerError('Failed to get content page', err));
 			throw new InternalServerError('Failed to get content page', null, { path });
 		}
