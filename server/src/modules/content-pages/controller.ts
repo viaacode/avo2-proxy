@@ -1,11 +1,11 @@
 import * as promiseUtils from 'blend-promise-utils';
 import { Request } from 'express';
-import _ from 'lodash';
+import { get, intersection, isEmpty, isNaN, keys, set } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 import { SearchResultItem } from '@viaa/avo2-types/types/search/index';
 
-import { CustomError, ExternalServerError } from '../../shared/helpers/error';
+import { BadRequestError, CustomError, ExternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import OrganisationService from '../organization/service';
@@ -31,8 +31,8 @@ export default class ContentPageController {
 				| Avo.ContentPage.Page
 				| undefined = await ContentPageService.getContentPageByPath(path);
 
-			const permissions = _.get(user, 'profile.permissions', []);
-			const profileId = _.get(user, 'profile.id', []);
+			const permissions = get(user, 'profile.permissions', []);
+			const profileId = get(user, 'profile.id', []);
 			const canEditContentPage =
 				permissions.includes('EDIT_ANY_CONTENT_PAGES') ||
 				(permissions.includes('EDIT_OWN_CONTENT_PAGES') &&
@@ -55,7 +55,10 @@ export default class ContentPageController {
 					contentPage.depublish_at &&
 					new Date().getTime() > new Date(contentPage.depublish_at).getTime()
 				) {
-					return null; // Already depublished yet published
+					throw new BadRequestError('The content page was depublished', null, {
+						error: 'CONTENT_PAGE_DEPUBLISHED',
+						contentPageType: get(contentPage, 'content_type'),
+					});
 				}
 
 				if (!contentPage.is_public) {
@@ -64,7 +67,7 @@ export default class ContentPageController {
 			}
 
 			// Check if content page is accessible for the user who requested the content page
-			if (!_.intersection(contentPage.user_group_ids, getUserGroupIds(user)).length) {
+			if (!intersection(contentPage.user_group_ids, getUserGroupIds(user)).length) {
 				return null;
 			}
 
@@ -116,15 +119,15 @@ export default class ContentPageController {
 		if (mediaGridBlocks.length) {
 			await promiseUtils.mapLimit(mediaGridBlocks, 2, async (mediaGridBlock: any) => {
 				try {
-					const searchQuery = _.get(
+					const searchQuery = get(
 						mediaGridBlock,
 						'variables.blockState.searchQuery.value'
 					);
-					const searchQueryLimit = _.get(
+					const searchQueryLimit = get(
 						mediaGridBlock,
 						'variables.blockState.searchQueryLimit'
 					);
-					const mediaItems = _.get(mediaGridBlock, 'variables.componentState', []).filter(
+					const mediaItems = get(mediaGridBlock, 'variables.componentState', []).filter(
 						(item: any) => item.mediaItem
 					);
 
@@ -135,7 +138,7 @@ export default class ContentPageController {
 						request
 					);
 
-					_.set(mediaGridBlock, 'variables.blockState.results', results);
+					set(mediaGridBlock, 'variables.blockState.results', results);
 				} catch (err) {
 					logger.error(
 						new CustomError('Failed to resolve media grid content', err, {
@@ -153,13 +156,13 @@ export default class ContentPageController {
 		request: Request
 	) {
 		const mediaPlayerBlocks = contentPage.contentBlockssBycontentId.filter((contentBlock) =>
-			_.keys(MEDIA_PLAYER_BLOCKS).includes(contentBlock.content_block_type)
+			keys(MEDIA_PLAYER_BLOCKS).includes(contentBlock.content_block_type)
 		);
 		if (mediaPlayerBlocks.length) {
 			await promiseUtils.mapLimit(mediaPlayerBlocks, 2, async (mediaPlayerBlock: any) => {
 				try {
 					const blockInfo = MEDIA_PLAYER_BLOCKS[mediaPlayerBlock.content_block_type];
-					const externalId = _.get(mediaPlayerBlock, blockInfo.getItemExternalIdPath);
+					const externalId = get(mediaPlayerBlock, blockInfo.getItemExternalIdPath);
 					if (externalId) {
 						const itemInfo = await ContentPageService.fetchItemByExternalId(externalId);
 						let videoSrc: string | undefined;
@@ -173,8 +176,8 @@ export default class ContentPageController {
 						}
 
 						// Copy all required properties to be able to render the video player without having to use the data route to fetch item information
-						if (videoSrc && !_.get(mediaPlayerBlock, blockInfo.setVideoSrcPath)) {
-							_.set(mediaPlayerBlock, blockInfo.setVideoSrcPath, videoSrc);
+						if (videoSrc && !get(mediaPlayerBlock, blockInfo.setVideoSrcPath)) {
+							set(mediaPlayerBlock, blockInfo.setVideoSrcPath, videoSrc);
 						}
 						[
 							['thumbnail_path', 'setPosterSrcPath'],
@@ -186,20 +189,20 @@ export default class ContentPageController {
 							if (
 								itemInfo &&
 								(itemInfo as any)[props[0]] &&
-								!_.get(mediaPlayerBlock, (blockInfo as any)[props[1]])
+								!get(mediaPlayerBlock, (blockInfo as any)[props[1]])
 							) {
 								if (
 									props[0] === 'thumbnail_path' &&
 									itemInfo.type.label === 'audio'
 								) {
 									// Replace poster for audio items with default still
-									_.set(
+									set(
 										mediaPlayerBlock,
 										(blockInfo as any)[props[1]],
 										DEFAULT_AUDIO_STILL
 									);
 								} else {
-									_.set(
+									set(
 										mediaPlayerBlock,
 										(blockInfo as any)[props[1]],
 										(itemInfo as any)[props[0]]
@@ -238,7 +241,7 @@ export default class ContentPageController {
 			let searchResults: any[] = [];
 
 			// Check for items/collections
-			const nonEmptyMediaItems = mediaItems.filter((mediaItem) => !_.isEmpty(mediaItem));
+			const nonEmptyMediaItems = mediaItems.filter((mediaItem) => !isEmpty(mediaItem));
 			if (nonEmptyMediaItems.length) {
 				manualResults = await promiseUtils.mapLimit(
 					nonEmptyMediaItems,
@@ -257,7 +260,7 @@ export default class ContentPageController {
 						);
 						if (result) {
 							// Replace audio thumbnail
-							if (_.get(result, 'type.label') === 'audio') {
+							if (get(result, 'type.label') === 'audio') {
 								result.thumbnail_path = DEFAULT_AUDIO_STILL;
 							}
 
@@ -280,7 +283,7 @@ export default class ContentPageController {
 				// resolve search query to a list of results
 				const parsedSearchQuery = JSON.parse(searchQuery);
 				let searchQueryLimitNum: number = parseInt(searchQueryLimit, 10);
-				if (_.isNaN(searchQueryLimitNum)) {
+				if (isNaN(searchQueryLimitNum)) {
 					searchQueryLimitNum = 8;
 				}
 				const searchResponse = await ContentPageService.fetchSearchQuery(
@@ -359,7 +362,7 @@ export default class ContentPageController {
 				const org = await OrganisationService.fetchOrganization(
 					searchResult.original_cp_id
 				);
-				item.organisation.logo_url = _.get(org, 'logo_url') || null;
+				item.organisation.logo_url = get(org, 'logo_url') || null;
 			} catch (err) {
 				logger.error(
 					new CustomError('Failed to set organization logo_url for item', err, {

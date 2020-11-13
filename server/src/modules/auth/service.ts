@@ -4,6 +4,7 @@ import { cloneDeep, compact, get, uniq } from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { PermissionName } from '../../shared/permissions';
 import DataService from '../data/service';
 import EducationOrganizationsService, {
 	LdapEducationOrganizationWithUnits,
@@ -272,5 +273,9 @@ export class AuthService {
 				avoUserId: get(avoUser, 'uid'),
 			});
 		}
+	}
+
+	static hasPermission(user: Avo.User.User, permissionName: PermissionName): boolean {
+		return get(user, 'profile.permissions', []).includes(permissionName);
 	}
 }
