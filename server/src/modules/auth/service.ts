@@ -1,10 +1,10 @@
-import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
 import { cloneDeep, compact, get, uniq } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { PermissionName } from '../../shared/permissions';
 import DataService from '../data/service';
 import EducationOrganizationsService, {
 	LdapEducationOrganizationWithUnits,
@@ -12,6 +12,7 @@ import EducationOrganizationsService, {
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
 
+import HetArchiefService from './idps/hetarchief/service';
 import {
 	GET_USER_GROUPS,
 	GET_USER_INFO_BY_ID,
@@ -70,10 +71,10 @@ export class AuthService {
 				return null;
 			}
 			// Simplify user object structure
-			(user as any).profile = user.profiles[0] || ({} as Avo.User.Profile);
+			((user as unknown) as Avo.User.User).profile = (user.profile || {}) as Avo.User.Profile;
 			const permissions = new Set<string>();
 			const userGroupIds: number[] = [];
-			get(user, 'profiles[0].profile_user_groups', []).forEach((profileUserGroup: any) => {
+			get(user, 'profile.profile_user_groups', []).forEach((profileUserGroup: any) => {
 				get(profileUserGroup, 'groups', []).forEach((userGroup: any) => {
 					userGroupIds.push(userGroup.id);
 					get(userGroup, 'group_user_permission_groups', []).forEach(
@@ -91,8 +92,8 @@ export class AuthService {
 			});
 			(user as any).profile.userGroupIds = userGroupIds;
 			(user as any).profile.permissions = Array.from(permissions);
+			(user as any).idpmapObjects = user.idpmaps;
 			(user as any).idpmaps = uniq((user.idpmaps || []).map((obj) => obj.idp));
-			delete user.profiles;
 			delete (user as any).profile.profile_user_groups;
 
 			// Simplify linked objects
@@ -213,6 +214,7 @@ export class AuthService {
 			delete updatedUser.profile;
 			delete updatedUser.idpmaps;
 			delete updatedUser.role;
+			delete (updatedUser as any).idpmapObjects;
 			updatedUser.updated_at = new Date().toISOString();
 
 			const response = await DataService.execute(UPDATE_AVO_USER, {
@@ -225,17 +227,14 @@ export class AuthService {
 			}
 
 			// Update profile
-			await ProfileController.updateProfile(avoUser.profile, {});
+			await ProfileController.updateProfile(avoUser, {});
 		} catch (err) {
 			throw new CustomError('Failed to update avo user info', err, { avoUser });
 		}
 	}
 
 	static async updateLdapUserInfo(avoUser: Avo.User.User, ldapEntryUuid: string): Promise<void> {
-		let url: string;
 		try {
-			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapEntryUuid}`;
-
 			const orgs: SimpleOrgInfo[] = get(avoUser, 'profile.organizations') || [];
 			const educationLevels = get(avoUser, 'profile.educationLevels') || [];
 
@@ -243,7 +242,7 @@ export class AuthService {
 			const orgUuids: string[] = [];
 			const unitUuids: string[] = [];
 			if (orgs.length) {
-				promiseUtils.mapLimit(orgs, 10, async (simpleOrgInfo: SimpleOrgInfo) => {
+				await promiseUtils.mapLimit(orgs, 10, async (simpleOrgInfo: SimpleOrgInfo) => {
 					const fullOrgInfo: LdapEducationOrganizationWithUnits | null = await EducationOrganizationsService.getOrganization(
 						simpleOrgInfo.organizationId,
 						simpleOrgInfo.unitId
@@ -261,35 +260,23 @@ export class AuthService {
 				});
 			}
 
-			const body = {
+			// Update first and last name
+			await HetArchiefService.setLdapUserInfo(ldapEntryUuid, {
 				organizations: orgUuids,
 				units: unitUuids,
 				edu_levelname: educationLevels,
-			};
-
-			const response: AxiosResponse<{}> = await axios(url, {
-				method: 'put',
-				auth: {
-					username: process.env.LDAP_API_USERNAME,
-					password: process.env.LDAP_API_PASSWORD,
-				},
-				data: body,
+				first_name: avoUser.first_name,
+				last_name: avoUser.last_name,
+				external_id: avoUser.uid,
 			});
-
-			if (response.status < 200 || response.status >= 400) {
-				/* istanbul ignore next */
-				throw new InternalServerError('Status code indicates failure', null, {
-					url,
-					method: 'put',
-					status: response.status,
-					statusText: response.statusText,
-				});
-			}
 		} catch (err) {
 			throw new InternalServerError('Failed to update user info in ldap', err, {
-				url,
 				avoUserId: get(avoUser, 'uid'),
 			});
 		}
+	}
+
+	static hasPermission(user: Avo.User.User, permissionName: PermissionName): boolean {
+		return get(user, 'profile.permissions', []).includes(permissionName);
 	}
 }

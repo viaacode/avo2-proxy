@@ -22,7 +22,7 @@ import KlascementService from './modules/auth/idps/klascement/service';
 import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
-import CampaignMonitorRoute from './modules/campaign-monitor/route';
+import CampaignMonitorRoute from './modules/campaign-monitor/campaign-monitor.route';
 import ContentPagesRoute from './modules/content-pages/route';
 import DataRoute from './modules/data/route';
 import EducationLevelsRoute from './modules/education-levels/route';
@@ -47,6 +47,7 @@ import OrganisationService from './modules/organization/service';
 import ZendeskService from './modules/zendesk/service';
 import MamSyncratorRoute from './modules/mam-syncrator/mam-syncrator.route';
 import SubtitleRoute from './modules/subtitles/subtitles.route';
+import UserRoute from './modules/user/user.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
@@ -150,6 +151,7 @@ export class App {
 			SearchRoute,
 			DataRoute,
 			ProfileRoute,
+			UserRoute,
 			NavigationItemsRoute,
 			ContentPagesRoute,
 			PlayerTicketRoute,

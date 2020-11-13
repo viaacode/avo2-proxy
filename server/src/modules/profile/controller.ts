@@ -10,6 +10,7 @@ import DataService from '../data/service';
 import { DELETE_PROFILE_OBJECTS, UPDATE_PROFILE_INFO } from './queries.gql';
 
 export interface UpdateProfileValues {
+	userId: string; // User id of the user that you want to update
 	educationLevels: {
 		profile_id: string;
 		key: string;
@@ -23,7 +24,9 @@ export interface UpdateProfileValues {
 		organization_id: string;
 		unit_id: string | null;
 	}[];
-	company_id: string;
+	company_id: string | null;
+	firstName: string;
+	lastName: string;
 	alias: string;
 	title: string | null;
 	alternativeEmail: string;
@@ -31,22 +34,24 @@ export interface UpdateProfileValues {
 	bio: string | null;
 	stamboek: string | null;
 	is_exception: boolean;
+	business_category: string | null;
 }
 
 export default class ProfileController {
 	public static async updateProfile(
-		profile: Avo.User.Profile,
+		user: Avo.User.User,
 		variables: Partial<UpdateProfileValues>
-	): Promise<UpdateProfileValues> {
+	): Promise<Partial<UpdateProfileValues>> {
 		try {
-			const completeVars: UpdateProfileValues = {
+			const profile = user.profile;
+			const completeVars: Partial<UpdateProfileValues> = {
 				educationLevels: uniq(profile.educationLevels || ([] as string[])).map(
 					(eduLevel: string) => ({
 						profile_id: profile.id,
 						key: eduLevel,
 					})
 				),
-				subjects: uniq(profile.subjects || ([] as string[])).map(subject => ({
+				subjects: uniq(profile.subjects || ([] as string[])).map((subject) => ({
 					profile_id: profile.id,
 					key: subject,
 				})),
@@ -59,26 +64,32 @@ export default class ProfileController {
 				),
 				company_id: variables.company_id || profile.company_id,
 				alias: profile.alias || profile.alternative_email,
+				firstName: user.first_name,
+				lastName: user.last_name,
 				title: profile.title,
 				alternativeEmail: profile.alternative_email,
 				avatar: profile.avatar,
 				bio: profile.bio || null,
 				stamboek: profile.stamboek,
 				is_exception: profile.is_exception || false,
+				business_category: (profile as any).business_category || null, // TODO remove cast after update to typings v2.25.0
 				...variables, // Override current profile variables with the variables in the parameter
 			};
+			delete completeVars.userId;
+
 			await DataService.execute(DELETE_PROFILE_OBJECTS, {
 				profileId: profile.id,
 			});
 			await DataService.execute(UPDATE_PROFILE_INFO, {
 				profileId: profile.id,
+				userUuid: user.uid,
 				...completeVars,
 			});
 
 			return completeVars;
 		} catch (err) {
 			throw new CustomError('Failed to update profile info', err, {
-				profile,
+				user,
 				variables,
 			});
 		}
@@ -94,12 +105,13 @@ export default class ProfileController {
 		let newUserGroupId = userGroupId; // Only one user group should be set
 
 		// Add extra usergroup for lesgever secundair or student lesgever secundair
-		if (
-			educationLevels.includes('Secundair onderwijs') &&
-			(newUserGroupId === SpecialUserGroup.Teacher ||
-				newUserGroupId === SpecialUserGroup.StudentTeacher)
-		) {
-			newUserGroupId = SpecialUserGroup.TeacherSecondary;
+		if (educationLevels.includes('Secundair onderwijs')) {
+			if (newUserGroupId === SpecialUserGroup.Teacher) {
+				newUserGroupId = SpecialUserGroup.TeacherSecondary;
+			}
+			if (newUserGroupId === SpecialUserGroup.StudentTeacher) {
+				newUserGroupId = SpecialUserGroup.StudentTeacherSecondary;
+			}
 		}
 
 		await AuthService.addUserGroupsToProfile([newUserGroupId], profileId);

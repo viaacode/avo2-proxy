@@ -6,7 +6,10 @@ import convert = require('xml-js');
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
+import { LdapEducationOrganisation } from '../../../education-organizations/service';
 import { IdpMetaData, LdapUser } from '../../types';
+
+import { LdapApiUserInfo } from './hetarchief.types';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -37,7 +40,7 @@ export default class HetArchiefService {
 	/**
 	 * Get saml credentials and signin and signout links directly from the idp when the server starts
 	 */
-	public static async initialize() {
+	static async initialize() {
 		logIfNotTestEnv('caching idp info hetarchief...');
 		const url = process.env.SAML_IDP_META_DATA_ENDPOINT;
 		try {
@@ -119,7 +122,7 @@ export default class HetArchiefService {
 		}
 	}
 
-	public static createLoginRequestUrl(returnToUrl: string) {
+	static createLoginRequestUrl(returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_login_request_url(
 				HetArchiefService.identityProvider,
@@ -142,14 +145,14 @@ export default class HetArchiefService {
 		});
 	}
 
-	public static assertSamlResponse(requestBody: SamlCallbackBody): Promise<LdapUser> {
+	static assertSamlResponse(requestBody: SamlCallbackBody): Promise<LdapUser> {
 		return new Promise((resolve, reject) => {
 			this.serviceProvider.post_assert(
 				this.identityProvider,
 				{
 					request_body: requestBody,
 					allow_unencrypted_assertion: true,
-				},
+				} as any,
 				(err, samlResponse: DecodedSamlResponse) => {
 					if (err) {
 						reject(
@@ -165,7 +168,7 @@ export default class HetArchiefService {
 		});
 	}
 
-	public static createLogoutRequestUrl(nameId: string, returnToUrl: string) {
+	static createLogoutRequestUrl(nameId: string, returnToUrl: string) {
 		return new Promise<string>((resolve, reject) => {
 			this.serviceProvider.create_logout_request_url(
 				HetArchiefService.identityProvider,
@@ -189,11 +192,45 @@ export default class HetArchiefService {
 		});
 	}
 
-	public static getLoginUrl(): string | undefined {
+	static getLoginUrl(): string | undefined {
 		return this.ssoLoginUrl;
 	}
 
-	public static getLogoutUrl(): string | undefined {
+	static getLogoutUrl(): string | undefined {
 		return this.ssoLogoutUrl;
+	}
+
+	static async setLdapUserInfo(
+		ldapUserId: string,
+		ldapUserInfo: Partial<LdapApiUserInfo>
+	): Promise<void> {
+		let url: string;
+		try {
+			url = `${process.env.LDAP_API_ENDPOINT}/people/${ldapUserId}`;
+			const response: AxiosResponse<LdapApiUserInfo> = await axios(url, {
+				method: 'put',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+				data: ldapUserInfo,
+			});
+			if (response.status < 200 || response.status >= 400) {
+				throw new ExternalServerError('response status code was unexpected', null, {
+					response,
+				});
+			}
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed to set user info from the ldap api',
+				err,
+				{
+					url,
+					ldapUserId,
+				}
+			);
+			logger.error(error);
+			throw error;
+		}
 	}
 }

@@ -13,7 +13,7 @@ export const DELETE_PROFILE_OBJECTS = `
 `;
 
 export const UPDATE_PROFILE_INFO = `
-	mutation insertProfileObject(
+	mutation updateProfileObject(
 		$educationLevels: [users_profile_contexts_insert_input!]!
 		$subjects: [users_profile_classifications_insert_input!]!
 		$organizations: [users_profile_organizations_insert_input!]!
@@ -26,6 +26,10 @@ export const UPDATE_PROFILE_INFO = `
 		$bio: String
 		$stamboek: String
 		$is_exception: Boolean!
+		$userUuid: uuid!
+		$firstName: String
+		$lastName: String
+		$business_category: String
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
 			affected_rows
@@ -39,7 +43,6 @@ export const UPDATE_PROFILE_INFO = `
 		update_users_profiles(
 			where: { id: { _eq: $profileId } }
 			_set: {
-				alias: $alias
 				title: $title
 				alternative_email: $alternativeEmail
 				avatar: $avatar
@@ -47,9 +50,27 @@ export const UPDATE_PROFILE_INFO = `
 				stamboek: $stamboek
 				company_id: $company_id
 				is_exception: $is_exception
+				business_category: $business_category
 			}
 		) {
 			affected_rows
 		}
+		update_alias: update_users_profiles(
+			where: { id: { _eq: $profileId }, alias: {_neq: $alias} }
+			_set: {
+				alias: $alias
+			}
+		) {
+			affected_rows
+		}
+		 update_shared_users(
+		 	where: {uid: {_eq: $userUuid}},
+		 	_set: {
+		 		first_name: $firstName,
+		 		last_name: $lastName
+		 	}
+		 ) {
+    	affected_rows
+  	}
 	}
 `;

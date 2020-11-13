@@ -22,8 +22,8 @@ export interface LdapPerson {
 	objectclass: string[];
 	apps: App[];
 	groups: Group[];
-	unit: Partial<Unit>;
-	organization: Partial<Organization>;
+	educationalOrganisationUnitIds: string[];
+	educationalOrganisationIds: string[];
 	confirmed: boolean;
 	edu_typename: string[];
 	edu_typecode: string[];
@@ -49,27 +49,16 @@ export interface Group {
 	objectclass: string[];
 }
 
-export interface Unit {
-	id: string;
-	or_id: string;
-	ou_id: string;
-	name: string;
-	dn: string;
-	objectclass: string[];
-	address: string;
-	city: string;
-	postal_code: string;
-}
-
-export interface Organization {
-	id: string;
-	or_id: string;
-	name: string;
-	dn: string;
-	objectclass: string[];
-	address: string;
-	city: string;
-	postal_code: string;
-	type: string;
-	sector: string;
+export interface LdapApiUserInfo {
+	email: string;
+	first_name: string;
+	last_name: string;
+	confirmed: boolean;
+	organizations: string[];
+	units: string[];
+	password: string;
+	apps: string[];
+	groups: string[];
+	edu_levelname: string[];
+	external_id: string;
 }

@@ -4,7 +4,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			first_name
 			last_name
 			is_blocked
-			profiles {
+			profile {
 				id
 				alias
 				title
@@ -49,6 +49,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			}
 			created_at
 			expires_at
+			last_access_at
 			external_uid
 			role {
 				label
@@ -59,6 +60,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			mail
 			idpmaps {
 				idp
+				idp_user_id
 			}
 		}
 	}
@@ -70,7 +72,7 @@ export const GET_USER_INFO_BY_ID = `
 			first_name
 			last_name
 			is_blocked
-			profiles {
+			profile {
 				id
 				alias
 				title
@@ -115,6 +117,7 @@ export const GET_USER_INFO_BY_ID = `
 			}
 			created_at
 			expires_at
+			last_access_at
 			external_uid
 			role {
 				label
@@ -125,6 +128,7 @@ export const GET_USER_INFO_BY_ID = `
 			mail
 			idpmaps {
 				idp
+				idp_user_id
 			}
 		}
 	}
@@ -137,7 +141,7 @@ export const GET_USER_BY_LDAP_UUID = `
 				first_name
 				last_name
 				is_blocked
-				profiles {
+				profile {
 					id
 					alias
 					title
@@ -182,6 +186,7 @@ export const GET_USER_BY_LDAP_UUID = `
 				}
 				created_at
 				expires_at
+				last_access_at
 				external_uid
 				role {
 					label
@@ -192,6 +197,7 @@ export const GET_USER_BY_LDAP_UUID = `
 				mail
 				idpmaps {
 					idp
+					idp_user_id
 				}
 			}
 		}

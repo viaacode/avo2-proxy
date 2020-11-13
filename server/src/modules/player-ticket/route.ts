@@ -31,11 +31,20 @@ export default class PlayerTicketRoute {
 			throw new BadRequestError('query param externalId is required');
 		}
 		try {
+			let expire: number;
+			if (
+				process.env.TICKET_SERVICE_MAXAGE &&
+				/[0-9]+/g.test(process.env.TICKET_SERVICE_MAXAGE)
+			) {
+				expire = parseInt(process.env.TICKET_SERVICE_MAXAGE, 10);
+			} else {
+				expire = 4 * 60 * 60;
+			}
 			const url = await PlayerTicketController.getPlayableUrl(
 				externalId,
 				await PlayerTicketRoute.getIp(this.context.request),
 				this.context.request.header('Referer') || 'http://localhost:8080/',
-				8 * 60 * 60 * 1000
+				expire
 			);
 			return url
 				? {

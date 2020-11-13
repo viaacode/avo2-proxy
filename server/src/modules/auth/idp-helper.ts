@@ -6,6 +6,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
 import DataService from '../data/service';
 
+import HetArchiefService from './idps/hetarchief/service';
 import { GET_IDP_MAP, INSERT_IDP_MAP } from './queries.gql';
 import { AuthService } from './service';
 import { IdpMap } from './types';
@@ -105,7 +106,11 @@ export class IdpHelper {
 		IdpHelper.setAvoUserInfoOnSession(req, null);
 	}
 
-	public static async createIdpMap(idpType: Avo.Auth.IdpType, idpUserId: string, localUserId: string) {
+	public static async createIdpMap(
+		idpType: Avo.Auth.IdpType,
+		idpUserId: string,
+		localUserId: string
+	) {
 		try {
 			const idpMap: Partial<IdpMap> = {
 				idp: idpType,
@@ -135,6 +140,11 @@ export class IdpHelper {
 					null,
 					{ insertResponse }
 				);
+			}
+
+			if (idpType === 'HETARCHIEF') {
+				// set avo id in ldap, so we can link from ACM => AVO2 admin dashboard
+				await HetArchiefService.setLdapUserInfo(idpUserId, { external_id: localUserId });
 			}
 		} catch (err) {
 			throw new CustomError('Failed to link user to idp', err, {

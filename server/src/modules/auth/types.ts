@@ -75,7 +75,7 @@ interface LdapAttributes {
 export interface SharedUser {
 	first_name: string;
 	last_name: string;
-	profiles: Profile[];
+	profile: UsersProfile;
 	created_at: string;
 	expires_at: any;
 	external_uid: number;
@@ -96,7 +96,7 @@ export interface SharedUser {
 	}[];
 }
 
-export interface Profile {
+export interface UsersProfile {
 	id: number;
 	alias: any;
 	title: string | null;
@@ -106,6 +106,8 @@ export interface Profile {
 	stamboek: any;
 	updated_at: string;
 	user_id: string;
+	business_category: string | null;
+	is_exception: boolean;
 	company_id: string | null;
 	organisation: Avo.Organization.Organization | null;
 	groups: {
@@ -121,6 +123,16 @@ export interface Profile {
 			}[];
 		};
 	}[];
+	profile_organizations: {
+		organization_id: string;
+		unit_id: string | null;
+	}[];
+	profile_classifications: {
+		key: string
+	}[];
+	profile_contexts: {
+		key: string;
+	}[]
 }
 
 export interface IdpMetaData {

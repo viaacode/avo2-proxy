@@ -5,7 +5,7 @@ import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-export interface LdapEducationOrganization {
+export interface LdapEducationOrganisation {
 	id: string;
 	or_id: string;
 	name: string;
@@ -18,7 +18,7 @@ export interface LdapEducationOrganization {
 	sector: string;
 }
 
-export interface LdapEducationOrganizationWithUnits extends LdapEducationOrganization {
+export interface LdapEducationOrganizationWithUnits extends LdapEducationOrganisation {
 	units: LdapEduOrgUnit[];
 }
 
@@ -50,7 +50,7 @@ export default class EducationOrganizationsService {
 	public static async getOrganizations(
 		cityName: string | null,
 		zipCode: string | null
-	): Promise<LdapEducationOrganization[]> {
+	): Promise<LdapEducationOrganisation[]> {
 		let url: string;
 		try {
 			if (!cityName && !zipCode) {
@@ -62,7 +62,7 @@ export default class EducationOrganizationsService {
 			} else {
 				url += `&city=${cityName}`;
 			}
-			const response: AxiosResponse<LdapEducationOrganization[]> = await axios(url, {
+			const response: AxiosResponse<LdapEducationOrganisation[]> = await axios(url, {
 				method: 'get',
 				auth: {
 					username: process.env.LDAP_API_USERNAME,
@@ -128,7 +128,7 @@ export default class EducationOrganizationsService {
 
 	public static async getOrganization(
 		organizationId: string,
-		unitId: string
+		unitId: string | undefined
 	): Promise<LdapEducationOrganizationWithUnits | null> {
 		let url: string;
 		try {

@@ -25,7 +25,7 @@ export default class CollectionsService {
 	 *
 	 * @returns Collection or bundle.
 	 */
-	public static async fetchCollectionOrBundleWithItemsById(
+	static async fetchCollectionOrBundleWithItemsById(
 		collectionId: string,
 		type: 'collection' | 'bundle'
 	): Promise<Avo.Collection.Collection | null> {
@@ -69,9 +69,9 @@ export default class CollectionsService {
 					'data.items',
 					[]
 				);
-				collectionOrBundle.collection_fragments.forEach(fragment => {
+				collectionOrBundle.collection_fragments.forEach((fragment) => {
 					const itemInfo = itemInfos.find(
-						item =>
+						(item) =>
 							fragment.external_id ===
 							(type === 'collection' ? item.external_id : item.id)
 					);
@@ -107,7 +107,7 @@ export default class CollectionsService {
 	 *
 	 * @returns Collection or bundle.
 	 */
-	public static async fetchCollectionOrBundleById(
+	static async fetchCollectionOrBundleById(
 		collectionId: string,
 		type: 'collection' | 'bundle'
 	): Promise<Avo.Collection.Collection | null> {
@@ -152,9 +152,7 @@ export default class CollectionsService {
 		}
 	}
 
-	public static async fetchItemExternalIdByMediamosaId(
-		mediamosaId: string
-	): Promise<string | null> {
+	static async fetchItemExternalIdByMediamosaId(mediamosaId: string): Promise<string | null> {
 		try {
 			const response = await DataService.execute(GET_EXTERNAL_ID_BY_MEDIAMOSA_ID, {
 				mediamosaId,
@@ -174,7 +172,7 @@ export default class CollectionsService {
 		}
 	}
 
-	public static async fetchUuidByAvo1Id(avo1Id: string): Promise<string | null> {
+	static async fetchUuidByAvo1Id(avo1Id: string): Promise<string | null> {
 		try {
 			const response = await DataService.execute(GET_COLLECTIONS_BY_AVO1_ID, {
 				avo1Id,
@@ -193,7 +191,7 @@ export default class CollectionsService {
 		}
 	}
 
-	public static async fetchPublicCollectionUuids(): Promise<
+	static async fetchPublicCollectionUuids(): Promise<
 		{
 			id: string;
 			updated_at: string;
@@ -215,7 +213,7 @@ export default class CollectionsService {
 		}
 	}
 
-	public static async isCollectionLinkedToAssignment(
+	static async isCollectionLinkedToAssignment(
 		collectionUuid: string,
 		assignmentId: number
 	): Promise<boolean> {

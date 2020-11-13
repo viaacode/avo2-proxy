@@ -9,8 +9,12 @@ import {
 	InternalServerError,
 } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
-import CampaignMonitorController from '../../../campaign-monitor/controller';
+import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
 import DataService from '../../../data/service';
+import EducationOrganizationsService, {
+	LdapEducationOrganisation,
+	LdapEduOrgUnit,
+} from '../../../education-organizations/service';
 import EventLoggingController from '../../../event-logging/controller';
 import ProfileController from '../../../profile/controller';
 import AuthController from '../../controller';
@@ -143,12 +147,8 @@ export default class HetArchiefController {
 			last_name: get(ldapObject, 'attributes.sn[0]'),
 			email: get(ldapObject, 'attributes.mail'),
 			display_name: get(ldapObject, 'attributes.displayName'),
-			unit: {
-				ou_id: get(ldapObject, 'attributes.ou[0]'),
-			},
-			organization: {
-				or_id: get(ldapObject, 'attributes.o[0]'),
-			},
+			educationalOrganisationUnitIds: get(ldapObject, 'attributes.ou'),
+			educationalOrganisationIds: get(ldapObject, 'attributes.o'),
 			employee_nr: get(ldapObject, 'attributes.employeeNumber'),
 			edu_typename: get(ldapObject, 'attributes.x-be-viaa-eduTypeName'),
 			edu_levelname: get(ldapObject, 'attributes.x-be-viaa-eduLevelName'),
@@ -179,7 +179,7 @@ export default class HetArchiefController {
 			if (!avoUserInfo) {
 				// No avo user exists yet and this call isn't part of a registration flow
 				// Check if ldap user has the avo group
-				if (!!(ldapUserInfo.apps || []).find(app => app.name === 'avo')) {
+				if (!!(ldapUserInfo.apps || []).find((app) => app.name === 'avo')) {
 					// Create the avo user for this ldap account
 					avoUserInfo = await HetArchiefController.createUserAndProfile(
 						ldapUserInfo,
@@ -234,32 +234,43 @@ export default class HetArchiefController {
 		newAvoUser.mail = get(ldapUserInfo, 'email[0]');
 		newAvoUser.first_name = get(ldapUserInfo, 'first_name');
 		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
+		newAvoUser.role_id = await AuthController.getRoleId(
+			get(ldapUserInfo, 'organizational_status[0]')
+		);
 		newAvoUser.profile.stamboek = get(ldapUserInfo, 'employee_nr[0]', null);
 		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 		newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
 		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
-		(newAvoUser.profile as any).business_category = get(ldapUserInfo, 'role[0]') || null;
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
-		newAvoUser.is_blocked = !ldapUserInfo.apps.find(app => app.name === 'avo');
+		newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
 
-		if (
-			get(ldapUserInfo, 'organization.or_id') &&
-			!newAvoUser.profile.organizations.find((org: any) => {
-				return (
-					org.organization_id === ldapUserInfo.organization.or_id &&
-					org.unit_id === ldapUserInfo.unit.ou_id
-				);
-			})
-		) {
-			// Update schools if ldap school is not found in avo list
-			newAvoUser.profile.organizations = [
-				{
-					organizationId: get(ldapUserInfo, 'organization.or_id'),
-					unitId: get(ldapUserInfo, 'unit.ou_id') || null,
-				},
-			] as any[];
+		const orgIds: string[] =
+			get(ldapUserInfo, 'educationalOrganisationIds') ||
+			get(ldapUserInfo, 'organizations', []).map(
+				(org: LdapEducationOrganisation) => org.or_id
+			);
+		const orgUnitIds: string[] =
+			get(ldapUserInfo, 'educationalOrganisationUnitIds') ||
+			get(ldapUserInfo, 'units', []).map((org: LdapEduOrgUnit) => org.ou_id);
+		newAvoUser.profile.organizations = orgIds.map((orgId: string) => {
+			return {
+				organizationId: orgId,
+				unitId: orgUnitIds.find((orgUnitId) => orgUnitId.startsWith(orgId)) || null,
+			};
+		}) as any[];
+
+		if (orgIds.length === 1) {
+			// Check if org has type "School" or something else
+			// if something else => set that as the business category
+			const orgInfo = await EducationOrganizationsService.getOrganization(
+				orgIds[0],
+				orgUnitIds[0]
+			);
+			if (orgInfo.type !== 'School') {
+				(newAvoUser.profile as any).business_category = orgInfo.type;
+			}
 		}
 
 		if (!isEqual(newAvoUser, avoUserInfo)) {
@@ -277,6 +288,7 @@ export default class HetArchiefController {
 			newAvoUser
 		);
 
+		// TODO remove this once https://meemoo.atlassian.net/browse/DEV-1318 is implemented
 		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
 		// Also update existing users if their email changed
 		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);
@@ -314,9 +326,9 @@ export default class HetArchiefController {
 
 			const allUserGroups = await AuthService.getAllUserGroups();
 
-			const ldapUserGroupsRaw: (UserGroup | undefined)[] = (ldapUser.roles || []).map(role =>
-				allUserGroups.find(ug => ug.ldap_role === role)
-			);
+			const ldapUserGroupsRaw: (UserGroup | undefined)[] = (
+				ldapUser.roles || []
+			).map((role) => allUserGroups.find((ug) => ug.ldap_role === role));
 			const ldapUserGroups: UserGroup[] = compact(ldapUserGroupsRaw);
 
 			if (ldapUserGroupsRaw.length !== ldapUserGroups.length) {
@@ -331,7 +343,7 @@ export default class HetArchiefController {
 			}
 
 			// Update user groups:
-			const ldapUserGroupIds = uniq(ldapUserGroups.map(ug => ug.id));
+			const ldapUserGroupIds = uniq(ldapUserGroups.map((ug) => ug.id));
 
 			await ProfileController.updateUserGroupsSecondaryEducation(
 				ldapUserGroupIds[0], // We can only have one user group by decree, the database still handles multiple, but this is deprecated
