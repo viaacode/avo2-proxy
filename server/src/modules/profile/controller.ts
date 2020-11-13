@@ -10,6 +10,7 @@ import DataService from '../data/service';
 import { DELETE_PROFILE_OBJECTS, UPDATE_PROFILE_INFO } from './queries.gql';
 
 export interface UpdateProfileValues {
+	userId: string; // User id of the user that you want to update
 	educationLevels: {
 		profile_id: string;
 		key: string;
@@ -23,7 +24,7 @@ export interface UpdateProfileValues {
 		organization_id: string;
 		unit_id: string | null;
 	}[];
-	company_id: string;
+	company_id: string | null;
 	firstName: string;
 	lastName: string;
 	alias: string;
@@ -40,10 +41,10 @@ export default class ProfileController {
 	public static async updateProfile(
 		user: Avo.User.User,
 		variables: Partial<UpdateProfileValues>
-	): Promise<UpdateProfileValues> {
+	): Promise<Partial<UpdateProfileValues>> {
 		try {
 			const profile = user.profile;
-			const completeVars: UpdateProfileValues = {
+			const completeVars: Partial<UpdateProfileValues> = {
 				educationLevels: uniq(profile.educationLevels || ([] as string[])).map(
 					(eduLevel: string) => ({
 						profile_id: profile.id,
@@ -74,6 +75,8 @@ export default class ProfileController {
 				business_category: (profile as any).business_category || null, // TODO remove cast after update to typings v2.25.0
 				...variables, // Override current profile variables with the variables in the parameter
 			};
+			delete completeVars.userId;
+
 			await DataService.execute(DELETE_PROFILE_OBJECTS, {
 				profileId: profile.id,
 			});

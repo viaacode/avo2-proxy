@@ -606,6 +606,16 @@ export const ROW_PERMISSIONS: { [permission in PermissionName]: RowPermission[] 
 			table: { name: 'profiles', schema: 'users' },
 			operation: 'delete',
 		},
-		// TODO add all tables
 	],
+	EDIT_ANY_USER: [
+		{
+			table: { name: 'users', schema: 'shared' },
+			operation: 'select',
+		},
+		{
+			table: { name: 'users', schema: 'shared' },
+			operation: 'update',
+		},
+	],
+	// TODO add all tables
 };
