@@ -62,11 +62,11 @@ export default class UserService {
 				anonymize ? UPDATE_NAME_AND_MAIL : UPDATE_MAIL,
 				anonymize
 					? {
-							profileId,
-							firstName: i18n.t('modules/user/user___anonieme'),
-							lastName: i18n.t('modules/user/user___gebruiker'),
-							mail: `${profileId}@hetarchief.be`,
-					  }
+						profileId,
+						firstName: i18n.t('modules/user/user___anonieme'),
+						lastName: i18n.t('modules/user/user___gebruiker'),
+						mail: `${profileId}@hetarchief.be`,
+					}
 					: {
 							profileId,
 							mail: `${profileId}@hetarchief.be`,
