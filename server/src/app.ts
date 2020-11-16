@@ -24,7 +24,7 @@ import SmartschoolService from './modules/auth/idps/smartschool/service';
 import AuthRoute from './modules/auth/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/campaign-monitor.route';
 import ContentPagesRoute from './modules/content-pages/route';
-import DataRoute from './modules/data/route';
+import DataRoute from './modules/data/data.route';
 import EducationLevelsRoute from './modules/education-levels/route';
 import EducationOrganizationsRoute from './modules/education-organizations/route';
 import EventLoggingRoute from './modules/event-logging/route';

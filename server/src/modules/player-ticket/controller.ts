@@ -1,7 +1,7 @@
 import { get } from 'lodash';
 
 import { InternalServerError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { GET_ITEM_BY_EXTERNAL_ID } from './queries.gql';
 import PlayerTicketService, { PlayerTicket } from './service';

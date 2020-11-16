@@ -6,7 +6,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { ExternalServerError } from '../../shared/helpers/error';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import { IdpHelper } from '../auth/idp-helper';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { GET_NAVIGATION_ITEMS } from './queries.gql';
 
@@ -20,12 +20,12 @@ interface GetNavElementsResponse {
 export interface AppContentNavElement {
 	content_path: string;
 	content_type:
-	| 'CONTENT_PAGE'
-	| 'COLLECTION'
-	| 'ITEM'
-	| 'DROPDOWN'
-	| 'INTERNAL_LINK'
-	| 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
+		| 'CONTENT_PAGE'
+		| 'COLLECTION'
+		| 'ITEM'
+		| 'DROPDOWN'
+		| 'INTERNAL_LINK'
+		| 'EXTERNAL_LINK'; // TODO Avo.Menu.ContentType;
 	link_target: string;
 	placement: string;
 	position: number;
@@ -69,7 +69,7 @@ export default class NavigationItemsController {
 				[]
 			);
 			const visibleItems: AppContentNavElement[] = [];
-			navItems.forEach(navItem => {
+			navItems.forEach((navItem) => {
 				if (navItem.user_group_ids && navItem.user_group_ids.length) {
 					// If the page doesn't have any groups specified, it isn't visible for anyone
 					if (_.intersection(groups, navItem.user_group_ids).length) {

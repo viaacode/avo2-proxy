@@ -6,7 +6,7 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import { IdpHelper } from '../auth/idp-helper';
 import { AuthService } from '../auth/service';
 
-import DataController from './controller';
+import DataController from './data.controller';
 
 interface DataQuery {
 	query: any;

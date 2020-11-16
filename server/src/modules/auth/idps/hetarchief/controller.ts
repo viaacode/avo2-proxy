@@ -10,7 +10,7 @@ import {
 } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
-import DataService from '../../../data/service';
+import DataService from '../../../data/data.service';
 import EducationOrganizationsService, {
 	LdapEducationOrganisation,
 	LdapEduOrgUnit,

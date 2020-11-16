@@ -3,7 +3,7 @@ import { compact, get } from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import {
 	GET_COLLECTION_BY_ID,

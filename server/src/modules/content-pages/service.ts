@@ -5,7 +5,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SpecialPermissionGroups } from '../auth/types';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 import SearchController from '../search/controller';
 
 import { MediaItemResponse } from './controller';
@@ -133,7 +133,7 @@ export default class ContentPageService {
 					},
 					{
 						// Get pages that are visible to the current user
-						_or: userGroupIds.map(userGroupId => ({
+						_or: userGroupIds.map((userGroupId) => ({
 							user_group_ids: { _contains: userGroupId },
 						})),
 					},
@@ -150,7 +150,7 @@ export default class ContentPageService {
 				],
 			},
 			orderBy: { [orderByProp]: orderByDirection },
-			orUserGroupIds: userGroupIds.map(userGroupId => ({
+			orUserGroupIds: userGroupIds.map((userGroupId) => ({
 				content: { user_group_ids: { _contains: userGroupId } },
 			})),
 		};
@@ -215,10 +215,7 @@ export default class ContentPageService {
 		try {
 			const response = await DataService.execute(UPDATE_CONTENT_PAGE_PUBLISH_DATES, {
 				now: new Date().toISOString(),
-				publishedAt: moment()
-					.hours(7)
-					.minutes(0)
-					.toISOString(),
+				publishedAt: moment().hours(7).minutes(0).toISOString(),
 			});
 			if (response.errors) {
 				throw new InternalServerError('Graphql mutation returned errors', response);

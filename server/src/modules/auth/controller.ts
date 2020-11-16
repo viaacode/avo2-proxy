@@ -11,7 +11,7 @@ import { redirectToClientErrorPage } from '../../shared/helpers/error-redirect-c
 import { logger } from '../../shared/helpers/logger';
 import { isLoggedIn } from '../../shared/middleware/is-authenticated';
 import i18n from '../../shared/translations/i18n';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 import EventLoggingController from '../event-logging/controller';
 
 import { ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS, IDP_ADAPTERS } from './consts';

@@ -6,7 +6,7 @@ import getUuid from 'uuid/v1';
 import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { DELETE_CONTENT_ASSET, INSERT_CONTENT_ASSET } from './queries.gql';
 import AssetService from './service';
