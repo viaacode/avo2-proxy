@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
-import { get, keys, toPairs, values } from 'lodash';
+import { get, isEmpty, isNil, isString, keys, toPairs, values } from 'lodash';
 import * as queryString from 'query-string';
 
 import type { Avo } from '@viaa/avo2-types';
@@ -153,6 +153,7 @@ export default class CampaignMonitorService {
 			CustomFields: toPairs(cmUserInfo.customFields).map((pair) => ({
 				Key: pair[0],
 				Value: pair[1],
+				Clear: isNil(pair[1]) || (isString(pair[1]) && pair[1] === ''),
 			})),
 		};
 	}
@@ -163,8 +164,10 @@ export default class CampaignMonitorService {
 				return;
 			}
 
+			const data = this.getCmSubscriberData(cmUserInfo, true);
+
 			await axios(`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}.json`, {
-				data: this.getCmSubscriberData(cmUserInfo, true),
+				data,
 				method: 'POST',
 				auth: {
 					username: process.env.CAMPAIGN_MONITOR_API_KEY,
