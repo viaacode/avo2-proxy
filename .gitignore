@@ -134,7 +134,6 @@ server/scripts/**/*.js
 server/scripts/**/*.js.map
 server/licenses.csv
 server/src/shared/translations/poeditor
-
 server/src/modules/auth/database-permissions/permissions.json
-
-server/scripts/whitelist.json
+server/scripts/proxy-whitelist.json
+server/scripts/client-whitelist.json

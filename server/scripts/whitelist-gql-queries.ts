@@ -143,7 +143,7 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 			});
 			logger.info('[QUERY WHITELISTING]: Re-added collection to whitelist');
 
-			const outputFile = path.join(__dirname, 'whitelist.json');
+			const outputFile = path.join(__dirname, 'proxy-whitelist.json');
 			await fs.writeFile(outputFile, JSON.stringify(queries, null, 2));
 
 			logger.info(
