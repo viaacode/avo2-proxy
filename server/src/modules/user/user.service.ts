@@ -63,8 +63,8 @@ export default class UserService {
 				anonymize
 					? {
 						profileId,
-						firstName: i18n.t('Anonieme'),
-						lastName: i18n.t('gebruiker'),
+						firstName: i18n.t('modules/user/user___anonieme'),
+						lastName: i18n.t('modules/user/user___gebruiker'),
 						mail: `${profileId}@hetarchief.be`,
 					}
 					: {

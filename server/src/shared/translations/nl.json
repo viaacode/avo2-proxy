@@ -29,5 +29,7 @@
   "modules/auth/idps/smartschool/route___link-eerst-je-accounts": "Je Smartschool-account is nog niet gekoppeld aan je account op Het Archief voor Onderwijs. Log eerst in en koppel je account met je Smartschool-account. Deze vind je onder je profiel rechtsboven in de navigatiebalk.",
   "modules/auth/route___er-ging-iets-mis-tijdens-het-uitloggen": "Er ging iets mis tijdens het uitloggen.",
   "modules/auth/route___het-koppelen-van-de-account-is-mislukt": "Het koppelen van de accounts is mislukt.",
-  "modules/auth/route___het-ontkoppelen-van-de-account-is-mislukt": "Het ontkoppelen van de accounts is mislukt."
+  "modules/auth/route___het-ontkoppelen-van-de-account-is-mislukt": "Het ontkoppelen van de accounts is mislukt.",
+  "modules/user/user___anonieme": "Anonieme",
+  "modules/user/user___gebruiker": "gebruiker"
 }
