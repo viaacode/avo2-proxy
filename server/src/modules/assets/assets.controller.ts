@@ -1,11 +1,15 @@
 import * as fs from 'fs-extra';
-import _ from 'lodash';
+import { get, kebabCase } from 'lodash';
 import * as path from 'path';
 import getUuid from 'uuid/v1';
 
 import type { Avo } from '@viaa/avo2-types';
 
-import { BadRequestError, UnauthorizedError } from '../../shared/helpers/error';
+import {
+	BadRequestError,
+	InternalServerError,
+	UnauthorizedError,
+} from '../../shared/helpers/error';
 import DataService from '../data/data.service';
 
 import {
@@ -68,7 +72,7 @@ export default class AssetController {
 		files: Express.Multer.File[]
 	): Promise<string> {
 		const parsedFilename = path.parse(uploadAssetInfo.filename);
-		const key = `${uploadAssetInfo.type}/${_.kebabCase(parsedFilename.name)}-${getUuid()}${
+		const key = `${uploadAssetInfo.type}/${kebabCase(parsedFilename.name)}-${getUuid()}${
 			parsedFilename.ext
 		}`;
 		if (!AssetController.isValidFileType(files[0])) {
@@ -102,9 +106,18 @@ export default class AssetController {
 	public static async info(
 		url: string
 	): Promise<{ owner_id: string; content_asset_type_id: string }> {
-		return DataService.execute(GET_CONTENT_ASSET, {
-			url,
-		});
+		try {
+			const response = await DataService.execute(GET_CONTENT_ASSET, {
+				url,
+			});
+			return get(response, 'data.app_content_assets[0]');
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to fetch asset info from the graphql database',
+				err,
+				{ url }
+			);
+		}
 	}
 
 	public static async delete(url: string, avoUser: Avo.User.User) {
