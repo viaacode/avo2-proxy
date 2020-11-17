@@ -1,6 +1,5 @@
-import { every, some } from 'lodash';
-
 import { Avo } from '@viaa/avo2-types';
+import { every, some } from 'lodash';
 
 import { BadRequestError } from '../../shared/helpers/error';
 import { PermissionName } from '../../shared/permissions';
@@ -27,7 +26,7 @@ function and(...permissionNames: PermissionName[]): IsAllowed {
 
 function ifProfileIdMatches(propName: string): IsAllowed {
 	return async (user: Avo.User.User, query: string, variables: any): Promise<boolean> => {
-		return user.profile.id === variables.profileId;
+		return user.profile.id === variables[propName];
 	};
 }
 
@@ -218,11 +217,18 @@ export const QUERY_PERMISSIONS: {
 		GET_ASSIGNMENT_BY_CONTENT_ID_AND_TYPE: or(
 			PermissionName.EDIT_ASSIGNMENTS,
 			PermissionName.EDIT_ANY_COLLECTIONS,
-			PermissionName.EDIT_ANY_BUNDLES
+			PermissionName.EDIT_ANY_BUNDLES,
+			PermissionName.DELETE_ANY_COLLECTIONS,
+			PermissionName.DELETE_OWN_COLLECTIONS,
+			PermissionName.DELETE_ANY_BUNDLES,
+			PermissionName.DELETE_OWN_BUNDLES
 		),
 		GET_ASSIGNMENTS_BY_OWNER_ID: or(PermissionName.EDIT_ASSIGNMENTS),
 		GET_ASSIGNMENTS_BY_RESPONSE_OWNER_ID: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
-		GET_ASSIGNMENT_RESPONSES: or(PermissionName.EDIT_ASSIGNMENTS),
+		GET_ASSIGNMENT_RESPONSES: or(
+			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		GET_ASSIGNMENT_WITH_RESPONSE: or(PermissionName.VIEW_ASSIGNMENTS),
 		INSERT_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
 		UPDATE_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
@@ -230,7 +236,14 @@ export const QUERY_PERMISSIONS: {
 		UPDATE_ASSIGNMENT_RESPONSE_SUBMITTED_STATUS: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
 		DELETE_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
 		INSERT_ASSIGNMENT_RESPONSE: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
-		GET_COLLECTION_BY_ID: or(PermissionName.CREATE_BUNDLES),
+		GET_COLLECTION_BY_ID: or(
+			PermissionName.CREATE_BUNDLES,
+			PermissionName.EDIT_ANY_COLLECTIONS,
+			PermissionName.EDIT_OWN_COLLECTIONS,
+			PermissionName.EDIT_ANY_BUNDLES,
+			PermissionName.EDIT_OWN_BUNDLES,
+			PermissionName.ADD_ITEM_TO_COLLECTION_BY_PID,
+		),
 		UPDATE_COLLECTION: or(
 			PermissionName.EDIT_OWN_COLLECTIONS,
 			PermissionName.EDIT_ANY_COLLECTIONS,
@@ -301,6 +314,7 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.EDIT_BUNDLE_LABELS
 		),
 		GET_QUALITY_LABELS: or(
+			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
 			PermissionName.EDIT_COLLECTION_LABELS,
 			PermissionName.EDIT_BUNDLE_LABELS
 		),
@@ -321,7 +335,10 @@ export const QUERY_PERMISSIONS: {
 		INSERT_COLLECTION_RELATION: or(PermissionName.CREATE_COLLECTIONS),
 		GET_EDUCATION_LEVELS: ALL_LOGGED_IN_USERS,
 		GET_SUBJECTS: ALL_LOGGED_IN_USERS,
-		GET_ASSIGNMENT_LABELS_BY_PROFILE_ID: or(PermissionName.EDIT_ASSIGNMENTS),
+		GET_ASSIGNMENT_LABELS_BY_PROFILE_ID: or(
+			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		INSERT_ASSIGNMENT_LABELS: or(PermissionName.EDIT_ASSIGNMENTS),
 		UPDATE_ASSIGNMENT_LABEL: or(PermissionName.EDIT_ASSIGNMENTS),
 		DELETE_ASSIGNMENT_LABELS: or(PermissionName.EDIT_ASSIGNMENTS),
@@ -338,35 +355,55 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
 			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
 		),
-		INIT_ITEM_VIEWS: or(PermissionName.VIEW_ANY_PUBLISHED_ITEMS),
+		INIT_ITEM_VIEWS: or(
+			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		INIT_COLLECTION_VIEWS: or(
 			PermissionName.VIEW_OWN_COLLECTIONS,
 			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
-		INCREMENT_ITEM_PLAYS: or(PermissionName.VIEW_ANY_PUBLISHED_ITEMS),
+		INCREMENT_ITEM_PLAYS: or(
+			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		INCREMENT_COLLECTION_PLAYS: or(
 			PermissionName.VIEW_OWN_COLLECTIONS,
 			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
-		GET_ITEM_VIEWS: or(PermissionName.VIEW_ANY_PUBLISHED_ITEMS),
+		GET_ITEM_VIEWS: or(
+			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		GET_COLLECTION_VIEWS: or(
 			PermissionName.VIEW_OWN_COLLECTIONS,
 			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
-		GET_ITEM_PLAYS: or(PermissionName.VIEW_ANY_PUBLISHED_ITEMS),
+		GET_ITEM_PLAYS: or(
+			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		GET_COLLECTION_PLAYS: or(
 			PermissionName.VIEW_OWN_COLLECTIONS,
 			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
-		INIT_ITEM_PLAYS: or(PermissionName.VIEW_ANY_PUBLISHED_ITEMS),
+		INIT_ITEM_PLAYS: or(
+			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
+		),
 		INIT_COLLECTION_PLAYS: or(
 			PermissionName.VIEW_OWN_COLLECTIONS,
 			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS
+			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS,
+			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
 		GET_ITEM_BOOKMARK_VIEW_PLAY_COUNTS: or(PermissionName.VIEW_ANY_PUBLISHED_ITEMS),
 		GET_COLLECTION_BOOKMARK_VIEW_PLAY_COUNTS: or(
