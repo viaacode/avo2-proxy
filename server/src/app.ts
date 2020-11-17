@@ -21,6 +21,7 @@ import KlascementRoute from './modules/auth/idps/klascement/route';
 import KlascementService from './modules/auth/idps/klascement/service';
 import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
+import DataService from './modules/data/data.service';
 import AuthRoute from './modules/auth/route';
 import CampaignMonitorRoute from './modules/campaign-monitor/campaign-monitor.route';
 import ContentPagesRoute from './modules/content-pages/route';
@@ -69,6 +70,7 @@ export class App {
 			KlascementService.initialize();
 			ZendeskService.initialize();
 			AssetService.initialize();
+			DataService.initialize();
 
 			this.loadMiddleware();
 			this.loadModules();

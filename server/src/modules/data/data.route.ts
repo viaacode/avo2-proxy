@@ -1,13 +1,13 @@
+import { isNil } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
 import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
-import { AuthService } from '../auth/service';
 
 import DataController from './data.controller';
-import { DataPermissions } from './data.permissions';
+import DataService from './data.service';
 
 interface DataQuery {
 	query: any;
@@ -31,7 +31,16 @@ export default class DataRoute {
 			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 
 			// Check if user can execute query
-			if (!(await DataPermissions.isAllowedToRunQuery(body.query, avoUser))) {
+			const permissionCheck: boolean | null = await DataService.isAllowedToRunQuery(
+				avoUser,
+				body.query,
+				body.variables,
+				'CLIENT'
+			);
+			if (isNil(permissionCheck)) {
+				throw new BadRequestError('This query is not whitelisted');
+			}
+			if (!permissionCheck) {
 				throw new BadRequestError('You are not allowed to run this query');
 			}
 
@@ -48,9 +57,17 @@ export default class DataRoute {
 				new InternalServerError('Failed to get data from graphql', err, { ...body })
 			);
 			if (err instanceof ClientError) {
-				throw new ClientError('Something failed while making the request to the database', err, { body });
+				throw new ClientError(
+					'Something failed while making the request to the database',
+					err,
+					{ body }
+				);
 			}
-			throw new ClientError('Something failed while making the request to the database', null, { body });
+			throw new ClientError(
+				'Something failed while making the request to the database',
+				null,
+				{ body }
+			);
 		}
 	}
 }

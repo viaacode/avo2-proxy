@@ -4,7 +4,6 @@ import { compact, get } from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import DataService from './data.service';
-import { DataPermissions } from './data.permissions';
 
 export default class DataController {
 	public static async execute(
