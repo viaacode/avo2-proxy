@@ -5,11 +5,15 @@ import getUuid from 'uuid/v1';
 
 import type { Avo } from '@viaa/avo2-types';
 
-import { BadRequestError } from '../../shared/helpers/error';
+import { BadRequestError, UnauthorizedError } from '../../shared/helpers/error';
 import DataService from '../data/data.service';
 
-import { DELETE_CONTENT_ASSET, INSERT_CONTENT_ASSET } from './queries.gql';
-import AssetService from './service';
+import {
+	DELETE_CONTENT_ASSET,
+	GET_CONTENT_ASSET,
+	INSERT_CONTENT_ASSET,
+} from './assets.queries.gql';
+import AssetService from './assets.service';
 
 const VALID_MIME_TYPES: string[] = [
 	// images
@@ -95,7 +99,25 @@ export default class AssetController {
 		return VALID_MIME_TYPES.includes(file.mimetype);
 	}
 
-	public static async delete(url: string) {
+	public static async info(
+		url: string
+	): Promise<{ owner_id: string; content_asset_type_id: string }> {
+		return DataService.execute(GET_CONTENT_ASSET, {
+			url,
+		});
+	}
+
+	public static async delete(url: string, avoUser: Avo.User.User) {
+		if (
+			!(await DataService.isAllowedToRunQuery(
+				avoUser,
+				DELETE_CONTENT_ASSET,
+				{ url },
+				'PROXY'
+			))
+		) {
+			throw new UnauthorizedError('You are not allowed to delete this file');
+		}
 		await AssetService.delete(url);
 		await DataService.execute(DELETE_CONTENT_ASSET, { url });
 		return;

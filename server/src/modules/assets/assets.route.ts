@@ -3,11 +3,19 @@ import { Context, DELETE, Path, POST, PreProcessor, ServiceContext } from 'types
 
 import type { Avo } from '@viaa/avo2-types/types/index';
 
-import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
+import {
+	BadRequestError,
+	ClientError,
+	InternalServerError,
+	UnauthorizedError,
+} from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
+import { IdpHelper } from '../auth/idp-helper';
 
-import AssetController from './controller';
+import AssetController from './assets.controller';
+import { AuthService } from '../auth/service';
+import DataService from '../data/data.service';
 
 @Path('/assets')
 export default class AssetRoute {
@@ -26,7 +34,7 @@ export default class AssetRoute {
 		if (!assetInfo || !assetInfo.filename || !assetInfo.type) {
 			throw new BadRequestError(
 				'the body must contain the filename, content and type (' +
-					"'BUNDLE_COVER','COLLECTION_COVER','CONTENT_PAGE_IMAGE','PROFILE_AVATAR','ITEM_SUBTITLE'"
+				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\''
 			);
 		}
 		if (!this.context.request.files || !this.context.request.files.length) {
@@ -67,7 +75,11 @@ export default class AssetRoute {
 		}
 
 		try {
-			await AssetController.delete(body.url);
+			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			if (!avoUser) {
+				throw new UnauthorizedError('To delete files you need to be logged in');
+			}
+			await AssetController.delete(body.url, avoUser);
 			return { status: 'deleted' };
 		} catch (err) {
 			const error = new InternalServerError('Failed to delete asset file', err, { body });
