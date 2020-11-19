@@ -307,3 +307,11 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
     }
   }
 `;
+
+export const GET_CONTENT_PAGES_BY_IDS = `
+	query getContentAssetOwnerId($ids: [Int!]) {
+		app_content(where: {id: {_in: $ids}}) {
+			user_profile_id
+		}
+	}
+`;

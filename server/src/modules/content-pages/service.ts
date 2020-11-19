@@ -12,7 +12,7 @@ import { MediaItemResponse } from './controller';
 import {
 	GET_COLLECTION_TILE_BY_ID,
 	GET_CONTENT_PAGE_BY_PATH,
-	GET_CONTENT_PAGES,
+	GET_CONTENT_PAGES, GET_CONTENT_PAGES_BY_IDS,
 	GET_CONTENT_PAGES_WITH_BLOCKS,
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
@@ -226,6 +226,18 @@ export default class ContentPageService {
 			};
 		} catch (err) {
 			throw new InternalServerError('Failed to update content page publish dates', err);
+		}
+	}
+
+	static async getContentPagesByIds(contentPageIds: number[]): Promise<Avo.ContentPage.Page[]> {
+		try {
+			const response = await DataService.execute(GET_CONTENT_PAGES_BY_IDS, {ids: contentPageIds});
+			if (response.errors) {
+				throw new InternalServerError('GraphQL has errors', null, { response });
+			}
+			return get(response, 'data.app_content') || [];
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch content pages by ids');
 		}
 	}
 }

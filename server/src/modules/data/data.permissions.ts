@@ -1,10 +1,18 @@
-import { Avo } from '@viaa/avo2-types';
 import { every, some } from 'lodash';
+
+import { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError } from '../../shared/helpers/error';
 import { PermissionName } from '../../shared/permissions';
 import AssetController from '../assets/assets.controller';
 import { AuthService } from '../auth/service';
+import { GET_COLLECTION_BY_ID } from '../collections/collections.queries.gql';
+import CollectionsService from '../collections/collections.service';
+import { ContentTypeNumber } from '../collections/collections.types';
+import ContentPageService from '../content-pages/service';
+
+import DataService from './data.service';
+import get = Reflect.get;
 
 type IsAllowed = (user: Avo.User.User, query: string, variables: any) => Promise<boolean>;
 
@@ -30,6 +38,64 @@ function ifProfileIdMatches(propName: string): IsAllowed {
 	};
 }
 
+function deleteCollectionOrBundle(propName: string): IsAllowed {
+	return async (user: Avo.User.User, query: string, variables: any): Promise<boolean> => {
+		if (
+			AuthService.hasPermission(user, PermissionName.DELETE_OWN_COLLECTIONS) ||
+			AuthService.hasPermission(user, PermissionName.DELETE_OWN_BUNDLES)
+		) {
+			const collection = await CollectionsService.fetchCollectionOrBundleById(
+				variables[propName]
+			);
+			if (!collection) {
+				return true;
+			}
+			if (collection.owner_profile_id === user.profile.id) {
+				return true;
+			}
+		}
+		if (
+			AuthService.hasPermission(user, PermissionName.DELETE_ANY_COLLECTIONS) ||
+			AuthService.hasPermission(user, PermissionName.DELETE_ANY_BUNDLES)
+		) {
+			return true;
+		}
+
+		return false;
+	};
+}
+
+async function insertOrUpdateContentBlocks(
+	user: Avo.User.User,
+	query: string,
+	variables: any
+): Promise<boolean> {
+	if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_CONTENT_PAGES)) {
+		return true;
+	}
+
+	const contentPageIds: number[] = variables.contentBlocks.map(
+		(block: Avo.ContentPage.Block) => block.content_id
+	);
+	const contentPages: Avo.ContentPage.Page[] = await ContentPageService.getContentPagesByIds(
+		contentPageIds
+	);
+
+	if (
+		(AuthService.hasPermission(user, PermissionName.CREATE_CONTENT_PAGES) ||
+			AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) &&
+		every(contentPages, (contentPage) => contentPage.user_profile_id === user.profile.id)
+	) {
+		return true;
+	}
+
+	return false;
+}
+
+function hasFilter(variables: any, path: string, value: any): boolean {
+	return !!variables.where._and.find((filter: any) => get(filter, path) === value);
+}
+
 const ALL_LOGGED_IN_USERS = () => Promise.resolve(true);
 
 export const QUERY_PERMISSIONS: {
@@ -37,14 +103,57 @@ export const QUERY_PERMISSIONS: {
 	PROXY: { [queryName: string]: IsAllowed };
 } = {
 	CLIENT: {
-		GET_COLLECTIONS: or(
-			PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS,
-			PermissionName.VIEW_ANY_PUBLISHED_BUNDLES,
-			PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES,
-			PermissionName.VIEW_OWN_BUNDLES,
-			PermissionName.VIEW_OWN_COLLECTIONS
-		),
+		GET_COLLECTIONS: async (user: Avo.User.User, query: string, variables: any) => {
+			if (
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS) &&
+				hasFilter(variables, 'type_id._eq', ContentTypeNumber.collection)
+			) {
+				return true;
+			}
+
+			if (
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_PUBLISHED_BUNDLES) &&
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES) &&
+				hasFilter(variables, 'type_id._eq', ContentTypeNumber.bundle)
+			) {
+				return true;
+			}
+
+			if (
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_PUBLISHED_COLLECTIONS) &&
+				hasFilter(variables, 'is_public._eq', true) &&
+				hasFilter(variables, 'type_id._eq', ContentTypeNumber.collection)
+			) {
+				return true;
+			}
+
+			if (
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_UNPUBLISHED_COLLECTIONS) &&
+				hasFilter(variables, 'is_public._eq', false) &&
+				hasFilter(variables, 'type_id._eq', ContentTypeNumber.collection)
+			) {
+				return true;
+			}
+
+			if (
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_PUBLISHED_BUNDLES) &&
+				hasFilter(variables, 'is_public._eq', true) &&
+				hasFilter(variables, 'type_id._eq', ContentTypeNumber.bundle)
+			) {
+				return true;
+			}
+
+			if (
+				AuthService.hasPermission(user, PermissionName.VIEW_ANY_UNPUBLISHED_BUNDLES) &&
+				hasFilter(variables, 'is_public._eq', false) &&
+				hasFilter(variables, 'type_id._eq', ContentTypeNumber.bundle)
+			) {
+				return true;
+			}
+
+			return false;
+		},
 		GET_COLLECTION_IDS: or(
 			PermissionName.VIEW_COLLECTIONS_OVERVIEW,
 			PermissionName.VIEW_BUNDLES_OVERVIEW
@@ -59,9 +168,7 @@ export const QUERY_PERMISSIONS: {
 		),
 		BULK_DELETE_COLLECTIONS: or(
 			PermissionName.DELETE_ANY_COLLECTIONS,
-			PermissionName.DELETE_ANY_BUNDLES,
-			PermissionName.DELETE_OWN_COLLECTIONS,
-			PermissionName.DELETE_OWN_BUNDLES
+			PermissionName.DELETE_ANY_BUNDLES
 		),
 		BULK_ADD_LABELS_TO_COLLECTIONS: or(
 			PermissionName.EDIT_ANY_COLLECTIONS,
@@ -75,16 +182,8 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.EDIT_ANY_COLLECTIONS,
 			PermissionName.EDIT_ANY_BUNDLES
 		),
-		INSERT_CONTENT_BLOCKS: or(
-			PermissionName.CREATE_CONTENT_PAGES,
-			PermissionName.EDIT_ANY_CONTENT_PAGES,
-			PermissionName.EDIT_OWN_CONTENT_PAGES
-		),
-		UPDATE_CONTENT_BLOCK: or(
-			PermissionName.CREATE_CONTENT_PAGES,
-			PermissionName.EDIT_ANY_CONTENT_PAGES,
-			PermissionName.EDIT_OWN_CONTENT_PAGES
-		),
+		INSERT_CONTENT_BLOCKS: insertOrUpdateContentBlocks,
+		UPDATE_CONTENT_BLOCK: insertOrUpdateContentBlocks,
 		DELETE_CONTENT_BLOCK: or(PermissionName.DELETE_ANY_CONTENT_PAGES),
 		GET_CONTENT_PAGE_LABELS: or(PermissionName.EDIT_CONTENT_PAGE_LABELS),
 		DELETE_CONTENT_PAGE_LABEL: or(PermissionName.EDIT_CONTENT_PAGE_LABELS),
@@ -121,29 +220,70 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.EDIT_ANY_CONTENT_PAGES,
 			PermissionName.EDIT_OWN_CONTENT_PAGES
 		),
-		UPDATE_CONTENT_BY_ID: or(
-			PermissionName.EDIT_CONTENT_PAGE_LABELS,
-			PermissionName.EDIT_ANY_CONTENT_PAGES,
-			PermissionName.EDIT_OWN_CONTENT_PAGES
-		),
-		INSERT_CONTENT: or(
-			PermissionName.EDIT_ANY_CONTENT_PAGES,
-			PermissionName.EDIT_OWN_CONTENT_PAGES
-		),
+		UPDATE_CONTENT_BY_ID: async (user: Avo.User.User, query: string, variables: any) => {
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_CONTENT_PAGES)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
+				const contentPage = (
+					await ContentPageService.getContentPagesByIds([variables.id])
+				)[0];
+				if (!contentPage) {
+					return true;
+				}
+				if (
+					contentPage.user_profile_id === user.profile.id &&
+					variables.contentPage.user_profile_id === user.profile.id
+				) {
+					return true;
+				}
+			}
+			return false;
+		},
+		INSERT_CONTENT: async (user: Avo.User.User, query: string, variables: any) => {
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_CONTENT_PAGES)) {
+				return true;
+			}
+			if (
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES) &&
+				variables.contentPage.user_profile_id === user.profile.id
+			) {
+				return true;
+			}
+			return false;
+		},
 		DELETE_CONTENT: or(PermissionName.DELETE_ANY_CONTENT_PAGES),
 		GET_PERMISSIONS_FROM_CONTENT_PAGE_BY_PATH: or(PermissionName.EDIT_NAVIGATION_BARS),
 		GET_CONTENT_LABELS_BY_CONTENT_TYPE: or(
 			PermissionName.EDIT_ANY_CONTENT_PAGES,
 			PermissionName.EDIT_OWN_CONTENT_PAGES
 		),
-		INSERT_CONTENT_LABEL_LINKS: or(
-			PermissionName.EDIT_ANY_CONTENT_PAGES,
-			PermissionName.EDIT_OWN_CONTENT_PAGES
-		),
-		DELETE_CONTENT_LABEL_LINKS: or(
-			PermissionName.EDIT_ANY_CONTENT_PAGES,
-			PermissionName.EDIT_OWN_CONTENT_PAGES
-		),
+		INSERT_CONTENT_LABEL_LINKS: async (user: Avo.User.User, query: string, variables: any) => {
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_CONTENT_PAGES)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
+				const contentPages = await ContentPageService.getContentPagesByIds(variables.objects.map((obj: any) => obj.content_id));
+				if (every(contentPages, (contentPage) => contentPage.user_profile_id === user.profile.id)) {
+					return true;
+				}
+			}
+
+			return false;
+		},
+		DELETE_CONTENT_LABEL_LINKS: async (user: Avo.User.User, query: string, variables: any) => {
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_CONTENT_PAGES)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
+				const contentPage = (await ContentPageService.getContentPagesByIds([variables.contentPageId]))[0];
+				if (contentPage.user_profile_id === user.profile.id) {
+					return true;
+				}
+			}
+
+			return false;
+		},
 		GET_INTERACTIVE_TOUR_BY_ID: ALL_LOGGED_IN_USERS,
 		GET_INTERACTIVE_TOURS: or(PermissionName.EDIT_INTERACTIVE_TOURS),
 		INSERT_INTERACTIVE_TOUR: or(PermissionName.EDIT_INTERACTIVE_TOURS),
@@ -242,7 +382,7 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.EDIT_OWN_COLLECTIONS,
 			PermissionName.EDIT_ANY_BUNDLES,
 			PermissionName.EDIT_OWN_BUNDLES,
-			PermissionName.ADD_ITEM_TO_COLLECTION_BY_PID,
+			PermissionName.ADD_ITEM_TO_COLLECTION_BY_PID
 		),
 		UPDATE_COLLECTION: or(
 			PermissionName.EDIT_OWN_COLLECTIONS,
@@ -256,12 +396,7 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.EDIT_OWN_BUNDLES,
 			PermissionName.EDIT_ANY_BUNDLES
 		),
-		DELETE_COLLECTION: or(
-			PermissionName.DELETE_OWN_COLLECTIONS,
-			PermissionName.DELETE_ANY_COLLECTIONS,
-			PermissionName.DELETE_OWN_BUNDLES,
-			PermissionName.DELETE_ANY_BUNDLES
-		),
+		DELETE_COLLECTION: deleteCollectionOrBundle('id'),
 		UPDATE_COLLECTION_FRAGMENT: or(
 			PermissionName.EDIT_OWN_COLLECTIONS,
 			PermissionName.EDIT_ANY_COLLECTIONS,
@@ -437,19 +572,9 @@ export const QUERY_PERMISSIONS: {
 		FETCH_COLLECTION_RELATIONS_BY_SUBJECTS: or(PermissionName.VIEW_COLLECTIONS_OVERVIEW),
 		FETCH_ITEM_RELATIONS_BY_SUBJECTS: or(PermissionName.PUBLISH_ITEMS),
 		INSERT_ITEM_RELATION: or(PermissionName.CREATE_COLLECTIONS),
-		DELETE_COLLECTION_RELATIONS_BY_OBJECT: or(
-			PermissionName.DELETE_OWN_COLLECTIONS,
-			PermissionName.DELETE_ANY_COLLECTIONS,
-			PermissionName.DELETE_OWN_BUNDLES,
-			PermissionName.DELETE_ANY_BUNDLES
-		),
+		DELETE_COLLECTION_RELATIONS_BY_OBJECT: deleteCollectionOrBundle('objectId'),
 		DELETE_ITEM_RELATIONS_BY_OBJECT: or(PermissionName.PUBLISH_ITEMS),
-		DELETE_COLLECTION_RELATIONS_BY_SUBJECT: or(
-			PermissionName.DELETE_OWN_COLLECTIONS,
-			PermissionName.DELETE_ANY_COLLECTIONS,
-			PermissionName.DELETE_OWN_BUNDLES,
-			PermissionName.DELETE_ANY_BUNDLES
-		),
+		DELETE_COLLECTION_RELATIONS_BY_SUBJECT: deleteCollectionOrBundle('subjectId'),
 		DELETE_ITEM_RELATIONS_BY_SUBJECT: or(PermissionName.PUBLISH_ITEMS),
 		GET_WORKSPACE_TAB_COUNTS: ALL_LOGGED_IN_USERS,
 	},
