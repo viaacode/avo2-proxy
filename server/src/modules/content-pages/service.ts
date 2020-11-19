@@ -122,9 +122,9 @@ export default class ContentPageService {
 	): Promise<ContentPageOverviewResponse> {
 		const now = new Date().toISOString();
 		const variables = {
-			offset,
 			limit,
 			labelIds,
+			offset: offset || 0,
 			where: {
 				_and: [
 					{
@@ -142,8 +142,8 @@ export default class ContentPageService {
 					{
 						_or: [
 							{ is_public: { _eq: true } },
-							{ publish_at: { _eq: null }, depublish_at: { _gte: now } },
-							{ publish_at: { _lte: now }, depublish_at: { _eq: null } },
+							{ publish_at: { _is_null: true }, depublish_at: { _gte: now } },
+							{ publish_at: { _lte: now }, depublish_at: { _is_null: true } },
 							{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
 						],
 					},
