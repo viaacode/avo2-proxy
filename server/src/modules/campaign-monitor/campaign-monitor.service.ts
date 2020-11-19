@@ -276,6 +276,29 @@ export default class CampaignMonitorService {
 		}
 	}
 
+	private static getWhere(activeDate: string): any {
+		let where = {};
+		if (activeDate) {
+			where = {
+				_or: [
+					{
+						updated_at: {
+							_gt: activeDate,
+						},
+					},
+					{
+						profile: {
+							updated_at: {
+								_gt: activeDate,
+							},
+						},
+					},
+				],
+			};
+		}
+		return where;
+	}
+
 	/**
 	 * Gets users from the database where their active date is past the provided date
 	 * @param activeDate when you pass null, all users will be returned
@@ -291,7 +314,7 @@ export default class CampaignMonitorService {
 			const response = await DataService.execute(GET_ACTIVE_USERS, {
 				offset,
 				limit,
-				where: activeDate ? { last_access_at: { _gt: activeDate } } : {},
+				where: CampaignMonitorService.getWhere(activeDate),
 			});
 
 			if (response.errors) {
@@ -312,7 +335,7 @@ export default class CampaignMonitorService {
 	static async countActiveUsers(activeDate: string | null): Promise<number> {
 		try {
 			const response = await DataService.execute(COUNT_ACTIVE_USERS, {
-				where: activeDate ? { last_access_at: { _gt: activeDate } } : {},
+				where: CampaignMonitorService.getWhere(activeDate),
 			});
 
 			if (response.errors) {
