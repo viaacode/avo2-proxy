@@ -67,7 +67,7 @@ export default class AssetController {
 	 * @param uploadAssetInfo
 	 * @param files
 	 */
-	public static async upload(
+	static async upload(
 		uploadAssetInfo: Avo.FileUpload.UploadAssetInfo,
 		files: Express.Multer.File[]
 	): Promise<string> {
@@ -99,11 +99,11 @@ export default class AssetController {
 		return url;
 	}
 
-	public static isValidFileType(file: Express.Multer.File): boolean {
+	static isValidFileType(file: Express.Multer.File): boolean {
 		return VALID_MIME_TYPES.includes(file.mimetype);
 	}
 
-	public static async info(
+	static async info(
 		url: string
 	): Promise<{ owner_id: string; content_asset_type_id: string }> {
 		try {
@@ -120,7 +120,7 @@ export default class AssetController {
 		}
 	}
 
-	public static async delete(url: string, avoUser: Avo.User.User) {
+	static async delete(url: string, avoUser: Avo.User.User) {
 		if (
 			!(await DataService.isAllowedToRunQuery(
 				avoUser,
