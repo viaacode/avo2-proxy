@@ -6,7 +6,7 @@ import type { Avo } from '@viaa/avo2-types';
 import DataService from './data.service';
 
 export default class DataController {
-	public static async execute(
+	static async execute(
 		query: string,
 		variables: { [varName: string]: any },
 		allHeaders: IncomingHttpHeaders,
