@@ -25,7 +25,7 @@ interface ElasticsearchResponse {
 	aggregations: any;
 }
 
-interface AuthTokenResponse {
+export interface AuthTokenResponse {
 	graphql_api_url: string;
 	authorization_token: string;
 	status: string;
@@ -82,7 +82,7 @@ export default class SearchService {
 		} catch (err) {
 			throw new InternalServerError('Failed to get JWT token from auth server', err, {
 				url,
-				data,
+				username: data.username,
 			});
 		}
 	}
