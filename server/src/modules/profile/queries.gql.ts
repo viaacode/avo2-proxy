@@ -30,6 +30,7 @@ export const UPDATE_PROFILE_INFO = `
 		$firstName: String
 		$lastName: String
 		$business_category: String
+		$updatedAt: timestamptz!
 	) {
 		insert_users_profile_contexts(objects: $educationLevels) {
 			affected_rows
@@ -51,6 +52,7 @@ export const UPDATE_PROFILE_INFO = `
 				company_id: $company_id
 				is_exception: $is_exception
 				business_category: $business_category
+				updated_at: $updatedAt
 			}
 		) {
 			affected_rows
@@ -64,13 +66,14 @@ export const UPDATE_PROFILE_INFO = `
 			affected_rows
 		}
 		 update_shared_users(
-		 	where: {uid: {_eq: $userUuid}},
-		 	_set: {
-		 		first_name: $firstName,
-		 		last_name: $lastName
-		 	}
+			 where: {uid: {_eq: $userUuid}},
+			 _set: {
+				 first_name: $firstName,
+				 last_name: $lastName,
+				updated_at: $updatedAt
+			 }
 		 ) {
-    	affected_rows
-  	}
+			affected_rows
+		}
 	}
 `;
