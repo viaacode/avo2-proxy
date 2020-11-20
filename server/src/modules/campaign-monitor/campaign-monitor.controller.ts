@@ -147,7 +147,9 @@ export default class CampaignMonitorController {
 
 		const isBlocked = get(user, 'is_blocked');
 		const createdAt = get(user, 'created_at');
+		const createdAtDate = createdAt ? moment(createdAt).format('YYYY/MM/DD') : null;
 		const lastAccessAt = get(user, 'last_access_at');
+		const lastAccessAtDate = lastAccessAt ? moment(lastAccessAt).format('YYYY/MM/DD') : null;
 
 		const businessCategory = get(user, 'profile.business_category');
 		const isExceptionAccount = get(user, 'profile.is_exception') || false;
@@ -230,8 +232,8 @@ export default class CampaignMonitorController {
 			name,
 			customFields: {
 				is_geblokkeerd: isBlocked ? 'true' : 'false',
-				aangemaakt_op: createdAt,
-				laatst_ingelogd_op: lastAccessAt,
+				aangemaakt_op: createdAtDate,
+				laatst_ingelogd_op: lastAccessAtDate,
 				heeft_publieke_collecties: hasPublicCollections ? 'true' : 'false',
 				heeft_prive_collecties: hasPrivateCollections ? 'true' : 'false',
 				heeft_opdrachten: hasAssignments ? 'true' : 'false',

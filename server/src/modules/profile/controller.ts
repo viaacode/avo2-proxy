@@ -84,6 +84,7 @@ export default class ProfileController {
 				profileId: profile.id,
 				userUuid: user.uid,
 				...completeVars,
+				updatedAt: new Date().toISOString(),
 			});
 
 			return completeVars;

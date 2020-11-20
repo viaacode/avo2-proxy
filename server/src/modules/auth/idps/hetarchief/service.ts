@@ -6,7 +6,6 @@ import convert = require('xml-js');
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
-import { LdapEducationOrganisation } from '../../../education-organizations/service';
 import { IdpMetaData, LdapUser } from '../../types';
 
 import { LdapApiUserInfo } from './hetarchief.types';
@@ -186,6 +185,27 @@ export default class HetArchiefService {
 						);
 					} else {
 						resolve(logoutUrl);
+					}
+				}
+			);
+		});
+	}
+
+	static createLogoutResponseUrl(relayState: any) {
+		return new Promise<string>((resolve, reject) => {
+			this.serviceProvider.create_logout_response_url(
+				HetArchiefService.identityProvider,
+				{ relay_state: relayState },
+				(error: any, responseUrl: string) => {
+					if (error) {
+						reject(
+							new InternalServerError(
+								'Failed to create logout response url on saml service provider',
+								error
+							)
+						);
+					} else {
+						resolve(responseUrl);
 					}
 				}
 			);

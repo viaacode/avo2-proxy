@@ -244,7 +244,7 @@ export default class HetArchiefController {
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
-		newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
+		newAvoUser.is_blocked = newAvoUser.is_blocked || !ldapUserInfo.apps.find((app) => app.name === 'avo');
 
 		const orgIds: string[] =
 			get(ldapUserInfo, 'educationalOrganisationIds') ||
