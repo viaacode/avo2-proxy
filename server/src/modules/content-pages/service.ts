@@ -117,14 +117,14 @@ export default class ContentPageService {
 		selectedLabelIds: number[],
 		orderByProp: string,
 		orderByDirection: 'asc' | 'desc',
-		offset: number,
+		offset: number = 0,
 		limit: number
 	): Promise<ContentPageOverviewResponse> {
 		const now = new Date().toISOString();
 		const variables = {
 			limit,
 			labelIds,
-			offset: offset || 0,
+			offset,
 			where: {
 				_and: [
 					{
