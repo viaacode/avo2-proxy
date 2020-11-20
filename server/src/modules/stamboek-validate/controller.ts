@@ -3,7 +3,7 @@ import { get } from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { GET_PROFILES_BY_STAMBOEK } from './queries.gql';
 import StamboekService from './service';

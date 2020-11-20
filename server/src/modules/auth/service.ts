@@ -5,7 +5,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { PermissionName } from '../../shared/permissions';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 import EducationOrganizationsService, {
 	LdapEducationOrganizationWithUnits,
 	SimpleOrgInfo,

@@ -4,7 +4,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
-import DataService from '../../../data/service';
+import DataService from '../../../data/data.service';
 import { SpecialUserGroup } from '../../consts';
 import AuthController from '../../controller';
 import { getUserByIdpId } from '../../helpers/get-user-by-idp-id';

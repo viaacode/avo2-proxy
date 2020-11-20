@@ -3,10 +3,12 @@ import _ from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import {
-	GET_INTERACTIVE_TOUR_ROUTE_IDS, GET_INTERACTIVE_TOUR_WITH_STATUSES, GET_INTERACTIVE_TOUR_WITHOUT_STATUSES,
+	GET_INTERACTIVE_TOUR_ROUTE_IDS,
+	GET_INTERACTIVE_TOUR_WITH_STATUSES,
+	GET_INTERACTIVE_TOUR_WITHOUT_STATUSES,
 } from './queries.gql';
 
 export default class InteractiveTourService {
@@ -17,13 +19,20 @@ export default class InteractiveTourService {
 			if (response.errors) {
 				throw new CustomError('Response contains errors', null, { response });
 			}
-			return _.get(response, 'data.app_interactive_tour', []).map((interactiveTour: Avo.InteractiveTour.InteractiveTour) => interactiveTour.page_id);
+			return _.get(response, 'data.app_interactive_tour', []).map(
+				(interactiveTour: Avo.InteractiveTour.InteractiveTour) => interactiveTour.page_id
+			);
 		} catch (err) {
-			throw new CustomError('Failed to get interactive tour route ids', err, { query: GET_INTERACTIVE_TOUR_ROUTE_IDS });
+			throw new CustomError('Failed to get interactive tour route ids', err, {
+				query: GET_INTERACTIVE_TOUR_ROUTE_IDS,
+			});
 		}
 	}
 
-	static async getInteractiveTour(routeId: string, profileId: string | undefined): Promise<Avo.InteractiveTour.InteractiveTour | null> {
+	static async getInteractiveTour(
+		routeId: string,
+		profileId: string | undefined
+	): Promise<Avo.InteractiveTour.InteractiveTour | null> {
 		let response: any;
 		let variables: any;
 		try {
@@ -42,7 +51,10 @@ export default class InteractiveTourService {
 					routeId,
 				};
 
-				response = await DataService.execute(GET_INTERACTIVE_TOUR_WITHOUT_STATUSES, variables);
+				response = await DataService.execute(
+					GET_INTERACTIVE_TOUR_WITHOUT_STATUSES,
+					variables
+				);
 			}
 
 			if (response.errors) {
@@ -51,11 +63,11 @@ export default class InteractiveTourService {
 
 			return response;
 		} catch (err) {
-			throw new CustomError(
-				'Failed to get interactive tour by route id',
-				err,
-				{ profileId, variables, query: [GET_INTERACTIVE_TOUR_WITH_STATUSES, GET_INTERACTIVE_TOUR_WITHOUT_STATUSES] }
-				);
+			throw new CustomError('Failed to get interactive tour by route id', err, {
+				profileId,
+				variables,
+				query: [GET_INTERACTIVE_TOUR_WITH_STATUSES, GET_INTERACTIVE_TOUR_WITHOUT_STATUSES],
+			});
 		}
 	}
 }

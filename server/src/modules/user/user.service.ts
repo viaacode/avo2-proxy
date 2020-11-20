@@ -6,7 +6,7 @@ import { Avo } from '@viaa/avo2-types';
 import { CustomError } from '../../shared/helpers/error';
 import i18n from '../../shared/translations/i18n';
 import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import {
 	BULK_DELETE_USERS,
@@ -68,9 +68,9 @@ export default class UserService {
 						mail: `${profileId}@hetarchief.be`,
 					}
 					: {
-						profileId,
-						mail: `${profileId}@hetarchief.be`,
-					}
+							profileId,
+							mail: `${profileId}@hetarchief.be`,
+					  }
 			);
 
 			if (response.errors) {

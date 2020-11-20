@@ -29,7 +29,7 @@ import glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
 
-import TranslationsController from '../src/modules/site-variables/controllers/translations.controller.js';
+import TranslationsController from '../src/modules/site-variables/controllers/translations.controller';
 import localTranslations from '../src/shared/translations/nl.json';
 
 type keyMap = { [key: string]: string };
@@ -43,7 +43,7 @@ function getFormattedKey(filePath: string, key: string) {
 		.replace(/[\\\/]+/g, '/')
 		.split('.')[0]
 		.split(/[\\\/]/g)
-		.map(part => _.kebabCase(part))
+		.map((part) => _.kebabCase(part))
 		.join('/')
 		.toLowerCase()
 		.replace(/(^\/+|\/+$)/g, '')
@@ -218,7 +218,7 @@ async function updateTranslations() {
 }
 
 // deepcode ignore UsageOfUndefinedReturnValue: False positive
-updateTranslations().catch(err => {
+updateTranslations().catch((err) => {
 	// tslint:disable-next-line:no-console
 	console.error('Update of translations failed: ', err);
 });

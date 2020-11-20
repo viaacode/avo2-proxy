@@ -6,7 +6,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../shared/helpers/logger';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { DELETE_ORGANIZATIONS, GET_ORGANIZATIONS, INSERT_ORGANIZATIONS } from './queries.gql';
 

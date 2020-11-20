@@ -8,7 +8,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './campaign-monitor.const';
 import { COUNT_ACTIVE_USERS, GET_ACTIVE_USERS, HAS_CONTENT } from './campaign-monitor.gql';

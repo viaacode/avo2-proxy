@@ -5,14 +5,14 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SpecialPermissionGroups } from '../auth/types';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 import SearchController from '../search/controller';
 
 import { MediaItemResponse } from './controller';
 import {
 	GET_COLLECTION_TILE_BY_ID,
 	GET_CONTENT_PAGE_BY_PATH,
-	GET_CONTENT_PAGES,
+	GET_CONTENT_PAGES, GET_CONTENT_PAGES_BY_IDS,
 	GET_CONTENT_PAGES_WITH_BLOCKS,
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
@@ -133,7 +133,7 @@ export default class ContentPageService {
 					},
 					{
 						// Get pages that are visible to the current user
-						_or: userGroupIds.map(userGroupId => ({
+						_or: userGroupIds.map((userGroupId) => ({
 							user_group_ids: { _contains: userGroupId },
 						})),
 					},
@@ -150,7 +150,7 @@ export default class ContentPageService {
 				],
 			},
 			orderBy: { [orderByProp]: orderByDirection },
-			orUserGroupIds: userGroupIds.map(userGroupId => ({
+			orUserGroupIds: userGroupIds.map((userGroupId) => ({
 				content: { user_group_ids: { _contains: userGroupId } },
 			})),
 		};
@@ -215,10 +215,7 @@ export default class ContentPageService {
 		try {
 			const response = await DataService.execute(UPDATE_CONTENT_PAGE_PUBLISH_DATES, {
 				now: new Date().toISOString(),
-				publishedAt: moment()
-					.hours(7)
-					.minutes(0)
-					.toISOString(),
+				publishedAt: moment().hours(7).minutes(0).toISOString(),
 			});
 			if (response.errors) {
 				throw new InternalServerError('Graphql mutation returned errors', response);
@@ -229,6 +226,18 @@ export default class ContentPageService {
 			};
 		} catch (err) {
 			throw new InternalServerError('Failed to update content page publish dates', err);
+		}
+	}
+
+	static async getContentPagesByIds(contentPageIds: number[]): Promise<Avo.ContentPage.Page[]> {
+		try {
+			const response = await DataService.execute(GET_CONTENT_PAGES_BY_IDS, {ids: contentPageIds});
+			if (response.errors) {
+				throw new InternalServerError('GraphQL has errors', null, { response });
+			}
+			return get(response, 'data.app_content') || [];
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch content pages by ids');
 		}
 	}
 }

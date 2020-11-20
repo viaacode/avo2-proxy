@@ -118,7 +118,6 @@ export default class CampaignMonitorController {
 			});
 		} catch (err) {
 			throw new InternalServerError('Failed to update newsletter preferences', err, {
-				user,
 				preferences,
 			});
 		}
