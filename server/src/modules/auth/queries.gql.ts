@@ -320,7 +320,10 @@ export const GET_NOTIFICATION = `
 
 export const UPDATE_USER_LAST_ACCESS_DATE = `
 	mutation updateUserLastAccessDate($userUid: uuid!, $date: timestamptz) {
-		update_shared_users(where: {uid: {_eq: $userUid}}, _set: {last_access_at: $date}) {
+		update_shared_users(where: {uid: {_eq: $userUid}}, _set: {last_access_at: $date, updated_at: $date}) {
+			affected_rows
+		}
+		update_users_profiles(where: {user_id: {_eq: $userUid}}, _set: {updated_at: $date}) {
 			affected_rows
 		}
 	}
