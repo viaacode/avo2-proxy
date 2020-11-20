@@ -2,10 +2,11 @@
  * This script runs over all files that match *.gql.ts and extracts the gql queries and whitelists them into the graphql database
  */
 import axios, { AxiosResponse } from 'axios';
-import * as fs from 'fs';
 import glob from 'glob';
 import _ from 'lodash';
 import * as path from 'path';
+
+const fs = require('fs-extra');
 
 import { logger } from '../src/shared/helpers/logger';
 
@@ -70,7 +71,9 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 									`Extracting graphql queries with javascript template parameters isn't supported: ${name}`
 								);
 							}
-							queries[name] = query.replace(/^\t/gm, '').trim();
+							// Remove new lines and tabs
+							// Trim whitespace
+							queries[name] = query.replace(/[\t\r\n]+/gm, ' ').trim();
 						}
 					} while (matches);
 				} catch (err) {
@@ -120,7 +123,8 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 					definition: {
 						queries: _.map(queries, (query: string, name: string) => ({
 							name,
-							query: query.trim(),
+							// Remove query name
+							query: query.replace(/^(query|mutation)\s?[^({]+([({])/gm, '$1 $2'),
 						})),
 					},
 				},
@@ -136,7 +140,14 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 			});
 			logger.info('[QUERY WHITELISTING]: Re-added collection to whitelist');
 
-			logger.info(`[QUERY WHITELISTING]: Whitelisted ${Object.keys(queries).length} queries in the graphql database`);
+			const outputFile = path.join(__dirname, 'proxy-whitelist.json');
+			await fs.writeFile(outputFile, JSON.stringify(queries, null, 2));
+
+			logger.info(
+				`[QUERY WHITELISTING]: Whitelisted ${
+					Object.keys(queries).length
+				} queries in the graphql database. Full list: ${outputFile}`
+			);
 		} catch (err) {
 			logger.error('Failed to extract and upload graphql query whitelist', err);
 		}

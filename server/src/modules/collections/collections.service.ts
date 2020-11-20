@@ -3,7 +3,7 @@ import { compact, get } from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import {
 	GET_COLLECTION_BY_ID,
@@ -109,7 +109,7 @@ export default class CollectionsService {
 	 */
 	static async fetchCollectionOrBundleById(
 		collectionId: string,
-		type: 'collection' | 'bundle'
+		type?: 'collection' | 'bundle'
 	): Promise<Avo.Collection.Collection | null> {
 		try {
 			const response = await DataService.execute(GET_COLLECTION_BY_ID, { id: collectionId });
@@ -138,7 +138,7 @@ export default class CollectionsService {
 			}
 			// Collection/bundle loaded successfully
 			// If we find a bundle but the function type param asked for a collection, we return undefined (and vice versa)
-			if (collectionObj.type_id !== ContentTypeNumber[type]) {
+			if (type && collectionObj.type_id !== ContentTypeNumber[type]) {
 				return null;
 			}
 

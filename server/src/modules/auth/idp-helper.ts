@@ -4,7 +4,7 @@ import _ from 'lodash';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import HetArchiefService from './idps/hetarchief/service';
 import { GET_IDP_MAP, INSERT_IDP_MAP } from './queries.gql';

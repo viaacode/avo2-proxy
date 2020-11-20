@@ -10,7 +10,7 @@ import {
 } from '../../../../shared/helpers/error';
 import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
-import DataService from '../../../data/service';
+import DataService from '../../../data/data.service';
 import EducationOrganizationsService, {
 	LdapEducationOrganisation,
 	LdapEduOrgUnit,
@@ -244,7 +244,7 @@ export default class HetArchiefController {
 		(newAvoUser.profile as any).is_exception =
 			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
 
-		newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
+		newAvoUser.is_blocked = newAvoUser.is_blocked || !ldapUserInfo.apps.find((app) => app.name === 'avo');
 
 		const orgIds: string[] =
 			get(ldapUserInfo, 'educationalOrganisationIds') ||

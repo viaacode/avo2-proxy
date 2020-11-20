@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
-import { get, keys, toPairs, values } from 'lodash';
+import { get, isEmpty, isNil, isString, keys, toPairs, values } from 'lodash';
 import * as queryString from 'query-string';
 
 import type { Avo } from '@viaa/avo2-types';
@@ -8,7 +8,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './campaign-monitor.const';
 import { COUNT_ACTIVE_USERS, GET_ACTIVE_USERS, HAS_CONTENT } from './campaign-monitor.gql';
@@ -153,6 +153,7 @@ export default class CampaignMonitorService {
 			CustomFields: toPairs(cmUserInfo.customFields).map((pair) => ({
 				Key: pair[0],
 				Value: pair[1],
+				Clear: isNil(pair[1]) || (isString(pair[1]) && pair[1] === ''),
 			})),
 		};
 	}
@@ -163,8 +164,10 @@ export default class CampaignMonitorService {
 				return;
 			}
 
+			const data = this.getCmSubscriberData(cmUserInfo, true);
+
 			await axios(`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}.json`, {
-				data: this.getCmSubscriberData(cmUserInfo, true),
+				data,
 				method: 'POST',
 				auth: {
 					username: process.env.CAMPAIGN_MONITOR_API_KEY,
@@ -276,6 +279,29 @@ export default class CampaignMonitorService {
 		}
 	}
 
+	private static getWhere(activeDate: string): any {
+		let where = {};
+		if (activeDate) {
+			where = {
+				_or: [
+					{
+						updated_at: {
+							_gt: activeDate,
+						},
+					},
+					{
+						profile: {
+							updated_at: {
+								_gt: activeDate,
+							},
+						},
+					},
+				],
+			};
+		}
+		return where;
+	}
+
 	/**
 	 * Gets users from the database where their active date is past the provided date
 	 * @param activeDate when you pass null, all users will be returned
@@ -291,7 +317,7 @@ export default class CampaignMonitorService {
 			const response = await DataService.execute(GET_ACTIVE_USERS, {
 				offset,
 				limit,
-				where: activeDate ? { last_access_at: { _gt: activeDate } } : {},
+				where: CampaignMonitorService.getWhere(activeDate),
 			});
 
 			if (response.errors) {
@@ -312,7 +338,7 @@ export default class CampaignMonitorService {
 	static async countActiveUsers(activeDate: string | null): Promise<number> {
 		try {
 			const response = await DataService.execute(COUNT_ACTIVE_USERS, {
-				where: activeDate ? { last_access_at: { _gt: activeDate } } : {},
+				where: CampaignMonitorService.getWhere(activeDate),
 			});
 
 			if (response.errors) {

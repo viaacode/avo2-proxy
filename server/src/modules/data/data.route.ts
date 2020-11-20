@@ -1,12 +1,13 @@
+import { isNil } from 'lodash';
 import { Context, Path, POST, PreProcessor, ServiceContext } from 'typescript-rest';
 
-import { ClientError, InternalServerError } from '../../shared/helpers/error';
+import { BadRequestError, ClientError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
-import { AuthService } from '../auth/service';
 
-import DataController from './controller';
+import DataController from './data.controller';
+import DataService from './data.service';
 
 interface DataQuery {
 	query: any;
@@ -28,23 +29,26 @@ export default class DataRoute {
 	async post(body: DataQuery): Promise<any> {
 		try {
 			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
-			const allUserGroups = await AuthService.getAllUserGroups();
-			const userGroup = allUserGroups.find(
-				(userGroup) => userGroup.id === avoUser.profile.userGroupIds[0]
+
+			// Check if user can execute query
+			const permissionCheck: boolean | null = await DataService.isAllowedToRunQuery(
+				avoUser,
+				body.query,
+				body.variables,
+				'CLIENT'
 			);
-			if (!userGroup) {
-				throw new InternalServerError('Failed to find user group for user group id', null, {
-					allUserGroups,
-					userGroupId: avoUser.profile.userGroupIds[0],
-				});
+			if (isNil(permissionCheck)) {
+				throw new BadRequestError('This query is not whitelisted');
 			}
-			const userGroupLabel = userGroup.label;
+			if (!permissionCheck) {
+				throw new BadRequestError('You are not allowed to run this query');
+			}
+
 			return await DataController.execute(
 				body.query,
 				body.variables,
 				{
 					...this.context.request.headers,
-					'X-Hasura-Role': userGroupLabel,
 				},
 				avoUser
 			);
@@ -52,7 +56,18 @@ export default class DataRoute {
 			logger.error(
 				new InternalServerError('Failed to get data from graphql', err, { ...body })
 			);
-			throw new ClientError('Something failed while making the request to the database');
+			if (err instanceof ClientError) {
+				throw new ClientError(
+					'Something failed while making the request to the database',
+					err,
+					{ body }
+				);
+			}
+			throw new ClientError(
+				'Something failed while making the request to the database',
+				null,
+				{ body }
+			);
 		}
 	}
 }
