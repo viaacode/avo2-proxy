@@ -8,7 +8,7 @@ import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-import { GET_ASSIGNMENT_OWNER, GET_COLLECTION_OWNER, GET_CONTENT_PAGE_OWNER } from './data.gql';
+import { GET_ASSIGNMENT_OWNER, GET_COLLECTION_OWNER } from './data.gql';
 import { QUERY_PERMISSIONS } from './data.permissions';
 
 const fs = require('fs-extra');
