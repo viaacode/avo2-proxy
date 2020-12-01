@@ -262,17 +262,14 @@ export default class HetArchiefController {
 			};
 		}) as any[];
 
-		await promiseUtils.mapLimit(orgIds, 2, async (orgId: string) => {
-			// Check if org has type "School" or "Internaat" or something else
-			// if something else => set that as the business category
+		// Store business category of first organisation
+		if (orgIds.length) {
 			const orgInfo = await EducationOrganizationsService.getOrganization(
-				orgId,
-				orgUnitIds.find(orgUnitId => orgUnitId.startsWith(orgId)),
+				orgIds[0],
+				orgUnitIds.find(orgUnitId => orgUnitId.startsWith(orgIds[0])),
 			);
-			if (orgInfo.type !== 'School' && orgInfo.type !== 'Internaat') {
-				(newAvoUser.profile as any).business_category = orgInfo.type;
-			}
-		});
+			(newAvoUser.profile as any).business_category = orgInfo.type;
+		}
 
 		if (!isEqual(newAvoUser, avoUserInfo)) {
 			// Something changes => save to database
