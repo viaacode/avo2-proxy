@@ -77,18 +77,29 @@ export default class DataService {
 		variables: any,
 		type: 'CLIENT' | 'PROXY'
 	): Promise<boolean | null> {
-		const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
-		const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
+		try {
+			const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
+			const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
 
-		// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
-		const queryName = keys(whitelist).find(
-			(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
-		);
+			// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
+			const queryName = keys(whitelist).find(
+				(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
+			);
 
-		if (!queryName) {
-			return null;
+			if (!queryName) {
+				return null;
+			}
+			const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
+			return isAllowed;
+		} catch (err) {
+			logger.error(
+				new InternalServerError(
+					'Failed to check if query can be executed, defaulting to false',
+					err,
+					{ user, query, variables, type }
+				)
+			);
+			return false;
 		}
-		const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
-		return isAllowed;
 	}
 }
