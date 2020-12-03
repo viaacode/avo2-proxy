@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { keys } from 'lodash';
+import { get, keys } from 'lodash';
 import path from 'path';
 
 import { Avo } from '@viaa/avo2-types';
@@ -8,6 +8,7 @@ import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
+import { GET_ASSIGNMENT_OWNER, GET_COLLECTION_OWNER } from './data.gql';
 import { QUERY_PERMISSIONS } from './data.permissions';
 
 const fs = require('fs-extra');
@@ -90,5 +91,50 @@ export default class DataService {
 		}
 		const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
 		return isAllowed;
+	}
+
+	private static async makeRequest(
+		query: string,
+		variables: any,
+		resultPath: string
+	): Promise<string> {
+		try {
+			const response = await DataService.execute(query, variables);
+			if (response.errors) {
+				throw new InternalServerError('graphql response contains errors', null, {
+					response,
+				});
+			}
+			return get(response, resultPath);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch from database', err, {
+				query,
+				variables,
+			});
+		}
+	}
+
+	static async getAssignmentOwner(assignmentId: number): Promise<string> {
+		try {
+			return DataService.makeRequest(
+				GET_ASSIGNMENT_OWNER,
+				{ assignmentId },
+				'data.app_assignments[0].owner_profile_id'
+			);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch assignment owner', err);
+		}
+	}
+
+	static async getCollectionOwner(collectionId: number): Promise<string> {
+		try {
+			return DataService.makeRequest(
+				GET_COLLECTION_OWNER,
+				{ collectionId },
+				'data.app_collections[0].owner_profile_id'
+			);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch collection owner', err);
+		}
 	}
 }
