@@ -1,4 +1,4 @@
-import { every, some } from 'lodash';
+import { every, get, some } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -6,13 +6,9 @@ import { BadRequestError } from '../../shared/helpers/error';
 import { PermissionName } from '../../shared/permissions';
 import AssetController from '../assets/assets.controller';
 import { AuthService } from '../auth/service';
-import { GET_COLLECTION_BY_ID } from '../collections/collections.queries.gql';
 import CollectionsService from '../collections/collections.service';
 import { ContentTypeNumber } from '../collections/collections.types';
 import ContentPageService from '../content-pages/service';
-
-import DataService from './data.service';
-import get = Reflect.get;
 
 type IsAllowed = (user: Avo.User.User, query: string, variables: any) => Promise<boolean>;
 
@@ -93,7 +89,10 @@ async function insertOrUpdateContentBlocks(
 }
 
 function hasFilter(variables: any, path: string, value: any): boolean {
-	return !!variables.where._and.find((filter: any) => get(filter, path) === value);
+	const filters = get(variables, 'where._and') || [];
+	return !!filters.find((filter: any) => {
+		return get(filter, path) === value;
+	});
 }
 
 const ALL_LOGGED_IN_USERS = () => Promise.resolve(true);
@@ -263,8 +262,15 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
-				const contentPages = await ContentPageService.getContentPagesByIds(variables.objects.map((obj: any) => obj.content_id));
-				if (every(contentPages, (contentPage) => contentPage.user_profile_id === user.profile.id)) {
+				const contentPages = await ContentPageService.getContentPagesByIds(
+					variables.objects.map((obj: any) => obj.content_id)
+				);
+				if (
+					every(
+						contentPages,
+						(contentPage) => contentPage.user_profile_id === user.profile.id
+					)
+				) {
 					return true;
 				}
 			}
@@ -276,7 +282,9 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
-				const contentPage = (await ContentPageService.getContentPagesByIds([variables.contentPageId]))[0];
+				const contentPage = (
+					await ContentPageService.getContentPagesByIds([variables.contentPageId])
+				)[0];
 				if (contentPage.user_profile_id === user.profile.id) {
 					return true;
 				}
