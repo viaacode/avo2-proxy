@@ -1,4 +1,4 @@
-import { every, some } from 'lodash';
+import { every, get, some } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
@@ -6,13 +6,9 @@ import { BadRequestError } from '../../shared/helpers/error';
 import { PermissionName } from '../../shared/permissions';
 import AssetController from '../assets/assets.controller';
 import { AuthService } from '../auth/service';
-import { GET_COLLECTION_BY_ID } from '../collections/collections.queries.gql';
 import CollectionsService from '../collections/collections.service';
 import { ContentTypeNumber } from '../collections/collections.types';
 import ContentPageService from '../content-pages/service';
-
-import DataService from './data.service';
-import get = Reflect.get;
 
 type IsAllowed = (user: Avo.User.User, query: string, variables: any) => Promise<boolean>;
 
@@ -93,7 +89,10 @@ async function insertOrUpdateContentBlocks(
 }
 
 function hasFilter(variables: any, path: string, value: any): boolean {
-	return !!variables.where._and.find((filter: any) => get(filter, path) === value);
+	const filters = get(variables, 'where._and') || [];
+	return !!filters.find((filter: any) => {
+		return get(filter, path) === value;
+	});
 }
 
 const ALL_LOGGED_IN_USERS = () => Promise.resolve(true);
@@ -263,8 +262,15 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
-				const contentPages = await ContentPageService.getContentPagesByIds(variables.objects.map((obj: any) => obj.content_id));
-				if (every(contentPages, (contentPage) => contentPage.user_profile_id === user.profile.id)) {
+				const contentPages = await ContentPageService.getContentPagesByIds(
+					variables.objects.map((obj: any) => obj.content_id)
+				);
+				if (
+					every(
+						contentPages,
+						(contentPage) => contentPage.user_profile_id === user.profile.id
+					)
+				) {
 					return true;
 				}
 			}
@@ -276,7 +282,9 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_CONTENT_PAGES)) {
-				const contentPage = (await ContentPageService.getContentPagesByIds([variables.contentPageId]))[0];
+				const contentPage = (
+					await ContentPageService.getContentPagesByIds([variables.contentPageId])
+				)[0];
 				if (contentPage.user_profile_id === user.profile.id) {
 					return true;
 				}
@@ -371,11 +379,19 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
 		GET_ASSIGNMENT_WITH_RESPONSE: or(PermissionName.VIEW_ASSIGNMENTS),
-		INSERT_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
-		UPDATE_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
+		INSERT_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
+			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && variables.assignment.owner_profile_id === user.profile.id;
+		},
+		UPDATE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
+			const assignmentOwner = await DataService.getAssignmentOwner(variables.id)
+			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && assignmentOwner === user.profile.id;
+		},
 		UPDATE_ASSIGNMENT_ARCHIVE_STATUS: or(PermissionName.EDIT_ASSIGNMENTS),
 		UPDATE_ASSIGNMENT_RESPONSE_SUBMITTED_STATUS: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
-		DELETE_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
+		DELETE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
+			const assignmentOwner = await DataService.getAssignmentOwner(variables.id)
+			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && assignmentOwner === user.profile.id;
+		},
 		INSERT_ASSIGNMENT_RESPONSE: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
 		GET_COLLECTION_BY_ID: or(
 			PermissionName.CREATE_BUNDLES,
@@ -385,18 +401,25 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.EDIT_OWN_BUNDLES,
 			PermissionName.ADD_ITEM_TO_COLLECTION_BY_PID
 		),
-		UPDATE_COLLECTION: or(
-			PermissionName.EDIT_OWN_COLLECTIONS,
-			PermissionName.EDIT_ANY_COLLECTIONS,
-			PermissionName.EDIT_OWN_BUNDLES,
-			PermissionName.EDIT_ANY_BUNDLES
-		),
-		INSERT_COLLECTION: or(
-			PermissionName.EDIT_OWN_COLLECTIONS,
-			PermissionName.EDIT_ANY_COLLECTIONS,
-			PermissionName.EDIT_OWN_BUNDLES,
-			PermissionName.EDIT_ANY_BUNDLES
-		),
+		UPDATE_COLLECTION: async (user: Avo.User.User, query: string, variables: any) => {
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) || AuthService.hasPermission(user, PermissionName.EDIT_ANY_BUNDLES)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) && AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)) {
+				const collectionOwner = await DataService.getCollectionOwner(variables.id);
+				return collectionOwner === user.profile.id;
+			}
+			return false;
+		},
+		INSERT_COLLECTION: async (user: Avo.User.User, query: string, variables: any) => {
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) || AuthService.hasPermission(user, PermissionName.EDIT_ANY_BUNDLES)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) && AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)) {
+				return variables.collection.id === user.profile.id;
+			}
+			return false;
+		},
 		DELETE_COLLECTION: deleteCollectionOrBundle('id'),
 		UPDATE_COLLECTION_FRAGMENT: or(
 			PermissionName.EDIT_OWN_COLLECTIONS,

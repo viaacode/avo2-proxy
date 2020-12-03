@@ -1,5 +1,6 @@
 import { Request } from 'express';
 import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
+import * as promiseUtils from 'blend-promise-utils';
 
 import type { Avo } from '@viaa/avo2-types';
 
@@ -12,7 +13,7 @@ import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
 import DataService from '../../../data/data.service';
 import EducationOrganizationsService, {
-	LdapEducationOrganisation,
+	LdapEducationOrganisation, LdapEducationOrganizationWithUnits,
 	LdapEduOrgUnit,
 } from '../../../education-organizations/service';
 import EventLoggingController from '../../../event-logging/controller';
@@ -261,16 +262,13 @@ export default class HetArchiefController {
 			};
 		}) as any[];
 
-		if (orgIds.length === 1) {
-			// Check if org has type "School" or something else
-			// if something else => set that as the business category
+		// Store business category of first organisation
+		if (orgIds.length) {
 			const orgInfo = await EducationOrganizationsService.getOrganization(
 				orgIds[0],
-				orgUnitIds[0]
+				orgUnitIds.find(orgUnitId => orgUnitId.startsWith(orgIds[0])),
 			);
-			if (orgInfo.type !== 'School') {
-				(newAvoUser.profile as any).business_category = orgInfo.type;
-			}
+			(newAvoUser.profile as any).business_category = orgInfo.type;
 		}
 
 		if (!isEqual(newAvoUser, avoUserInfo)) {
