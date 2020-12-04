@@ -6,7 +6,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SpecialPermissionGroups } from '../auth/types';
 import DataService from '../data/data.service';
-import SearchController from '../search/controller';
+import SearchController from '../search/search.controller';
 
 import { MediaItemResponse } from './controller';
 import {
