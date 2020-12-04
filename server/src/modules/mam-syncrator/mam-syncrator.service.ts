@@ -77,7 +77,7 @@ export default class MamSyncratorService {
 		}
 	}
 
-	public static async triggerDeltaSync(): Promise<string> {
+	static async triggerDeltaSync(): Promise<string> {
 		let url: string;
 		try {
 			if (!process.env.SYNCRATOR_API || !process.env.SYNCRATOR_ENV) {
