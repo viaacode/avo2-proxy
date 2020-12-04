@@ -90,7 +90,7 @@ export default class MamSyncratorService {
 			const response: AxiosResponse = await axios({
 				url,
 				headers: {
-					Authorization: `Bearer ${token}`,
+					Authorization: `Bearer ${token.access_token}`,
 				},
 				method: 'post',
 			});
