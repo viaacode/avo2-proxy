@@ -13,7 +13,7 @@ import {
 	NEEDS_FILTER_SUFFIX,
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
-} from './constants';
+} from './search.consts';
 import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 
 const removeAccents = require('remove-accents');

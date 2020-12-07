@@ -9,6 +9,7 @@ import { AuthService } from '../auth/service';
 import CollectionsService from '../collections/collections.service';
 import { ContentTypeNumber } from '../collections/collections.types';
 import ContentPageService from '../content-pages/service';
+import DataService from './data.service';
 
 type IsAllowed = (user: Avo.User.User, query: string, variables: any) => Promise<boolean>;
 
