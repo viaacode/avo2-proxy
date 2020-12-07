@@ -61,10 +61,10 @@ export const BULK_STRIP_USERS = `
 
 export const GET_USER_BLOCK_EVENTS = `
 	query getUserInfoFromEvents($profileId: String) {
-		lastBlockAction: avo_events(where: {action: {_eq: "block"}, object_type: {_eq: "profile"}, object: {_eq: $profileId}}) {
+		lastBlockAction: avo_events(where: {action: {_eq: "activate"}, object_type: {_eq: "profile"}, object: {_eq: $profileId}}) {
 			created_at
 		}
-		lastUnblockAction: avo_events(where: {action: {_eq: "unblock"}, object_type: {_eq: "profile"}, object: {_eq: $profileId}}) {
+		lastUnblockAction: avo_events(where: {action: {_eq: "deactivate"}, object_type: {_eq: "profile"}, object: {_eq: $profileId}}) {
 			created_at
 		}
 	}

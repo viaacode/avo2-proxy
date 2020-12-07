@@ -86,7 +86,7 @@ export default class UserController {
 
 			// create block/unblock user events
 			await EventLoggingService.insertEvents(profileIds.map((profileId): LogEvent => ({
-				action: isBlocked ? 'block' : 'unblock',
+				action: isBlocked ? 'activate' : 'deactivate',
 				component: 'server',
 				created_at: new Date().toISOString(),
 				is_system: false,
