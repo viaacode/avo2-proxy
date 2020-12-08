@@ -182,9 +182,9 @@ export const GET_PUBLIC_COLLECTIONS = `
 `;
 
 export const GET_COLLECTIONS_LINKED_TO_ASSIGNMENT = `
-	query getAssignmentLinkedToCollection($collectionUuid: String!, $assignmentId: Int!) {
-		app_assignments(where: {content_id: {_eq: $collectionUuid}, id: {_eq: $assignmentId}}, limit: 1) {
-			id
+	query getAssignmentLinkedToCollection($collectionUuid: String!, $assignmentUuid: uuid!) {
+		app_assignments(where: {content_id: {_eq: $collectionUuid}, uuid: {_eq: $assignmentUuid}}, limit: 1) {
+			uuid
 		}
 	}
 `;

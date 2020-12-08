@@ -7,7 +7,7 @@ export const HAS_CONTENT = `
 			id
 		}
 		has_assignments: app_assignments(limit: 1, where: {owner_profile_id: {_eq: $profileId}}) {
-			id
+			uuid
 		}
 	}
 `;

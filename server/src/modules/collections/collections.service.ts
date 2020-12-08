@@ -215,12 +215,12 @@ export default class CollectionsService {
 
 	static async isCollectionLinkedToAssignment(
 		collectionUuid: string,
-		assignmentId: number
+		assignmentUuid: string
 	): Promise<boolean> {
 		try {
 			const response = await DataService.execute(GET_COLLECTIONS_LINKED_TO_ASSIGNMENT, {
 				collectionUuid,
-				assignmentId,
+				assignmentUuid,
 			});
 
 			if (response.errors) {
