@@ -125,11 +125,11 @@ export default class DataService {
 		}
 	}
 
-	static async getAssignmentOwner(assignmentId: number): Promise<string> {
+	static async getAssignmentOwner(assignmentUuid: string): Promise<string> {
 		try {
 			return DataService.makeRequest(
 				GET_ASSIGNMENT_OWNER,
-				{ assignmentId },
+				{ assignmentUuid },
 				'data.app_assignments[0].owner_profile_id'
 			);
 		} catch (err) {

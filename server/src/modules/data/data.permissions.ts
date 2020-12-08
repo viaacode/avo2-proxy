@@ -384,13 +384,13 @@ export const QUERY_PERMISSIONS: {
 			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && variables.assignment.owner_profile_id === user.profile.id;
 		},
 		UPDATE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
-			const assignmentOwner = await DataService.getAssignmentOwner(variables.id)
+			const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid)
 			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && assignmentOwner === user.profile.id;
 		},
 		UPDATE_ASSIGNMENT_ARCHIVE_STATUS: or(PermissionName.EDIT_ASSIGNMENTS),
 		UPDATE_ASSIGNMENT_RESPONSE_SUBMITTED_STATUS: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
 		DELETE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
-			const assignmentOwner = await DataService.getAssignmentOwner(variables.id)
+			const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid)
 			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && assignmentOwner === user.profile.id;
 		},
 		INSERT_ASSIGNMENT_RESPONSE: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
