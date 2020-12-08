@@ -6,7 +6,7 @@ import { default as helmet } from 'helmet';
 import multer from 'multer';
 
 import session from '../../../shared/middleware/session';
-import AssetController from '../../assets/controller';
+import AssetController from '../../assets/assets.controller';
 
 import cors from './cors';
 

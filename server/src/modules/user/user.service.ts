@@ -1,12 +1,13 @@
+import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
 import { get } from 'lodash';
 
 import { Avo } from '@viaa/avo2-types';
 
-import { CustomError } from '../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import i18n from '../../shared/translations/i18n';
 import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import {
 	BULK_DELETE_USERS,
@@ -16,11 +17,13 @@ import {
 	DELETE_PRIVATE_CONTENT_FOR_PROFILES,
 	DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 	GET_EMAIL_USER_INFO,
+	GET_USER_BLOCK_EVENTS,
 	TRANSFER_PRIVATE_CONTENT_FOR_PROFILES,
 	TRANSFER_PUBLIC_CONTENT_FOR_PROFILES,
 	UPDATE_MAIL,
 	UPDATE_NAME_AND_MAIL,
 } from './user.queries.gql';
+import { ProfileBlockEvents } from './user.types';
 
 export default class UserService {
 	/**
@@ -62,15 +65,15 @@ export default class UserService {
 				anonymize ? UPDATE_NAME_AND_MAIL : UPDATE_MAIL,
 				anonymize
 					? {
-						profileId,
-						firstName: i18n.t('modules/user/user___anonieme'),
-						lastName: i18n.t('modules/user/user___gebruiker'),
-						mail: `${profileId}@hetarchief.be`,
-					}
+							profileId,
+							firstName: i18n.t('modules/user/user___anonieme'),
+							lastName: i18n.t('modules/user/user___gebruiker'),
+							mail: `${profileId}@hetarchief.be`,
+					  }
 					: {
-						profileId,
-						mail: `${profileId}@hetarchief.be`,
-					}
+							profileId,
+							mail: `${profileId}@hetarchief.be`,
+					  }
 			);
 
 			if (response.errors) {
@@ -283,6 +286,47 @@ export default class UserService {
 				profileIds,
 				query: GET_EMAIL_USER_INFO,
 			});
+		}
+	}
+
+	static async getBlockEvents(profileId: string): Promise<ProfileBlockEvents> {
+		let url: string | undefined = undefined;
+		try {
+			url = process.env.GRAPHQL_LOGGING_URL as string;
+			const response: AxiosResponse<any> = await axios(url, {
+				method: 'post',
+				headers: {
+					'x-hasura-admin-secret': process.env.GRAPHQL_LOGGING_SECRET,
+				},
+				data: {
+					query: GET_USER_BLOCK_EVENTS,
+					variables: {
+						profileId,
+					},
+				},
+			});
+			const errors = get(response, 'data.errors');
+			if (errors) {
+				throw new InternalServerError('GraphQL response contains errors', null, {
+					profileId,
+					url,
+					errors,
+				});
+			}
+
+			return {
+				blockedAt: get(response, 'data.data.lastBlockAction[0].created_at'),
+				unblockedAt: get(response, 'data.data.lastUnblockAction[0].created_at'),
+			};
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to get profile block events event from the database',
+				err,
+				{
+					profileId,
+					url,
+				}
+			);
 		}
 	}
 }

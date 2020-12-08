@@ -2,13 +2,15 @@ import 'jest';
 
 import type { Avo } from '@viaa/avo2-types';
 
-import { AGGS_PROPERTIES } from './constants';
 import aggregations from './fixtures/aggregations.json';
-import SearchService from './service';
+import { AGGS_PROPERTIES } from './search.consts';
+import SearchService from './search.service';
 
 describe('Search', () => {
 	it('should simplify aggregation object correctly', async () => {
-		const filterOptions: Avo.Search.FilterOptions = SearchService.simplifyAggregations(aggregations);
+		const filterOptions: Avo.Search.FilterOptions = SearchService.simplifyAggregations(
+			aggregations
+		);
 		expect(filterOptions).toBeObject();
 		expect(filterOptions).toContainAllKeys([...AGGS_PROPERTIES]);
 		AGGS_PROPERTIES.forEach((key) => {

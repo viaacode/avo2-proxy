@@ -59,6 +59,17 @@ export const BULK_STRIP_USERS = `
 	}
 `;
 
+export const GET_USER_BLOCK_EVENTS = `
+	query getUserInfoFromEvents($profileId: String) {
+		lastBlockAction: avo_events(where: {action: {_eq: "activate"}, object_type: {_eq: "profile"}, object: {_eq: $profileId}}) {
+			created_at
+		}
+		lastUnblockAction: avo_events(where: {action: {_eq: "deactivate"}, object_type: {_eq: "profile"}, object: {_eq: $profileId}}) {
+			created_at
+		}
+	}
+`;
+
 export const UPDATE_NAME_AND_MAIL = `
 	mutation updateNameAndMail($profileId: uuid!, $firstName: String!, $lastName: String!, $mail: String!) {
 		update_shared_users(where: {profile: {id: {_eq: $profileId}}}, _set: {first_name: $firstName, last_name: $lastName, mail: $mail}) {

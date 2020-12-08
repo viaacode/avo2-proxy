@@ -7,7 +7,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, ExternalServerError, NotFoundError } from '../../shared/helpers/error';
 import ContentPageController from '../content-pages/controller';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { GET_ITEM_THUMBNAIL_BY_EXTERNAL_ID } from './klaar.gql';
 

@@ -22,8 +22,8 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 					name
 					or_id
 				}
-				profile_user_groups {
-					groups {
+				profile_user_group {
+					group {
 						id
 						group_user_permission_groups {
 							permission_group {
@@ -90,8 +90,8 @@ export const GET_USER_INFO_BY_ID = `
 					name
 					or_id
 				}
-				profile_user_groups {
-					groups {
+				profile_user_group {
+					group {
 						id
 						group_user_permission_groups {
 							permission_group {
@@ -159,8 +159,8 @@ export const GET_USER_BY_LDAP_UUID = `
 						name
 						or_id
 					}
-					profile_user_groups {
-						groups {
+					profile_user_group {
+						group {
 							id
 							group_user_permission_groups {
 								permission_group {

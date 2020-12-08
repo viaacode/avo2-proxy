@@ -5,7 +5,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { CustomError } from '../../shared/helpers/error';
 import { SpecialUserGroup } from '../auth/consts';
 import { AuthService } from '../auth/service';
-import DataService from '../data/service';
+import DataService from '../data/data.service';
 
 import { DELETE_PROFILE_OBJECTS, UPDATE_PROFILE_INFO } from './queries.gql';
 

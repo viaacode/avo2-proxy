@@ -1,15 +1,23 @@
 import * as fs from 'fs-extra';
-import _ from 'lodash';
+import { get, kebabCase } from 'lodash';
 import * as path from 'path';
 import getUuid from 'uuid/v1';
 
 import type { Avo } from '@viaa/avo2-types';
 
-import { BadRequestError } from '../../shared/helpers/error';
-import DataService from '../data/service';
+import {
+	BadRequestError,
+	InternalServerError,
+	UnauthorizedError,
+} from '../../shared/helpers/error';
+import DataService from '../data/data.service';
 
-import { DELETE_CONTENT_ASSET, INSERT_CONTENT_ASSET } from './queries.gql';
-import AssetService from './service';
+import {
+	DELETE_CONTENT_ASSET,
+	GET_CONTENT_ASSET,
+	INSERT_CONTENT_ASSET,
+} from './assets.queries.gql';
+import AssetService from './assets.service';
 
 const VALID_MIME_TYPES: string[] = [
 	// images
@@ -59,12 +67,12 @@ export default class AssetController {
 	 * @param uploadAssetInfo
 	 * @param files
 	 */
-	public static async upload(
+	static async upload(
 		uploadAssetInfo: Avo.FileUpload.UploadAssetInfo,
 		files: Express.Multer.File[]
 	): Promise<string> {
 		const parsedFilename = path.parse(uploadAssetInfo.filename);
-		const key = `${uploadAssetInfo.type}/${_.kebabCase(parsedFilename.name)}-${getUuid()}${
+		const key = `${uploadAssetInfo.type}/${kebabCase(parsedFilename.name)}-${getUuid()}${
 			parsedFilename.ext
 		}`;
 		if (!AssetController.isValidFileType(files[0])) {
@@ -91,11 +99,38 @@ export default class AssetController {
 		return url;
 	}
 
-	public static isValidFileType(file: Express.Multer.File): boolean {
+	static isValidFileType(file: Express.Multer.File): boolean {
 		return VALID_MIME_TYPES.includes(file.mimetype);
 	}
 
-	public static async delete(url: string) {
+	static async info(
+		url: string
+	): Promise<{ owner_id: string; content_asset_type_id: string }> {
+		try {
+			const response = await DataService.execute(GET_CONTENT_ASSET, {
+				url,
+			});
+			return get(response, 'data.app_content_assets[0]');
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to fetch asset info from the graphql database',
+				err,
+				{ url }
+			);
+		}
+	}
+
+	static async delete(url: string, avoUser: Avo.User.User) {
+		if (
+			!(await DataService.isAllowedToRunQuery(
+				avoUser,
+				DELETE_CONTENT_ASSET,
+				{ url },
+				'PROXY'
+			))
+		) {
+			throw new UnauthorizedError('You are not allowed to delete this file');
+		}
 		await AssetService.delete(url);
 		await DataService.execute(DELETE_CONTENT_ASSET, { url });
 		return;
