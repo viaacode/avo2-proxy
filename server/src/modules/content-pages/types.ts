@@ -32,3 +32,18 @@ export interface ContentPageOverviewResponse {
 	count: number;
 	labelCounts: { [id: number]: number };
 }
+
+export type LabelObj = {
+	label: string;
+	id: number;
+};
+
+export type ContentLabelsRequestBody =
+	| {
+			contentType: string;
+			labelIds: string[];
+	  }
+	| {
+			contentType: string;
+			labels: string[];
+	  };

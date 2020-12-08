@@ -315,3 +315,23 @@ export const GET_CONTENT_PAGES_BY_IDS = `
 		}
 	}
 `;
+
+export const GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL = `
+	query getContentPageLabelsByTypeAndLabels($contentType: String!, $labels: [String!]!) {
+		app_content_labels(
+			where: { label: { _in: $labels }, content_type: { _eq: $contentType } }
+		) {
+			label
+			id
+		}
+	}
+`;
+
+export const GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID = `
+	query getContentPageLabelsByTypeAndIds($contentType: String!, $labelIds: [Int!]!) {
+		app_content_labels(where: { id: { _in: $labelIds }, content_type: { _eq: $contentType } }) {
+			label
+			id
+		}
+	}
+`;
