@@ -7,10 +7,10 @@ import { Avo } from '@viaa/avo2-types';
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
-import { AuthTokenResponse } from '../search/service';
 
 import { GET_ASSIGNMENT_OWNER, GET_COLLECTION_OWNER } from './data.gql';
 import { QUERY_PERMISSIONS } from './data.permissions';
+import { AuthTokenResponse } from './data.types';
 
 const fs = require('fs-extra');
 
