@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { get, keys } from 'lodash';
+import { get, keys, without } from 'lodash';
 import path from 'path';
 
 import { Avo } from '@viaa/avo2-types';
@@ -25,6 +25,40 @@ export default class DataService {
 		try {
 			this.clientWhitelist = JSON.parse(await fs.readFile(clientWhitelistPath));
 			this.proxyWhitelist = JSON.parse(await fs.readFile(proxyWhitelistPath));
+
+			// Check missing permissions
+			const missingClientPermissions = without(
+				keys(this.clientWhitelist),
+				...keys(QUERY_PERMISSIONS.CLIENT)
+			);
+			const oldClientPermissions = without(
+				keys(QUERY_PERMISSIONS.CLIENT),
+				...keys(this.clientWhitelist)
+			);
+			const missingProxyPermissions = without(
+				keys(this.proxyWhitelist),
+				...keys(QUERY_PERMISSIONS.PROXY)
+			);
+			const oldProxyPermissions = without(
+				keys(QUERY_PERMISSIONS.PROXY),
+				...keys(this.proxyWhitelist)
+			);
+
+			if (
+				missingClientPermissions.length ||
+				oldClientPermissions.length ||
+				missingProxyPermissions.length ||
+				oldProxyPermissions.length
+			) {
+				logger.error(
+					`Some permissions need to be updated:${JSON.stringify({
+						missingClientPermissions,
+						oldClientPermissions,
+						missingProxyPermissions,
+						oldProxyPermissions,
+					})}`
+				);
+			}
 		} catch (err) {
 			throw new InternalServerError('Failed to read whitelists', err, {
 				clientWhitelistPath,
