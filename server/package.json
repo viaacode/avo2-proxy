@@ -1,6 +1,6 @@
 {
   "name": "avo2-proxy-server",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
   "main": "index.ts",
   "repository": {
@@ -17,7 +17,7 @@
     "start-with-env": "dotenv -e .env/local.env npm run serve",
     "serve": "ts-node-dev --transpile-only --poll -- index.ts",
     "prebuild": "npm run clean:build",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && cp ./scripts/*.json ./dist/scripts",
     "lint": "tslint -c tslint.json -p tsconfig.json -t stylish",
     "format": "npm run lint -- --fix",
     "pretest": "npm run clean:coverage",
