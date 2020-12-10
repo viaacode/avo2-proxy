@@ -9,6 +9,7 @@ import { AuthService } from '../auth/service';
 import CollectionsService from '../collections/collections.service';
 import { ContentTypeNumber } from '../collections/collections.types';
 import ContentPageService from '../content-pages/service';
+
 import DataService from './data.service';
 
 type IsAllowed = (user: Avo.User.User, query: string, variables: any) => Promise<boolean>;
@@ -188,8 +189,6 @@ export const QUERY_PERMISSIONS: {
 		GET_CONTENT_PAGE_LABELS: or(PermissionName.EDIT_CONTENT_PAGE_LABELS),
 		DELETE_CONTENT_PAGE_LABEL: or(PermissionName.EDIT_CONTENT_PAGE_LABELS),
 		GET_CONTENT_PAGE_LABEL_BY_ID: ALL_LOGGED_IN_USERS,
-		GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL: ALL_LOGGED_IN_USERS,
-		GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID: ALL_LOGGED_IN_USERS,
 		INSERT_CONTENT_PAGE_LABEL: or(PermissionName.EDIT_CONTENT_PAGE_LABELS),
 		UPDATE_CONTENT_PAGE_LABEL: or(PermissionName.EDIT_CONTENT_PAGE_LABELS),
 		GET_CONTENT_PAGES: or(PermissionName.VIEW_ADMIN_DASHBOARD),
@@ -381,7 +380,10 @@ export const QUERY_PERMISSIONS: {
 		),
 		GET_ASSIGNMENT_WITH_RESPONSE: or(PermissionName.VIEW_ASSIGNMENTS),
 		INSERT_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
-			return AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) && variables.assignment.owner_profile_id === user.profile.id;
+			return (
+				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) &&
+				variables.assignment.owner_profile_id === user.profile.id
+			);
 		},
 		UPDATE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
 			const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid)
@@ -403,20 +405,32 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.ADD_ITEM_TO_COLLECTION_BY_PID
 		),
 		UPDATE_COLLECTION: async (user: Avo.User.User, query: string, variables: any) => {
-			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) || AuthService.hasPermission(user, PermissionName.EDIT_ANY_BUNDLES)) {
+			if (
+				AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) ||
+				AuthService.hasPermission(user, PermissionName.EDIT_ANY_BUNDLES)
+			) {
 				return true;
 			}
-			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) && AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)) {
+			if (
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)
+			) {
 				const collectionOwner = await DataService.getCollectionOwner(variables.id);
 				return collectionOwner === user.profile.id;
 			}
 			return false;
 		},
 		INSERT_COLLECTION: async (user: Avo.User.User, query: string, variables: any) => {
-			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) || AuthService.hasPermission(user, PermissionName.EDIT_ANY_BUNDLES)) {
+			if (
+				AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) ||
+				AuthService.hasPermission(user, PermissionName.EDIT_ANY_BUNDLES)
+			) {
 				return true;
 			}
-			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) && AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)) {
+			if (
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)
+			) {
 				return variables.collection.id === user.profile.id;
 			}
 			return false;
@@ -731,5 +745,12 @@ export const QUERY_PERMISSIONS: {
 		TRANSFER_PRIVATE_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
 		BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS: ALL_LOGGED_IN_USERS,
 		GET_EMAIL_USER_INFO: ALL_LOGGED_IN_USERS,
+		GET_CONTENT_ASSET: ALL_LOGGED_IN_USERS,
+		GET_CONTENT_PAGES_BY_IDS: ALL_LOGGED_IN_USERS,
+		GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL: ALL_LOGGED_IN_USERS,
+		GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID: ALL_LOGGED_IN_USERS,
+		GET_ASSIGNMENT_OWNER: ALL_LOGGED_IN_USERS,
+		GET_COLLECTION_OWNER: ALL_LOGGED_IN_USERS,
+		GET_USER_BLOCK_EVENTS: ALL_LOGGED_IN_USERS,
 	},
 };
