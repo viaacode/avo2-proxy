@@ -292,16 +292,16 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
         ],
         published_at: {_is_null: true}
       },
-      _set: {published_at: $publishedAt}
+      _set: {published_at: $publishedAt, is_public: true}
     ) {
       affected_rows
     }
     unpublish_content_pages: update_app_content(
       where: {
         depublish_at: {_lt: $now, _is_null: false},
-        published_at: {_is_null: false}
+        is_public: {_eq: true}
       },
-      _set: {published_at: null}
+      _set: {is_public: false}
     ) {
       affected_rows
     }
