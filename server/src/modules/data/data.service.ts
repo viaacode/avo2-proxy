@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { keys } from 'lodash';
+import { get, keys } from 'lodash';
 import path from 'path';
 
 import { Avo } from '@viaa/avo2-types';
@@ -9,6 +9,7 @@ import { CustomError, ExternalServerError, InternalServerError } from '../../sha
 import { logger } from '../../shared/helpers/logger';
 import { AuthTokenResponse } from '../search/service';
 
+import { GET_ASSIGNMENT_OWNER, GET_COLLECTION_OWNER } from './data.gql';
 import { QUERY_PERMISSIONS } from './data.permissions';
 
 const fs = require('fs-extra');
@@ -149,18 +150,74 @@ export default class DataService {
 		variables: any,
 		type: 'CLIENT' | 'PROXY'
 	): Promise<boolean | null> {
-		const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
-		const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
+		try {
+			const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
+			const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
 
-		// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
-		const queryName = keys(whitelist).find(
-			(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
-		);
+			// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
+			const queryName = keys(whitelist).find(
+				(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
+			);
 
-		if (!queryName) {
-			return null;
+			if (!queryName) {
+				return null;
+			}
+			const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
+			return isAllowed;
+		} catch (err) {
+			logger.error(
+				new InternalServerError(
+					'Failed to check if query can be executed, defaulting to false',
+					err,
+					{ user, query, variables, type }
+				)
+			);
+			return false;
 		}
-		const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
-		return isAllowed;
+	}
+
+	private static async makeRequest(
+		query: string,
+		variables: any,
+		resultPath: string
+	): Promise<string> {
+		try {
+			const response = await DataService.execute(query, variables);
+			if (response.errors) {
+				throw new InternalServerError('graphql response contains errors', null, {
+					response,
+				});
+			}
+			return get(response, resultPath);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch from database', err, {
+				query,
+				variables,
+			});
+		}
+	}
+
+	static async getAssignmentOwner(assignmentId: number): Promise<string> {
+		try {
+			return DataService.makeRequest(
+				GET_ASSIGNMENT_OWNER,
+				{ assignmentId },
+				'data.app_assignments[0].owner_profile_id'
+			);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch assignment owner', err);
+		}
+	}
+
+	static async getCollectionOwner(collectionId: number): Promise<string> {
+		try {
+			return DataService.makeRequest(
+				GET_COLLECTION_OWNER,
+				{ collectionId },
+				'data.app_collections[0].owner_profile_id'
+			);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch collection owner', err);
+		}
 	}
 }

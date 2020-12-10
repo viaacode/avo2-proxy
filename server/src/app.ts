@@ -34,7 +34,7 @@ import KlaarRoute from './modules/klaar/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
 import PlayerTicketRoute from './modules/player-ticket/route';
 import ProfileRoute from './modules/profile/route';
-import SearchRoute from './modules/search/route';
+import SearchRoute from './modules/search/search.route';
 import TranslationsRoute from './modules/site-variables/route/translations.route';
 import StamboekRoute from './modules/stamboek-validate/route';
 import StatusRoute from './modules/status/route';

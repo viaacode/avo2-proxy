@@ -3,115 +3,24 @@ import _ from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
-import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
+import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
-import { ELASTIC_TO_READABLE_FILTER_NAMES } from './constants';
+import { ELASTIC_TO_READABLE_FILTER_NAMES } from './search.consts';
+import {
+	AggregationMultiBucket,
+	Aggregations,
+	AggregationSingleBucket,
+	Bucket,
+	ElasticsearchResponse,
+	SimpleBucket,
+} from './search.types';
 
-interface ElasticsearchResponse {
-	took: number;
-	timed_out: boolean;
-	_shards: {
-		total: number;
-		successful: number;
-		skipped: number;
-		failed: number;
-	};
-	hits: {
-		total: number;
-		max_score: number;
-		hits: any[];
-	};
-	aggregations: any;
-}
-
-export interface AuthTokenResponse {
-	graphql_api_url: string;
-	authorization_token: string;
-	status: string;
-}
-
-type Aggregations = {
-	[prop: string]: AggregationMultiBucket | AggregationSingleBucket;
-};
-
-type AggregationMultiBucket = {
-	buckets: {
-		[bucketName: string]: {
-			from?: number;
-			to?: number;
-			doc_count: number;
-		};
-	};
-};
-
-type Bucket = { key: string; doc_count: number };
-
-type AggregationSingleBucket = {
-	doc_count_error_upper_bound: number;
-	sum_other_doc_count: number;
-	buckets: Bucket[];
-};
-
-interface SimpleBucket {
-	option_name: string;
-	option_count: number;
-}
+checkRequiredEnvs(['ELASTICSEARCH_URL']);
 
 export default class SearchService {
-	private static authToken: string;
-	private static authTokenExpire: Date;
-	private static tokenPromise: Promise<string> | null;
-
-	private static async getAuthTokenFromNetwork(): Promise<string> {
-		let url: string | undefined;
-		let data: { username: string; password: string } | undefined;
-		try {
-			// Fetch new token
-			url = process.env.ELASTICSEARCH_AUTH_SERVER_URL as string;
-			data = {
-				username: process.env.ELASTICSEARCH_AUTH_USERNAME as string,
-				password: process.env.ELASTICSEARCH_AUTH_PASSWORD as string,
-			};
-			const authTokenResponse: AxiosResponse<AuthTokenResponse> = await axios({
-				url,
-				data,
-				method: 'post',
-			});
-			return authTokenResponse.data.authorization_token;
-		} catch (err) {
-			throw new InternalServerError('Failed to get JWT token from auth server', err, {
-				url,
-				username: data.username,
-			});
-		}
-	}
-
-	private static async getAuthToken(): Promise<string> {
-		try {
-			if (SearchService.tokenPromise) {
-				// Token call in progress, return the same promise that is in progress
-				return SearchService.tokenPromise;
-			}
-
-			if (!SearchService.authToken || SearchService.authTokenExpire < new Date()) {
-				// We need to get a token the first time the search api is called or
-				// when the token in the cache is expired
-				SearchService.tokenPromise = SearchService.getAuthTokenFromNetwork();
-				SearchService.authToken = await SearchService.tokenPromise;
-				SearchService.authTokenExpire = new Date(new Date().getTime() + 5 * 60 * 1000); // Refresh token every 5 min
-				SearchService.tokenPromise = null;
-				return SearchService.authToken;
-			}
-			// Return cached token
-			return SearchService.authToken;
-		} catch (err) {
-			SearchService.tokenPromise = null;
-			throw new ExternalServerError('Failed to get token for elasticsearch', err);
-		}
-	}
-
-	public static async search(searchQueryObject: any, index: string): Promise<Avo.Search.Search> {
+	static async search(searchQueryObject: any, index: string): Promise<Avo.Search.Search> {
 		let url;
 		if (!process.env.ELASTICSEARCH_URL) {
 			throw new InternalServerError('Environment variable ELASTICSEARCH_URL is undefined');
@@ -126,29 +35,9 @@ export default class SearchService {
 
 			url = `${url}/${index}/${searchPath}`; // TODO remove default once ELASTICSEARCH_SEARCH_PATH env var has been added
 
-			let token: string;
-			try {
-				token = await SearchService.getAuthToken();
-			} catch (err) {
-				logger.error(
-					new ExternalServerError('Failed to get token for elasticsearch, attempt 1', err)
-				);
-				try {
-					token = await SearchService.getAuthToken();
-				} catch (err) {
-					throw new ExternalServerError(
-						'Failed to get token for elasticsearch, attempt 2',
-						err
-					);
-				}
-			}
-
 			const esResponse: AxiosResponse<ElasticsearchResponse> = await axios({
 				url,
 				method: 'post',
-				headers: {
-					Authorization: token,
-				},
 				data: searchQueryObject,
 			});
 
@@ -269,7 +158,7 @@ export default class SearchService {
 	 *      ]
 	 * @param aggregations
 	 */
-	public static simplifyAggregations(aggregations: Aggregations): Avo.Search.FilterOptions {
+	static simplifyAggregations(aggregations: Aggregations): Avo.Search.FilterOptions {
 		const simpleAggs: Avo.Search.FilterOptions = {};
 		_.forEach(
 			aggregations,

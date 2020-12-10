@@ -12,7 +12,7 @@ import {
 } from '../../shared/middleware/is-authenticated';
 import { PermissionName } from '../../shared/permissions';
 
-import SearchController from './controller';
+import SearchController from './search.controller';
 
 @Path('/search')
 export default class SearchRoute {

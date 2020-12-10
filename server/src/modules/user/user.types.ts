@@ -15,3 +15,8 @@ export interface BulkBlockUsersBody {
 	profileIds: string[];
 	isBlocked: boolean;
 }
+
+export interface ProfileBlockEvents {
+	blockedAt: string | undefined;
+	unblockedAt: string | undefined;
+}

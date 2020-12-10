@@ -25,7 +25,12 @@ import {
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
-import { ContentPageOverviewParams, ContentPageOverviewResponse } from './types';
+import {
+	ContentLabelsRequestBody,
+	ContentPageOverviewParams,
+	ContentPageOverviewResponse,
+	LabelObj,
+} from './types';
 
 @Path('/content-pages')
 export default class ContentPagesRoute {
@@ -149,6 +154,33 @@ export default class ContentPagesRoute {
 			const error = new CustomError('Failed to update content page publish dates', err);
 			logger.error(error);
 			throw new InternalServerError(error.message);
+		}
+	}
+
+	@Path('labels')
+	@POST
+	async getContentPageLabelsByTypeAndIds(body: ContentLabelsRequestBody): Promise<LabelObj[]> {
+		try {
+			if ((body as any).labelIds) {
+				return await ContentPageController.getContentPageLabelsByTypeAndIds(
+					body.contentType,
+					(body as any).labelIds
+				);
+			}
+
+			// else labels query param is set
+			return await ContentPageController.getContentPageLabelsByTypeAndLabels(
+				body.contentType,
+				(body as any).labels
+			);
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed to get content page labels by type and labels or labelIds',
+				err,
+				{ body }
+			);
+			logger.error(error);
+			throw new InternalServerError(error.message, null, error.additionalInfo);
 		}
 	}
 }
