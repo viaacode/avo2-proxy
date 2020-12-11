@@ -28,7 +28,7 @@ export const BULK_STRIP_USERS = `
 			affected_rows
 		}
 		update_users_profiles(
-			where: {id: {_in: $profileIds}},
+			where: {id: {_in: $profileIds}, is_deleted: { _eq: false }},
 			_set: {
 				alias: null,
 				alternative_email: null,
@@ -49,7 +49,7 @@ export const BULK_STRIP_USERS = `
 				expires_at: null,
 				is_blocked: null,
 				role_id: null,
-				type_label: null
+				type_label: null,
 			}
 		) {
 			affected_rows
@@ -176,7 +176,7 @@ export const BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS = `
 
 export const GET_EMAIL_USER_INFO = `
 	query getEmailUserInfo($profileIds: [uuid!]!) {
-		users_profiles(where: {id: {_in: $profileIds}}) {
+		users_profiles(where: {id: {_in: $profileIds}, is_deleted: { _eq: false }}) {
 			id
 			user: usersByuserId {
 				mail

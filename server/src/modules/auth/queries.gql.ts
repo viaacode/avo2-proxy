@@ -1,6 +1,6 @@
 export const GET_USER_INFO_BY_USER_EMAIL = `
 	query getUserInfoByMail($email: String!) {
-		users: shared_users(limit: 1, where: {mail: {_eq: $email}}) {
+		users: shared_users(limit: 1, where: {mail: {_eq: $email}, profile: { is_deleted: { _eq: false } }}) {
 			first_name
 			last_name
 			is_blocked
@@ -68,7 +68,7 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 
 export const GET_USER_INFO_BY_ID = `
 	query getUserInfoById($userId: uuid!) {
-		users: shared_users(limit: 1, where: {uid: {_eq: $userId}}) {
+		users: shared_users(limit: 1, where: {uid: {_eq: $userId}, profile: { is_deleted: { _eq: false } }}) {
 			first_name
 			last_name
 			is_blocked
@@ -257,7 +257,7 @@ export const DELETE_IDP_MAPS = `
 
 export const GET_USER_BY_IDP_ID = `
 	query getUserByIdpId($idpType: users_idps_enum!, $idpId: String!) {
-		shared_users(where: {idpmaps: {idp: {_eq: $idpType}, idp_user_id: {_eq: $idpId}}}) {
+		shared_users(where: {idpmaps: {idp: {_eq: $idpType}, idp_user_id: {_eq: $idpId}}, profile: { is_deleted: { _eq: false } }}) {
 			uid
 		}
 	}
@@ -265,7 +265,7 @@ export const GET_USER_BY_IDP_ID = `
 
 export const GET_PROFILE_IDS_BY_USER_UID = `
 	query getProfileIdsByUserUid($userUid: uuid!) {
-		users_profiles(where: {user_id: {_eq: $userUid}}) {
+		users_profiles(where: {user_id: {_eq: $userUid}, is_deleted: { _eq: false }}) {
 			id
 		}
 	}
@@ -320,10 +320,10 @@ export const GET_NOTIFICATION = `
 
 export const UPDATE_USER_LAST_ACCESS_DATE = `
 	mutation updateUserLastAccessDate($userUid: uuid!, $date: timestamptz) {
-		update_shared_users(where: {uid: {_eq: $userUid}}, _set: {last_access_at: $date, updated_at: $date}) {
+		update_shared_users(where: {uid: {_eq: $userUid}, profile: { is_deleted: { _eq: false } }}, _set: {last_access_at: $date, updated_at: $date}) {
 			affected_rows
 		}
-		update_users_profiles(where: {user_id: {_eq: $userUid}}, _set: {updated_at: $date}) {
+		update_users_profiles(where: {user_id: {_eq: $userUid}, is_deleted: { _eq: false }}, _set: {updated_at: $date}) {
 			affected_rows
 		}
 	}
@@ -331,7 +331,7 @@ export const UPDATE_USER_LAST_ACCESS_DATE = `
 
 export const UPDATE_AVO_USER = `
 	mutation updateUser($uid: uuid!, $user: shared_users_set_input!) {
-		update_shared_users(where: {uid: {_eq: $uid}}, _set: $user) {
+		update_shared_users(where: {uid: {_eq: $uid}, profile: { is_deleted: { _eq: false } }}, _set: $user) {
 			affected_rows
 		}
 	}

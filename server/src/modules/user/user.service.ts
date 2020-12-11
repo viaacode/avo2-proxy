@@ -14,10 +14,10 @@ import {
 	BULK_SOFT_DELETE_USERS,
 	BULK_STRIP_USERS,
 	BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
-	SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES,
-	SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 	GET_EMAIL_USER_INFO,
 	GET_USER_BLOCK_EVENTS,
+	SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES,
+	SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 	TRANSFER_PRIVATE_CONTENT_FOR_PROFILES,
 	TRANSFER_PUBLIC_CONTENT_FOR_PROFILES,
 	UPDATE_MAIL,
@@ -46,11 +46,9 @@ export default class UserService {
 				});
 			}
 
-			if (anonymize) {
-				await promiseUtils.mapLimit(profileIds, 10, async (profileId: string) =>
-					UserService.updateNameAndEmail(profileId, anonymize)
-				);
-			}
+			await promiseUtils.mapLimit(profileIds, 10, async (profileId: string) =>
+				UserService.updateNameAndEmail(profileId, anonymize)
+			);
 		} catch (err) {
 			throw new CustomError('Failed to bulk delete users except their names', err, {
 				profileIds,
