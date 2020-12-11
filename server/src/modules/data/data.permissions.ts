@@ -418,7 +418,7 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (
-				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) ||
 				AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)
 			) {
 				const collectionOwner = await DataService.getCollectionOwner(variables.id);
@@ -434,10 +434,10 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (
-				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) ||
 				AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)
 			) {
-				return variables.collection.id === user.profile.id;
+				return variables.collection.owner_profile_id === user.profile.id;
 			}
 			return false;
 		},
