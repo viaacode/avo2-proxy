@@ -77,7 +77,7 @@ export default class DataService {
 		let data: { username: string; password: string } | undefined;
 		try {
 			// Fetch new token
-			url = process.env.GRAPHQL_AUTH_SERVER_URL as string;
+			url = `${process.env.GRAPHQL_AUTH_SERVER_URL as string}/auth`;
 			data = {
 				username: process.env.GRAPHQL_AUTH_USERNAME as string,
 				password: process.env.GRAPHQL_AUTH_PASSWORD as string,
