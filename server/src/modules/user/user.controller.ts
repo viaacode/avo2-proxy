@@ -3,7 +3,6 @@ import * as promiseUtils from 'blend-promise-utils';
 import { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
-import { IdpHelper } from '../auth/idp-helper';
 import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
 import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
 import EventLoggingService from '../event-logging/service';
@@ -25,14 +24,14 @@ export default class UserController {
 
 		switch (deleteOption) {
 			case 'DELETE_PRIVATE_KEEP_NAME':
-				await UserService.deletePrivateContentForProfiles(profileIds);
+				await UserService.softDeletePrivateContentForProfiles(profileIds);
 				await UserService.stripUserAccount(profileIds, false);
 				break;
 
 			case 'TRANSFER_PUBLIC':
 				await UserService.transferPublicContentForProfiles(profileIds, transferToProfileId);
-				await UserService.deletePrivateContentForProfiles(profileIds);
-				await UserService.bulkDeleteUsers(profileIds);
+				await UserService.softDeletePrivateContentForProfiles(profileIds);
+				await UserService.bulkSoftDeleteUsers(profileIds);
 				break;
 
 			case 'TRANSFER_ALL':
@@ -41,18 +40,18 @@ export default class UserController {
 					profileIds,
 					transferToProfileId
 				);
-				await UserService.bulkDeleteUsers(profileIds);
+				await UserService.bulkSoftDeleteUsers(profileIds);
 				break;
 
 			case 'ANONYMIZE_PUBLIC':
-				await UserService.deletePrivateContentForProfiles(profileIds);
+				await UserService.softDeletePrivateContentForProfiles(profileIds);
 				await UserService.stripUserAccount(profileIds, true);
 				break;
 
 			case 'DELETE_ALL':
-				await UserService.deletePrivateContentForProfiles(profileIds);
-				await UserService.deletePublicContentForProfiles(profileIds);
-				await UserService.bulkDeleteUsers(profileIds);
+				await UserService.softDeletePrivateContentForProfiles(profileIds);
+				await UserService.softDeletePublicContentForProfiles(profileIds);
+				await UserService.bulkSoftDeleteUsers(profileIds);
 				break;
 
 			default:
