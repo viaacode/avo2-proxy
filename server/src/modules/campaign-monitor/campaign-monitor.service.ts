@@ -283,6 +283,7 @@ export default class CampaignMonitorService {
 		let where = {};
 		if (activeDate) {
 			where = {
+				profile: { is_deleted: { _eq: false } },
 				_or: [
 					{
 						updated_at: {

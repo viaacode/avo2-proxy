@@ -1,6 +1,6 @@
 export const GET_CONTENT_PAGE_BY_PATH = `
 	query getContentPageByPath($path: String!) {
-		app_content(where: { path: { _eq: $path } }) {
+		app_content(where: { path: { _eq: $path }, is_deleted: { _eq: false } }) {
 			content_type
 			content_width
 			created_at
@@ -113,7 +113,7 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 
 export const GET_COLLECTION_TILE_BY_ID = `
 	query getCollectionTileById($id: uuid!) {
-		obj: app_collections(where: {id: {_eq: $id}}) {
+		obj: app_collections(where: {id: {_eq: $id}, is_deleted: { _eq: false }}) {
 			created_at
 			title
 			thumbnail_path
@@ -290,7 +290,8 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
           {publish_at: {_lte: $now, _is_null: false}, depublish_at: {_is_null: true}},
           {publish_at: {_is_null: true}, published_at: {_gte: $now, _is_null: false}}
         ],
-        published_at: {_is_null: true}
+        published_at: {_is_null: true},
+        is_deleted: { _eq: false }
       },
       _set: {published_at: $publishedAt, is_public: true}
     ) {
@@ -300,6 +301,7 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
       where: {
         depublish_at: {_lt: $now, _is_null: false},
         is_public: {_eq: true}
+        is_deleted: { _eq: false }
       },
       _set: {is_public: false}
     ) {
@@ -310,7 +312,7 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
 
 export const GET_CONTENT_PAGES_BY_IDS = `
 	query getContentAssetOwnerId($ids: [Int!]) {
-		app_content(where: {id: {_in: $ids}}) {
+		app_content(where: {id: {_in: $ids}, is_deleted: { _eq: false }}) {
 			user_profile_id
 		}
 	}

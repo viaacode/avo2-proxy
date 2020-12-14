@@ -1,6 +1,6 @@
 export const GET_COLLECTION_BY_ID = `
 	query getCollectionById($id: uuid!) {
-		app_collections(where: { id: { _eq: $id } }) {
+		app_collections(where: { id: { _eq: $id }, is_deleted: { _eq: false } }) {
 			id
 			description
 			description_long
@@ -134,7 +134,7 @@ export const GET_ITEMS_BY_IDS = `
 
 export const GET_COLLECTIONS_BY_IDS = `
 	query getCollectionsByIds($ids: [uuid!]!) {
-		items: app_collections(where: { id: { _in: $ids } }) {
+		items: app_collections(where: { id: { _in: $ids }, is_deleted: { _eq: false } }) {
 			external_id
 			id
 			thumbnail_path
@@ -165,7 +165,7 @@ export const GET_EXTERNAL_ID_BY_MEDIAMOSA_ID = `
 
 export const GET_COLLECTIONS_BY_AVO1_ID = `
 	query getCollectionsByAvo1Id($avo1Id: String!) {
-		items: app_collections(where: { avo1_id: { _eq: $avo1Id } }) {
+		items: app_collections(where: { avo1_id: { _eq: $avo1Id }, is_deleted: { _eq: false } }) {
 			id
 		}
 	}
@@ -173,7 +173,7 @@ export const GET_COLLECTIONS_BY_AVO1_ID = `
 
 export const GET_PUBLIC_COLLECTIONS = `
 	query getPublicCollections {
-		app_collections(where: {is_public: {_eq: true}}) {
+		app_collections(where: {is_public: {_eq: true}, is_deleted: { _eq: false }}) {
 			id
 			updated_at
 			type_id
@@ -183,7 +183,7 @@ export const GET_PUBLIC_COLLECTIONS = `
 
 export const GET_COLLECTIONS_LINKED_TO_ASSIGNMENT = `
 	query getAssignmentLinkedToCollection($collectionUuid: String!, $assignmentId: Int!) {
-		app_assignments(where: {content_id: {_eq: $collectionUuid}, id: {_eq: $assignmentId}}, limit: 1) {
+		app_assignments(where: {content_id: {_eq: $collectionUuid}, id: {_eq: $assignmentId}, is_deleted: { _eq: false }}, limit: 1) {
 			id
 		}
 	}
