@@ -92,6 +92,10 @@ export default class CampaignMonitorController {
 		preferences: Partial<Avo.Newsletter.Preferences>
 	) {
 		try {
+			if (!get(user, 'mail')) {
+				return;
+			}
+
 			const mappedPreferences = toPairs(preferences) as [
 				Avo.Newsletter.PreferencesKey,
 				boolean
@@ -296,6 +300,10 @@ export default class CampaignMonitorController {
 		oldAvoUser?: Avo.User.User
 	): Promise<void> {
 		try {
+			if (!get(avoUser, 'mail')) {
+				return;
+			}
+
 			const preferences: Avo.Newsletter.Preferences = await CampaignMonitorController.fetchNewsletterPreferences(
 				avoUser.mail
 			);
