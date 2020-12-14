@@ -1,6 +1,6 @@
 import * as promiseUtils from 'blend-promise-utils';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
 import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
@@ -9,12 +9,12 @@ import EventLoggingService from '../event-logging/service';
 import { LogEvent } from '../event-logging/types';
 
 import UserService from './user.service';
-import { ProfileBlockEvents, UserDeleteOption } from './user.types';
+import { ProfileBlockEvents } from './user.types';
 
 export default class UserController {
 	static async bulkDeleteUsers(
 		profileIds: string[],
-		deleteOption: UserDeleteOption,
+		deleteOption: Avo.User.UserDeleteOption,
 		transferToProfileId: string | null,
 		currentUser: Avo.User.User
 	) {

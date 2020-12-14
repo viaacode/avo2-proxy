@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
 import { get } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import i18n from '../../shared/translations/i18n';

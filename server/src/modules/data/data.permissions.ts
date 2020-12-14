@@ -1,6 +1,6 @@
 import { every, get, some } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { BadRequestError } from '../../shared/helpers/error';
 import { PermissionName } from '../../shared/permissions';

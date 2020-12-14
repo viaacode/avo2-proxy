@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { get, isEmpty, keys, omitBy, without } from 'lodash';
 import path from 'path';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';

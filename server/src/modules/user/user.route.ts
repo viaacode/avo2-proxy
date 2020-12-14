@@ -9,6 +9,8 @@ import {
 	ServiceContext,
 } from 'typescript-rest';
 
+import type { Avo } from '@viaa/avo2-types';
+
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import {
@@ -20,7 +22,7 @@ import { PermissionName } from '../../shared/permissions';
 import { IdpHelper } from '../auth/idp-helper';
 
 import UserController from './user.controller';
-import { BulkBlockUsersBody, BulkDeleteUsersBody, ProfileBlockEvents } from './user.types';
+import { ProfileBlockEvents } from './user.types';
 
 @Path('/user')
 export default class UserRoute {
@@ -40,13 +42,14 @@ export default class UserRoute {
 			hasPermissionRouteGuard(PermissionName.DELETE_ANY_USER)
 		)
 	)
-	async bulkDeleteUsers(body: BulkDeleteUsersBody): Promise<{ message: 'ok' }> {
+	async bulkDeleteUsers(body: any): Promise<{ message: 'ok' }> {
 		try {
 			const currentUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			const typedBody: Avo.User.BulkDeleteUsersBody = body;
 			await UserController.bulkDeleteUsers(
-				body.profileIds,
-				body.deleteOption,
-				body.transferToProfileId || null,
+				typedBody.profileIds,
+				typedBody.deleteOption,
+				typedBody.transferToProfileId || null,
 				currentUser
 			);
 			return { message: 'ok' };
@@ -65,10 +68,15 @@ export default class UserRoute {
 			hasPermissionRouteGuard(PermissionName.EDIT_BAN_USER_STATUS)
 		)
 	)
-	async bulkUpdateBlockStatus(body: BulkBlockUsersBody): Promise<{ message: 'ok' }> {
+	async bulkUpdateBlockStatus(body: any): Promise<{ message: 'ok' }> {
 		try {
 			const currentUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
-			await UserController.bulkUpdateBlockStatus(body.profileIds, body.isBlocked, currentUser);
+			const typedBody: Avo.User.BulkBlockUsersBody = body;
+			await UserController.bulkUpdateBlockStatus(
+				typedBody.profileIds,
+				typedBody.isBlocked,
+				currentUser
+			);
 			return { message: 'ok' };
 		} catch (err) {
 			const error = new InternalServerError('Failed to bulk block/unblock users', err, {
@@ -88,15 +96,14 @@ export default class UserRoute {
 	@PreProcessor(
 		multiGuard(isAuthenticatedRouteGuard, hasPermissionRouteGuard(PermissionName.VIEW_USERS))
 	)
-	async getUserInfo(
-		@QueryParam('profileId') profileId: string
-	): Promise<ProfileBlockEvents> {
+	async getUserInfo(@QueryParam('profileId') profileId: string): Promise<ProfileBlockEvents> {
 		if (!profileId) {
-			throw new BadRequestError('This route requires profileId to be passed as a query param, eg: user/info?profileId=b78874df-6993-4432-afbe-014696f40d9b')
+			throw new BadRequestError(
+				'This route requires profileId to be passed as a query param, eg: user/info?profileId=b78874df-6993-4432-afbe-014696f40d9b'
+			);
 		}
 		try {
-			const response = await UserController.getUserInfo(profileId);
-			return response;
+			return await UserController.getUserInfo(profileId);
 		} catch (err) {
 			const error = new InternalServerError(
 				'Failed to fetch user block and unblock events',
