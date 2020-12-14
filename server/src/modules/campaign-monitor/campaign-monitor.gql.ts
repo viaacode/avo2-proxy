@@ -27,7 +27,7 @@ export const HAS_CONTENT = `
 				is_deleted: { _eq: false }
 			}
 		) {
-			id
+			uuid
 		}
 	}
 `;

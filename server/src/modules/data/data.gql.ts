@@ -1,6 +1,6 @@
 export const GET_ASSIGNMENT_OWNER = `
-	query getAssignmentOwnerId($assignmentId: Int!) {
-		app_assignments(where: {id: {_eq: $assignmentId}, is_deleted: { _eq: false }}) {
+	query getAssignmentOwnerId($assignmentUuid: uuid!) {
+		app_assignments(where: {uuid: {_eq: $assignmentUuid}, is_deleted: { _eq: false }}) {
 			owner_profile_id
 		}
 	}
