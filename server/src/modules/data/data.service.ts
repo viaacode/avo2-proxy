@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { get, keys, without } from 'lodash';
+import { get, isEmpty, keys, omitBy, without } from 'lodash';
 import path from 'path';
 
 import { Avo } from '@viaa/avo2-types';
@@ -51,12 +51,17 @@ export default class DataService {
 				oldProxyPermissions.length
 			) {
 				logger.error(
-					`Some permissions need to be updated:${JSON.stringify({
-						missingClientPermissions,
-						oldClientPermissions,
-						missingProxyPermissions,
-						oldProxyPermissions,
-					})}`
+					`Some permissions need to be updated:${JSON.stringify(
+						omitBy(
+							{
+								missingClientPermissions,
+								oldClientPermissions,
+								missingProxyPermissions,
+								oldProxyPermissions,
+							},
+							isEmpty
+						)
+					)}`
 				);
 			}
 		} catch (err) {

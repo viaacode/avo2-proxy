@@ -292,6 +292,7 @@ export default class CampaignMonitorService {
 					},
 					{ mail: { _is_null: false } },
 					{ mail: { _neq: '' } },
+					{ profile: { is_deleted: { _eq: false } } },
 				],
 			};
 		}

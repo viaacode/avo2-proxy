@@ -251,7 +251,7 @@ export const QUERY_PERMISSIONS: {
 			}
 			return false;
 		},
-		DELETE_CONTENT: or(PermissionName.DELETE_ANY_CONTENT_PAGES),
+		SOFT_DELETE_CONTENT: or(PermissionName.DELETE_ANY_CONTENT_PAGES),
 		GET_PERMISSIONS_FROM_CONTENT_PAGE_BY_PATH: or(PermissionName.EDIT_NAVIGATION_BARS),
 		GET_CONTENT_LABELS_BY_CONTENT_TYPE: or(
 			PermissionName.EDIT_ANY_CONTENT_PAGES,
@@ -418,7 +418,7 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (
-				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) ||
 				AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)
 			) {
 				const collectionOwner = await DataService.getCollectionOwner(variables.id);
@@ -434,14 +434,14 @@ export const QUERY_PERMISSIONS: {
 				return true;
 			}
 			if (
-				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) &&
+				AuthService.hasPermission(user, PermissionName.EDIT_OWN_COLLECTIONS) ||
 				AuthService.hasPermission(user, PermissionName.EDIT_OWN_BUNDLES)
 			) {
-				return variables.collection.id === user.profile.id;
+				return variables.collection.owner_profile_id === user.profile.id;
 			}
 			return false;
 		},
-		DELETE_COLLECTION: deleteCollectionOrBundle('id'),
+		SOFT_DELETE_COLLECTION: deleteCollectionOrBundle('id'),
 		UPDATE_COLLECTION_FRAGMENT: or(
 			PermissionName.EDIT_OWN_COLLECTIONS,
 			PermissionName.EDIT_ANY_COLLECTIONS,
@@ -740,13 +740,13 @@ export const QUERY_PERMISSIONS: {
 		GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID: ALL_LOGGED_IN_USERS,
 		GET_SITE_VARIABLES_BY_NAME: ALL_LOGGED_IN_USERS,
 		GET_PROFILES_BY_STAMBOEK: ALL_LOGGED_IN_USERS,
-		BULK_DELETE_USERS: ALL_LOGGED_IN_USERS,
+		BULK_SOFT_DELETE_USERS: ALL_LOGGED_IN_USERS,
 		BULK_STRIP_USERS: ALL_LOGGED_IN_USERS,
 		UPDATE_NAME_AND_MAIL: ALL_LOGGED_IN_USERS,
 		UPDATE_MAIL: ALL_LOGGED_IN_USERS,
 		BULK_GET_EMAIL_ADDRESSES: ALL_LOGGED_IN_USERS,
-		DELETE_PUBLIC_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
-		DELETE_PRIVATE_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
+		SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
+		SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
 		TRANSFER_PUBLIC_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
 		TRANSFER_PRIVATE_CONTENT_FOR_PROFILES: ALL_LOGGED_IN_USERS,
 		BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS: ALL_LOGGED_IN_USERS,
