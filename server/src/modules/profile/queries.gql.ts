@@ -42,7 +42,7 @@ export const UPDATE_PROFILE_INFO = `
 			affected_rows
 		}
 		update_users_profiles(
-			where: { id: { _eq: $profileId } }
+			where: { id: { _eq: $profileId }, is_deleted: { _eq: false } }
 			_set: {
 				title: $title
 				alternative_email: $alternativeEmail
@@ -58,7 +58,7 @@ export const UPDATE_PROFILE_INFO = `
 			affected_rows
 		}
 		update_alias: update_users_profiles(
-			where: { id: { _eq: $profileId }, alias: {_neq: $alias} }
+			where: { id: { _eq: $profileId }, is_deleted: { _eq: false }, alias: {_neq: $alias} }
 			_set: {
 				alias: $alias
 			}
@@ -66,7 +66,7 @@ export const UPDATE_PROFILE_INFO = `
 			affected_rows
 		}
 		 update_shared_users(
-			 where: {uid: {_eq: $userUuid}},
+			 where: {uid: {_eq: $userUuid}, profile: { is_deleted: { _eq: false } }},
 			 _set: {
 				 first_name: $firstName,
 				 last_name: $lastName,

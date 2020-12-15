@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
-import { get, keys, without } from 'lodash';
+import { get, isEmpty, keys, omitBy, without } from 'lodash';
 import path from 'path';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
@@ -51,12 +51,17 @@ export default class DataService {
 				oldProxyPermissions.length
 			) {
 				logger.error(
-					`Some permissions need to be updated:${JSON.stringify({
-						missingClientPermissions,
-						oldClientPermissions,
-						missingProxyPermissions,
-						oldProxyPermissions,
-					})}`
+					`Some permissions need to be updated:${JSON.stringify(
+						omitBy(
+							{
+								missingClientPermissions,
+								oldClientPermissions,
+								missingProxyPermissions,
+								oldProxyPermissions,
+							},
+							isEmpty
+						)
+					)}`
 				);
 			}
 		} catch (err) {
@@ -159,11 +164,11 @@ export default class DataService {
 		}
 	}
 
-	static async getAssignmentOwner(assignmentId: number): Promise<string> {
+	static async getAssignmentOwner(assignmentUuid: string): Promise<string> {
 		try {
 			return DataService.makeRequest(
 				GET_ASSIGNMENT_OWNER,
-				{ assignmentId },
+				{ assignmentUuid },
 				'data.app_assignments[0].owner_profile_id'
 			);
 		} catch (err) {

@@ -8,7 +8,7 @@ export const GET_ITEMS_BY_IDS = `
 
 export const GET_PROFILES_BY_STAMBOEK = `
 	query getProfilesByStamboek($stamboekNumber: String!) {
-		users_profiles(where: {stamboek: {_eq: $stamboekNumber}}, limit: 1) {
+		users_profiles(where: {stamboek: {_eq: $stamboekNumber}, is_deleted: { _eq: false }}, limit: 1) {
 			stamboek
 		}
 	}
