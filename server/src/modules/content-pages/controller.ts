@@ -180,11 +180,13 @@ export default class ContentPageController {
 							set(mediaPlayerBlock, blockInfo.setVideoSrcPath, videoSrc);
 						}
 						[
+							['external_id', 'setItemExternalIdPath'],
 							['thumbnail_path', 'setPosterSrcPath'],
 							['title', 'setTitlePath'],
 							['description', 'setDescriptionPath'],
 							['issued', 'setIssuedPath'],
 							['organisation', 'setOrganisationPath'],
+							['duration', 'setDurationPath'],
 						].forEach((props) => {
 							if (
 								itemInfo &&
