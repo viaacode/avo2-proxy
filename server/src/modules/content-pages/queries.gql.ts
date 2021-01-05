@@ -90,6 +90,7 @@ export const GET_ITEM_TILE_BY_ID = `
 export const GET_ITEM_BY_EXTERNAL_ID = `
 	query getItemByExternalId($externalId: bpchar!) {
 		app_item_meta(where: {external_id: {_eq: $externalId}}) {
+			external_id
 			browse_path
 			thumbnail_path
 			title
@@ -99,6 +100,7 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 				name
 				logo_url
 			}
+			duration
 			type {
 				label
 			}
