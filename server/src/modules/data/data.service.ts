@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
-import { get, keys, without } from 'lodash';
+import { get, isEmpty, keys, omitBy, without } from 'lodash';
 import path from 'path';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
@@ -56,12 +56,17 @@ export default class DataService {
 				oldProxyPermissions.length
 			) {
 				logger.error(
-					`Some permissions need to be updated:${JSON.stringify({
-						missingClientPermissions,
-						oldClientPermissions,
-						missingProxyPermissions,
-						oldProxyPermissions,
-					})}`
+					`Some permissions need to be updated:${JSON.stringify(
+						omitBy(
+							{
+								missingClientPermissions,
+								oldClientPermissions,
+								missingProxyPermissions,
+								oldProxyPermissions,
+							},
+							isEmpty
+						)
+					)}`
 				);
 			}
 		} catch (err) {
@@ -183,7 +188,7 @@ export default class DataService {
 		query: string,
 		variables: any,
 		type: 'CLIENT' | 'PROXY'
-	): Promise<boolean | null> {
+	): Promise<string | null> {
 		try {
 			const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
 			const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
@@ -196,17 +201,22 @@ export default class DataService {
 			if (!queryName) {
 				return null;
 			}
-			const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
-			return isAllowed;
-		} catch (err) {
-			logger.error(
-				new InternalServerError(
-					'Failed to check if query can be executed, defaulting to false',
-					err,
-					{ user, query, variables, type }
-				)
+
+			// Use the query from the whitelist instead of the one passed in the request body to avoid tampering
+			const whitelistQuery = whitelist[queryName];
+
+			const isAllowed = await QUERY_PERMISSIONS[type][queryName](
+				user,
+				whitelistQuery,
+				variables
 			);
-			return false;
+			return isAllowed ? whitelistQuery : null;
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to check if query can be executed, defaulting to false',
+				err,
+				{ user, query, variables, type }
+			);
 		}
 	}
 
@@ -231,11 +241,11 @@ export default class DataService {
 		}
 	}
 
-	static async getAssignmentOwner(assignmentId: number): Promise<string> {
+	static async getAssignmentOwner(assignmentUuid: string): Promise<string> {
 		try {
 			return DataService.makeRequest(
 				GET_ASSIGNMENT_OWNER,
-				{ assignmentId },
+				{ assignmentUuid },
 				'data.app_assignments[0].owner_profile_id'
 			);
 		} catch (err) {

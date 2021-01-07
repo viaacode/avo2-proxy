@@ -58,7 +58,7 @@ export default class PlayerTicketRoute {
 		}
 	}
 
-	public static async getIp(request: Request): Promise<string> {
+	static async getIp(request: Request): Promise<string> {
 		const forwardedFor =
 			request.headers['X-Forwarded-For'] || request.headers['x-forwarded-for'];
 		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || request.ip;

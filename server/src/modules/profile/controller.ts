@@ -1,4 +1,4 @@
-import { remove, uniq } from 'lodash';
+import { isNull, remove, uniq } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
@@ -62,7 +62,9 @@ export default class ProfileController {
 						unit_id: org.unitId || null,
 					})
 				),
-				company_id: variables.company_id || profile.company_id,
+				company_id: isNull(variables.company_id)
+					? null
+					: variables.company_id || profile.company_id,
 				alias: profile.alias || profile.alternative_email,
 				firstName: user.first_name,
 				lastName: user.last_name,

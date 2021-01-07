@@ -18,7 +18,7 @@ export default class CollectionsRoute {
 	async fetchCollectionOrBundleWithItemsById(
 		@QueryParam('id') id: string,
 		@QueryParam('type') type: 'collection' | 'bundle',
-		@QueryParam('assignmentId') assignmentId: number | undefined
+		@QueryParam('assignmentUuid') assignmentUuid: string | undefined
 	): Promise<Avo.Collection.Collection | null> {
 		let collection: Avo.Collection.Collection | null = null;
 		try {
@@ -26,7 +26,7 @@ export default class CollectionsRoute {
 			collection = await CollectionsController.fetchCollectionWithItemsById(
 				id,
 				type,
-				assignmentId,
+				assignmentUuid,
 				avoUser
 			);
 		} catch (err) {

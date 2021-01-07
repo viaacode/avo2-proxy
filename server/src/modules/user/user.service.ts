@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
 import { get } from 'lodash';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import i18n from '../../shared/translations/i18n';
@@ -10,14 +10,14 @@ import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
 import DataService from '../data/data.service';
 
 import {
-	BULK_DELETE_USERS,
 	BULK_GET_EMAIL_ADDRESSES,
+	BULK_SOFT_DELETE_USERS,
 	BULK_STRIP_USERS,
 	BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
-	DELETE_PRIVATE_CONTENT_FOR_PROFILES,
-	DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 	GET_EMAIL_USER_INFO,
 	GET_USER_BLOCK_EVENTS,
+	SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES,
+	SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 	TRANSFER_PRIVATE_CONTENT_FOR_PROFILES,
 	TRANSFER_PUBLIC_CONTENT_FOR_PROFILES,
 	UPDATE_MAIL,
@@ -46,11 +46,9 @@ export default class UserService {
 				});
 			}
 
-			if (anonymize) {
-				await promiseUtils.mapLimit(profileIds, 10, async (profileId: string) =>
-					UserService.updateNameAndEmail(profileId, anonymize)
-				);
-			}
+			await promiseUtils.mapLimit(profileIds, 10, async (profileId: string) =>
+				UserService.updateNameAndEmail(profileId, anonymize)
+			);
 		} catch (err) {
 			throw new CustomError('Failed to bulk delete users except their names', err, {
 				profileIds,
@@ -90,21 +88,32 @@ export default class UserService {
 		}
 	}
 
-	static async bulkDeleteUsers(profileIds: string[]): Promise<void> {
+	static async bulkSoftDeleteUsers(profileIds: string[]): Promise<void> {
 		try {
-			const response = await DataService.execute(BULK_DELETE_USERS, {
+			const stripResponse = await DataService.execute(BULK_STRIP_USERS, {
 				profileIds,
 			});
 
-			if (response.errors) {
+			if (stripResponse.errors) {
 				throw new CustomError('graphql response contains errors', null, {
-					response,
+					stripResponse,
+					query: BULK_STRIP_USERS,
+				});
+			}
+
+			const softDeleteResponse = await DataService.execute(BULK_SOFT_DELETE_USERS, {
+				profileIds,
+			});
+
+			if (softDeleteResponse.errors) {
+				throw new CustomError('graphql response contains errors', null, {
+					softDeleteResponse,
+					query: BULK_SOFT_DELETE_USERS,
 				});
 			}
 		} catch (err) {
-			throw new CustomError('Failed to bulk delete users', err, {
+			throw new CustomError('Failed to bulk soft delete profiles', err, {
 				profileIds,
-				query: BULK_DELETE_USERS,
 			});
 		}
 	}
@@ -134,9 +143,9 @@ export default class UserService {
 	 * Delete all public content for the given users: collections, bundles, content pages. And all linked objects to those items
 	 * @param profileIds the profile ids for which to delete the content
 	 */
-	static async deletePublicContentForProfiles(profileIds: string[]): Promise<void> {
+	static async softDeletePublicContentForProfiles(profileIds: string[]): Promise<void> {
 		try {
-			const response = await DataService.execute(DELETE_PUBLIC_CONTENT_FOR_PROFILES, {
+			const response = await DataService.execute(SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES, {
 				profileIds,
 			});
 
@@ -146,7 +155,7 @@ export default class UserService {
 		} catch (err) {
 			throw new CustomError('Failed to bulk delete public content for profile ids', err, {
 				profileIds,
-				query: DELETE_PUBLIC_CONTENT_FOR_PROFILES,
+				query: SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES,
 			});
 		}
 	}
@@ -155,9 +164,9 @@ export default class UserService {
 	 * Delete all private content for the given users: collections, bundles, bookmarks, assignments, content pages. And all linked objects to those items
 	 * @param profileIds the profile ids for which to delete the content
 	 */
-	static async deletePrivateContentForProfiles(profileIds: string[]): Promise<void> {
+	static async softDeletePrivateContentForProfiles(profileIds: string[]): Promise<void> {
 		try {
-			const response = await DataService.execute(DELETE_PRIVATE_CONTENT_FOR_PROFILES, {
+			const response = await DataService.execute(SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES, {
 				profileIds,
 			});
 
@@ -167,7 +176,7 @@ export default class UserService {
 		} catch (err) {
 			throw new CustomError('Failed to bulk delete private content for profile ids', err, {
 				profileIds,
-				query: DELETE_PRIVATE_CONTENT_FOR_PROFILES,
+				query: SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES,
 			});
 		}
 	}
