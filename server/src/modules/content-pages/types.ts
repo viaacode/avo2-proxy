@@ -2,12 +2,14 @@ import type { Avo } from '@viaa/avo2-types';
 
 export interface MediaPlayerPathInfo {
 	getItemExternalIdPath: string;
+	setItemExternalIdPath: string;
 	setVideoSrcPath: string;
 	setPosterSrcPath: string;
 	setTitlePath: string;
 	setDescriptionPath: string;
 	setIssuedPath: string;
 	setOrganisationPath: string;
+	setDurationPath: string;
 }
 
 export type ResolvedItemOrCollection = Partial<Avo.Item.Item | Avo.Collection.Collection> & {
