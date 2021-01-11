@@ -1,6 +1,6 @@
+import * as promiseUtils from 'blend-promise-utils';
 import { Request } from 'express';
 import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
-import * as promiseUtils from 'blend-promise-utils';
 
 import type { Avo } from '@viaa/avo2-types';
 
