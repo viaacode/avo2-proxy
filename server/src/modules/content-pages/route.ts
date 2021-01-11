@@ -25,6 +25,7 @@ import {
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
+import ContentPageService from './service';
 import {
 	ContentLabelsRequestBody,
 	ContentPageOverviewParams,
@@ -72,6 +73,17 @@ export default class ContentPagesRoute {
 			null,
 			{ path }
 		);
+	}
+
+	@Path('path-exist')
+	@GET
+	async doesContentPageExist(@QueryParam('path') path: string): Promise<{ exists: boolean, title: string, id: number }> {
+		try {
+			const contentPage = await ContentPageService.getContentPageByPath(path);
+			return { exists: !!contentPage, title: get(contentPage, 'title') || null, id: get(contentPage, 'id', null) };
+		} catch (err) {
+			throw new InternalServerError('Failed to get content page', null, { path });
+		}
 	}
 
 	@Path('/overview')
