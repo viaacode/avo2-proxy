@@ -92,7 +92,7 @@ export default class DataService {
 				data,
 				method: 'post',
 			});
-			return authTokenResponse.data.authorization_token;
+			return authTokenResponse.data.access_token;
 		} catch (err) {
 			throw new InternalServerError('Failed to get JWT token from auth server', err, {
 				url,
@@ -121,7 +121,7 @@ export default class DataService {
 			return DataService.authToken;
 		} catch (err) {
 			DataService.tokenPromise = null;
-			throw new ExternalServerError('Failed to get token for elasticsearch', err);
+			throw new ExternalServerError('Failed to get token for GRAPHQL_AUTH_SERVER_URL', err);
 		}
 	}
 
@@ -162,7 +162,7 @@ export default class DataService {
 				headers: {
 					...headers,
 					// 'x-hasura-admin-secret': process.env.GRAPHQL_SECRET,
-					Authorization: token,
+					Authorization: `Bearer ${token}`,
 				},
 			});
 			if (response.data.errors) {
