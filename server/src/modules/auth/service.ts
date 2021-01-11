@@ -226,7 +226,7 @@ export class AuthService {
 			}
 
 			// Update profile
-			await ProfileController.updateProfile(avoUser, {});
+			await ProfileController.updateProfile(avoUser, {company_id: avoUser.profile.company_id});
 		} catch (err) {
 			throw new CustomError('Failed to update avo user info', err, { avoUser });
 		}
@@ -260,8 +260,9 @@ export class AuthService {
 			}
 
 			// Update first and last name
+			const companyId = avoUser.profile.company_id;
 			await HetArchiefService.setLdapUserInfo(ldapEntryUuid, {
-				organizations: orgUuids,
+				organizations: [...orgUuids, ...(companyId ? [companyId] : [])],
 				units: unitUuids,
 				edu_levelname: educationLevels,
 				first_name: avoUser.first_name,
