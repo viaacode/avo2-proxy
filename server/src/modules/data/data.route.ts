@@ -37,12 +37,13 @@ export default class DataRoute {
 				body.variables,
 				'CLIENT'
 			);
-			if (isNil(whitelistedQuery)) {
+			const enableWhitelist = process.env.GRAPHQL_ENABLE_WHITELIST === undefined || process.env.GRAPHQL_ENABLE_WHITELIST === 'true';
+			if (isNil(whitelistedQuery) && enableWhitelist) {
 				throw new BadRequestError('You are not allowed to run this query');
 			}
 
 			return await DataController.execute(
-				whitelistedQuery,
+				enableWhitelist ? whitelistedQuery : body.query,
 				body.variables,
 				{
 					...this.context.request.headers,
