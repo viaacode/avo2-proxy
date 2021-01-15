@@ -171,127 +171,144 @@ export default class HetArchiefController {
 		avoUser: Avo.User.User | null,
 		request: Request
 	): Promise<Avo.User.User> {
-		let avoUserInfo = avoUser;
+		try {
+			let avoUserInfo = avoUser;
 
-		if (!avoUserInfo) {
-			avoUserInfo = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
-				ldapUserInfo.id
-			);
 			if (!avoUserInfo) {
-				// No avo user exists yet and this call isn't part of a registration flow
-				// Check if ldap user has the avo group
-				if (!!(ldapUserInfo.apps || []).find((app) => app.name === 'avo')) {
-					// Create the avo user for this ldap account
-					avoUserInfo = await HetArchiefController.createUserAndProfile(
-						ldapUserInfo,
-						null
-					);
+				avoUserInfo = await HetArchiefController.getAvoUserInfoFromDatabaseByLdapUuid(
+					ldapUserInfo.id
+				);
+				if (!avoUserInfo) {
+					// No avo user exists yet and this call isn't part of a registration flow
+					// Check if ldap user has the avo group
+					if (!!(ldapUserInfo.apps || []).find((app) => app.name === 'avo')) {
+						// Create the avo user for this ldap account
+						avoUserInfo = await HetArchiefController.createUserAndProfile(
+							ldapUserInfo,
+							null
+						);
 
-					EventLoggingController.insertEvent(
-						{
-							object: avoUserInfo.uid,
-							object_type: 'account',
-							message: `${get(avoUserInfo, 'first_name')} ${get(
-								avoUserInfo,
-								'last_name'
-							)} heeft zijn account aangemaakt`,
-							action: 'create',
-							subject: avoUserInfo.uid,
-							subject_type: 'user',
-							occurred_at: new Date().toISOString(),
-							source_url: process.env.HOST + request.path,
-						},
-						request
-					);
+						EventLoggingController.insertEvent(
+							{
+								object: avoUserInfo.uid,
+								object_type: 'account',
+								message: `${get(avoUserInfo, 'first_name')} ${get(
+									avoUserInfo,
+									'last_name'
+								)} heeft zijn account aangemaakt`,
+								action: 'create',
+								subject: avoUserInfo.uid,
+								subject_type: 'user',
+								occurred_at: new Date().toISOString(),
+								source_url: process.env.HOST + request.path,
+							},
+							request
+						);
 
-					EventLoggingController.insertEvent(
-						{
-							object: avoUserInfo.uid,
-							object_type: 'profile',
-							message: `${get(avoUserInfo, 'first_name')} ${get(
-								avoUserInfo,
-								'last_name'
-							)} heeft zijn profiel aangemaakt`,
-							action: 'create',
-							subject: avoUserInfo.uid,
-							subject_type: 'user',
-							occurred_at: new Date().toISOString(),
-							source_url: process.env.HOST + request.path,
-						},
-						request
+						EventLoggingController.insertEvent(
+							{
+								object: avoUserInfo.uid,
+								object_type: 'profile',
+								message: `${get(avoUserInfo, 'first_name')} ${get(
+									avoUserInfo,
+									'last_name'
+								)} heeft zijn profiel aangemaakt`,
+								action: 'create',
+								subject: avoUserInfo.uid,
+								subject_type: 'user',
+								occurred_at: new Date().toISOString(),
+								source_url: process.env.HOST + request.path,
+							},
+							request
+						);
+					}
+				}
+				if (!avoUserInfo) {
+					throw new InternalServerError(
+						'Failed to find matching avo user to the provided ldap uuid',
+						null,
+						{ ldapUuid: ldapUserInfo.id }
 					);
 				}
 			}
-			if (!avoUserInfo) {
-				throw new InternalServerError(
-					'Failed to find matching avo user to the provided ldap uuid',
-					null,
-					{ ldapUuid: ldapUserInfo.id }
+
+			let newAvoUser = cloneDeep(avoUserInfo);
+			newAvoUser.mail = get(ldapUserInfo, 'email[0]');
+			newAvoUser.first_name = get(ldapUserInfo, 'first_name');
+			newAvoUser.last_name = get(ldapUserInfo, 'last_name');
+			newAvoUser.role_id = await AuthController.getRoleId(
+				get(ldapUserInfo, 'organizational_status[0]')
+			);
+			newAvoUser.profile.stamboek = get(ldapUserInfo, 'employee_nr[0]', null);
+			newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
+			newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
+			newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
+			(newAvoUser.profile as any).is_exception =
+				get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
+
+			newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
+
+			const orgIds: string[] =
+				get(ldapUserInfo, 'educationalOrganisationIds') ||
+				get(ldapUserInfo, 'organizations', []).map(
+					(org: LdapEducationOrganisation) => org.or_id
 				);
+
+			// Split educational organisations from company id
+			const eduOrgIds = orgIds.filter(id => !id.startsWith('OR-'));
+			const companyId = orgIds.find(id => id.startsWith('OR-'));
+			const orgUnitIds: string[] =
+				get(ldapUserInfo, 'educationalOrganisationUnitIds') ||
+				get(ldapUserInfo, 'units', []).map((org: LdapEduOrgUnit) => org.ou_id);
+			newAvoUser.profile.organizations = eduOrgIds.map((orgId: string) => {
+				return {
+					organizationId: orgId,
+					unitId: orgUnitIds.find((orgUnitId) => orgUnitId.startsWith(orgId)) || null,
+				};
+			}) as any[];
+
+			// Store business category of first educational organisation
+			if (eduOrgIds.length) {
+				let index = 0;
+				let orgInfo: any = null;
+				while (index < eduOrgIds.length && !orgInfo) {
+					orgInfo = await EducationOrganizationsService.getOrganization(
+						eduOrgIds[index],
+						orgUnitIds.find(orgUnitId => orgUnitId.startsWith(eduOrgIds[0])),
+					);
+					if (orgInfo) {
+						(newAvoUser.profile as any).business_category = orgInfo.type;
+					}
+					index += 1;
+				}
 			}
-		}
 
-		let newAvoUser = cloneDeep(avoUserInfo);
-		newAvoUser.mail = get(ldapUserInfo, 'email[0]');
-		newAvoUser.first_name = get(ldapUserInfo, 'first_name');
-		newAvoUser.last_name = get(ldapUserInfo, 'last_name');
-		newAvoUser.role_id = await AuthController.getRoleId(
-			get(ldapUserInfo, 'organizational_status[0]')
-		);
-		newAvoUser.profile.stamboek = get(ldapUserInfo, 'employee_nr[0]', null);
-		newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
-		newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
-		newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
-		(newAvoUser.profile as any).is_exception =
-			get(ldapUserInfo, 'exception_account[0]') === 'TRUE';
+			newAvoUser.profile.company_id = companyId;
 
-		newAvoUser.is_blocked = !ldapUserInfo.apps.find((app) => app.name === 'avo');
+			if (!isEqual(newAvoUser, avoUserInfo)) {
+				// Something changes => save to database
+				await AuthService.updateAvoUserInfo(newAvoUser);
+			}
 
-		const orgIds: string[] =
-			get(ldapUserInfo, 'educationalOrganisationIds') ||
-			get(ldapUserInfo, 'organizations', []).map(
-				(org: LdapEducationOrganisation) => org.or_id
+			newAvoUser = await HetArchiefController.updateUserGroups(
+				{
+					first_name: newAvoUser.first_name,
+					last_name: newAvoUser.last_name,
+					mail: newAvoUser.mail,
+					roles: (get(ldapUserInfo, 'organizational_status') || []) as string[],
+				},
+				newAvoUser
 			);
-		const orgUnitIds: string[] =
-			get(ldapUserInfo, 'educationalOrganisationUnitIds') ||
-			get(ldapUserInfo, 'units', []).map((org: LdapEduOrgUnit) => org.ou_id);
-		newAvoUser.profile.organizations = orgIds.map((orgId: string) => {
-			return {
-				organizationId: orgId,
-				unitId: orgUnitIds.find((orgUnitId) => orgUnitId.startsWith(orgId)) || null,
-			};
-		}) as any[];
 
-		// Store business category of first organisation
-		if (orgIds.length) {
-			const orgInfo = await EducationOrganizationsService.getOrganization(
-				orgIds[0],
-				orgUnitIds.find(orgUnitId => orgUnitId.startsWith(orgIds[0])),
-			);
-			(newAvoUser.profile as any).business_category = orgInfo.type;
+			// TODO remove this once https://meemoo.atlassian.net/browse/DEV-1318 is implemented
+			// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
+			// Also update existing users if their email changed
+			CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);
+
+			return newAvoUser;
+		} catch (err) {
+			throw new InternalServerError('Failed to create or update user', err);
 		}
-
-		if (!isEqual(newAvoUser, avoUserInfo)) {
-			// Something changes => save to database
-			await AuthService.updateAvoUserInfo(newAvoUser);
-		}
-
-		newAvoUser = await HetArchiefController.updateUserGroups(
-			{
-				first_name: newAvoUser.first_name,
-				last_name: newAvoUser.last_name,
-				mail: newAvoUser.mail,
-				roles: (get(ldapUserInfo, 'organizational_status') || []) as string[],
-			},
-			newAvoUser
-		);
-
-		// TODO remove this once https://meemoo.atlassian.net/browse/DEV-1318 is implemented
-		// Update campaign monitor lists without waiting for the reply, since it takes longer and it's not critical to the login process
-		// Also update existing users if their email changed
-		CampaignMonitorController.refreshNewsletterPreferences(newAvoUser, avoUserInfo);
-
-		return newAvoUser;
 	}
 
 	/**
