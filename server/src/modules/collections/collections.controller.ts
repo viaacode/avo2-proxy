@@ -15,7 +15,8 @@ export default class CollectionsController {
 	): Promise<Avo.Collection.Collection | null> {
 		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
 			id,
-			type
+			type,
+			avoUser
 		);
 		const isOwner =
 			collection.owner_profile_id &&
