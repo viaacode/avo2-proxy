@@ -5,6 +5,7 @@ import type { Avo } from '@viaa/avo2-types';
 import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
+import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 import {
 	AggProps,
 	AGGS_PROPERTIES,
@@ -14,7 +15,6 @@ import {
 	NUMBER_OF_FILTER_OPTIONS,
 	READABLE_TO_ELASTIC_FILTER_NAMES,
 } from './search.consts';
-import textQueryObjectTemplateImport from './elasticsearch-templates/text-query-object.json';
 
 const removeAccents = require('remove-accents');
 

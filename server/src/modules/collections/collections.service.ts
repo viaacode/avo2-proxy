@@ -1,8 +1,10 @@
-import { compact, get } from 'lodash';
+import { compact, get, unset } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
+import { PermissionName } from '../../shared/permissions';
+import { AuthService } from '../auth/service';
 import DataService from '../data/data.service';
 
 import {
@@ -23,11 +25,13 @@ export default class CollectionsService {
 	 * @param collectionId Unique id of the collection that must be fetched.
 	 * @param type Type of which items should be fetched.
 	 *
+	 * @param user
 	 * @returns Collection or bundle.
 	 */
 	static async fetchCollectionOrBundleWithItemsById(
 		collectionId: string,
-		type: 'collection' | 'bundle'
+		type: 'collection' | 'bundle',
+		user: Avo.User.User
 	): Promise<Avo.Collection.Collection | null> {
 		try {
 			// retrieve collection or bundle by id
@@ -39,6 +43,24 @@ export default class CollectionsService {
 			// handle empty response
 			if (!collectionOrBundle) {
 				return undefined;
+			}
+
+			// omit management info if user does not have adequate permissions
+			if (get(collectionOrBundle, 'management')) {
+				if (
+					(type === 'collection' &&
+						!AuthService.hasPermission(
+							user,
+							PermissionName.VIEW_COLLECTION_EDITORIAL_OVERVIEWS
+						)) ||
+					(type === 'bundle' &&
+						!AuthService.hasPermission(
+							user,
+							PermissionName.VIEW_BUNDLE_EDITORIAL_OVERVIEWS
+						))
+				) {
+					unset(collectionOrBundle, 'management');
+				}
 			}
 
 			// retrieve items/collections for each collection_fragment that has an external_id set
