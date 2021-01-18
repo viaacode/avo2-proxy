@@ -190,70 +190,20 @@ export default class HetArchiefRoute {
 	}
 
 	/**
-	 * Redirect the user to the logout page on the SAML identity server
-	 * The SAML service will then redirect the browser back to the callback url
-	 */
-	@Path('logout')
-	@GET
-	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		try {
-			const ldapUser: LdapUser | null = IdpHelper.getIdpUserInfoFromSession(
-				this.context.request
-			);
-
-			// Remove the ldap user from the session
-			IdpHelper.logout(this.context.request);
-
-			if (ldapUser) {
-				// Logout by redirecting to the identity server logout page
-				const url = await HetArchiefService.createLogoutRequestUrl(
-					ldapUser.name_id,
-					returnToUrl
-				);
-				return new Return.MovedTemporarily<void>(url);
-			}
-			logger.error(
-				new InternalServerError("ldap user wasn't found on the session", null, {
-					returnToUrl,
-				})
-			);
-			return new Return.MovedTemporarily<void>(returnToUrl);
-		} catch (err) {
-			const error = new InternalServerError(
-				'Failed during hetarchief auth logout route',
-				err,
-				{}
-			);
-			logger.error(error);
-			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
-				),
-				'alert-triangle',
-				['home', 'helpdesk'],
-				error.identifier
-			);
-		}
-	}
-
-	/**
-	 * Called by SAML service to let the proxy know what the logout status is of the user after a logout attempt
-	 * This function has to redirect the browser back to the app
+	 * Called by the identity provider service after the proxy requested the user to be logged out in response to a call from the client (global logout)
+	 * This call should redirect to the return url in the avo client
 	 */
 	@Path('logout-callback')
-	@POST
-	async logoutCallback(response: SamlCallbackBody): Promise<any> {
+	@GET
+	async logoutCallbackGet(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		try {
-			// Remove the ldap user from the session
-			IdpHelper.logout(this.context.request);
-
-			const info: RelayState = JSON.parse(response.RelayState);
-			return new Return.MovedTemporarily(info.returnToUrl);
+			return new Return.MovedTemporarily(returnToUrl);
 		} catch (err) {
 			const error = new InternalServerError(
-				'Failed during hetarchief auth logout-callback route',
+				'Failed during hetarchief auth GET logout-callback route',
 				err,
 				{
-					relayState: response.RelayState,
+					returnToUrl,
 				}
 			);
 			logger.error(error);
@@ -267,22 +217,21 @@ export default class HetArchiefRoute {
 	}
 
 	/**
-	 * This endpoint is called by the idp when the user signs out on a different platform, and should also be signed out of this platform (single sign out)
-	 * @param response
+	 * Called by the identity provider service when a user logs out of another platform and the idp wants all platforms to logout
+	 * This call should redirect to the idp logout response url
 	 */
-	@Path('idp-logout')
+	@Path('logout-callback')
 	@POST
-	async idpInitiatedLogout(response: SamlCallbackBody): Promise<any> {
+	async logoutCallbackPost(response: SamlCallbackBody): Promise<any> {
 		try {
 			// Remove the ldap user from the session
 			IdpHelper.logout(this.context.request);
 
-			return new Return.MovedTemporarily(
-				await HetArchiefService.createLogoutResponseUrl(response.RelayState)
-			);
+			const responseUrl = await HetArchiefService.createLogoutResponseUrl(response.RelayState);
+			return new Return.MovedTemporarily(responseUrl);
 		} catch (err) {
 			const error = new InternalServerError(
-				'Failed during hetarchief auth idp-logout route',
+				'Failed during hetarchief auth POST logout-callback route',
 				err,
 				{
 					relayState: response.RelayState,
