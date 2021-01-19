@@ -85,7 +85,7 @@ export default class MamSyncratorService {
 					'Environment variables SYNCRATOR_API and SYNCRATOR_ENV are required'
 				);
 			}
-			url = `${process.env.SYNCRATOR_API}/delta/avo/${process.env.SYNCRATOR_ENV}`;
+			url = `${process.env.SYNCRATOR_API}/delta/avo`;
 			const token = await MamSyncratorService.getAuthToken();
 			const response: AxiosResponse = await axios({
 				url,
