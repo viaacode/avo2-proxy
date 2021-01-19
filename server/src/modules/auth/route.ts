@@ -53,34 +53,15 @@ export default class AuthRoute {
 	@Path('global-logout')
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		return AuthController.getIdpSpecificLogoutPage(
-			this.context.request,
-			`${process.env.HOST}/auth/global-logout-callback?${queryString.stringify({
-				returnToUrl,
-			})}`
-		);
-	}
-
-	@Path('global-logout-callback')
-	@GET
-	async logoutCallback(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		try {
-			IdpHelper.clearAllIdpUserInfosFromSession(this.context.request);
-			return new Return.MovedTemporarily<void>(returnToUrl);
-		} catch (err) {
-			const error = new InternalServerError(
-				'Failed during auth global-logout-callback route',
-				err,
-				{}
-			);
-			logger.error(error);
-			return redirectToClientErrorPage(
-				i18n.t('modules/auth/route___er-ging-iets-mis-tijdens-het-uitloggen'),
-				'alert-triangle',
-				['home', 'helpdesk'],
-				error.identifier
+		if (IdpHelper.getIdpTypeFromSession(this.context.request) === 'HETARCHIEF') {
+			return AuthController.getIdpSpecificLogoutPage(
+				this.context.request,
+				returnToUrl
 			);
 		}
+
+		IdpHelper.logout(this.context.request);
+		return new Return.MovedTemporarily<void>(returnToUrl);
 	}
 
 	@Path('link-account')
