@@ -54,13 +54,9 @@ export default class AuthRoute {
 	@GET
 	async logout(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
 		if (IdpHelper.getIdpTypeFromSession(this.context.request) === 'HETARCHIEF') {
-			IdpHelper.logout(this.context.request);
-
 			return AuthController.getIdpSpecificLogoutPage(
 				this.context.request,
-				`${process.env.HOST}/auth/hetarchief/logout-callback?${queryString.stringify({
-					returnToUrl,
-				})}`
+				returnToUrl
 			);
 		}
 
