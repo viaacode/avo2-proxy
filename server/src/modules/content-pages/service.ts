@@ -14,10 +14,10 @@ import {
 	GET_CONTENT_PAGE_BY_PATH,
 	GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID,
 	GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL,
-	GET_CONTENT_PAGES,
+	GET_CONTENT_PAGES_FOR_OVERVIEW_BLOCK,
 	GET_CONTENT_PAGES_BY_IDS,
 	GET_CONTENT_PAGES_WITH_BLOCKS,
-	GET_ITEM_BY_EXTERNAL_ID,
+	GET_ITEM_MEDIA_PLAYER_INFO_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
 	GET_PUBLIC_CONTENT_PAGES,
 	UPDATE_CONTENT_PAGE_PUBLISH_DATES,
@@ -63,11 +63,11 @@ export default class ContentPageService {
 		}
 	}
 
-	public static async fetchItemByExternalId(
+	public static async fetchItemMediaPlayerInfoByExternalId(
 		externalId: string
 	): Promise<Partial<Avo.Item.Item> | null> {
 		try {
-			const response = await DataService.execute(GET_ITEM_BY_EXTERNAL_ID, { externalId });
+			const response = await DataService.execute(GET_ITEM_MEDIA_PLAYER_INFO_BY_EXTERNAL_ID, { externalId });
 
 			return get(response, 'data.app_item_meta[0]', null);
 		} catch (err) {
@@ -159,7 +159,7 @@ export default class ContentPageService {
 			})),
 		};
 		const response = await DataService.execute(
-			withBlock ? GET_CONTENT_PAGES_WITH_BLOCKS : GET_CONTENT_PAGES,
+			withBlock ? GET_CONTENT_PAGES_WITH_BLOCKS : GET_CONTENT_PAGES_FOR_OVERVIEW_BLOCK,
 			variables
 		);
 		if (response.errors) {

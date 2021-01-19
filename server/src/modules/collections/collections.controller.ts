@@ -11,12 +11,14 @@ export default class CollectionsController {
 		id: string,
 		type: 'collection' | 'bundle',
 		assignmentUuid: string | undefined,
-		avoUser: Avo.User.User
+		avoUser: Avo.User.User,
+		includeFragments: boolean,
 	): Promise<Avo.Collection.Collection | null> {
 		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
 			id,
 			type,
-			avoUser
+			avoUser,
+			includeFragments
 		);
 		const isOwner =
 			collection.owner_profile_id &&

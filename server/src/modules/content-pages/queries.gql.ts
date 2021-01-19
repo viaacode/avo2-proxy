@@ -87,8 +87,8 @@ export const GET_ITEM_TILE_BY_ID = `
 	}
 `;
 
-export const GET_ITEM_BY_EXTERNAL_ID = `
-	query getItemByExternalId($externalId: bpchar!) {
+export const GET_ITEM_MEDIA_PLAYER_INFO_BY_EXTERNAL_ID = `
+	query getItemMediaPlayerInfoByExternalId($externalId: bpchar!) {
 		app_item_meta(where: {external_id: {_eq: $externalId}}) {
 			external_id
 			browse_path
@@ -211,8 +211,8 @@ export const GET_CONTENT_PAGES_WITH_BLOCKS = `
 	}
 `;
 
-export const GET_CONTENT_PAGES = `
-	query getContentPages(
+export const GET_CONTENT_PAGES_FOR_OVERVIEW_BLOCK = `
+	query getContentPagesForOverviewBlock(
 		$where: app_content_bool_exp,
 		$offset: Int = 0,
 		$limit: Int = 10,

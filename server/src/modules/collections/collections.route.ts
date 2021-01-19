@@ -18,7 +18,8 @@ export default class CollectionsRoute {
 	async fetchCollectionOrBundleWithItemsById(
 		@QueryParam('id') id: string,
 		@QueryParam('type') type: 'collection' | 'bundle',
-		@QueryParam('assignmentUuid') assignmentUuid: string | undefined
+		@QueryParam('assignmentUuid') assignmentUuid: string | undefined,
+		@QueryParam('includeFragments') includeFragments: 'true' | 'false' | undefined
 	): Promise<Avo.Collection.Collection | null> {
 		let collection: Avo.Collection.Collection | null = null;
 		try {
@@ -27,7 +28,8 @@ export default class CollectionsRoute {
 				id,
 				type,
 				assignmentUuid,
-				avoUser
+				avoUser,
+				includeFragments !== 'false',
 			);
 		} catch (err) {
 			logger.error(new InternalServerError('Failed to get collection', err));

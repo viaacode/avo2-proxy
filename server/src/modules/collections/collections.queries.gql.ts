@@ -212,8 +212,8 @@ export const GET_COLLECTIONS_BY_AVO1_ID = `
 	}
 `;
 
-export const GET_PUBLIC_COLLECTIONS = `
-	query getPublicCollections {
+export const GET_PUBLIC_COLLECTIONS_OR_BUNDLES = `
+	query getPublicCollectionsOrBundles {
 		app_collections(where: {is_public: {_eq: true}, is_deleted: { _eq: false }}) {
 			id
 			updated_at

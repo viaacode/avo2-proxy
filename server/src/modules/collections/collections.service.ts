@@ -14,7 +14,7 @@ import {
 	GET_COLLECTIONS_LINKED_TO_ASSIGNMENT,
 	GET_EXTERNAL_ID_BY_MEDIAMOSA_ID,
 	GET_ITEMS_BY_IDS,
-	GET_PUBLIC_COLLECTIONS,
+	GET_PUBLIC_COLLECTIONS_OR_BUNDLES,
 } from './collections.queries.gql';
 import { ContentTypeNumber } from './collections.types';
 
@@ -26,12 +26,14 @@ export default class CollectionsService {
 	 * @param type Type of which items should be fetched.
 	 *
 	 * @param user
+	 * @param includeFragments
 	 * @returns Collection or bundle.
 	 */
 	static async fetchCollectionOrBundleWithItemsById(
 		collectionId: string,
 		type: 'collection' | 'bundle',
-		user: Avo.User.User
+		user: Avo.User.User,
+		includeFragments: boolean,
 	): Promise<Avo.Collection.Collection | null> {
 		try {
 			// retrieve collection or bundle by id
@@ -63,60 +65,62 @@ export default class CollectionsService {
 				}
 			}
 
-			// retrieve items/collections for each collection_fragment that has an external_id set
-			const ids: string[] = compact(
-				(collectionOrBundle.collection_fragments || []).map((collectionFragment, index) => {
-					// reset positions to a list of ordered integers, db ensures sorting on previous position
-					collectionFragment.position = index;
+			if (includeFragments) {
+				// retrieve items/collections for each collection_fragment that has an external_id set
+				const ids: string[] = compact(
+					(collectionOrBundle.collection_fragments || []).map((collectionFragment, index) => {
+						// reset positions to a list of ordered integers, db ensures sorting on previous position
+						collectionFragment.position = index;
 
-					// return external id if set
-					if (collectionFragment.type !== 'TEXT') {
-						return collectionFragment.external_id;
-					}
+						// return external id if set
+						if (collectionFragment.type !== 'TEXT') {
+							return collectionFragment.external_id;
+						}
 
-					return null;
-				})
-			);
-
-			try {
-				// retrieve items of collection or bundle
-				const response = await DataService.execute(
-					type === 'collection' ? GET_ITEMS_BY_IDS : GET_COLLECTIONS_BY_IDS,
-					{ ids }
+						return null;
+					})
 				);
 
-				// Add infos to each fragment under the item_meta property
-				const itemInfos: (Avo.Collection.Collection | Avo.Item.Item)[] = get(
-					response,
-					'data.items',
-					[]
-				);
-				collectionOrBundle.collection_fragments.forEach((fragment) => {
-					const itemInfo = itemInfos.find(
-						(item) =>
-							fragment.external_id ===
-							(type === 'collection' ? item.external_id : item.id)
+				try {
+					// retrieve items of collection or bundle
+					const response = await DataService.execute(
+						type === 'collection' ? GET_ITEMS_BY_IDS : GET_COLLECTIONS_BY_IDS,
+						{ ids }
 					);
 
-					if (itemInfo) {
-						fragment.item_meta = itemInfo;
-						if (!fragment.use_custom_fields) {
-							fragment.custom_description = itemInfo.description;
-							fragment.custom_title = itemInfo.title;
-						}
-					}
-				});
+					// Add infos to each fragment under the item_meta property
+					const itemInfos: (Avo.Collection.Collection | Avo.Item.Item)[] = get(
+						response,
+						'data.items',
+						[]
+					);
+					collectionOrBundle.collection_fragments.forEach((fragment) => {
+						const itemInfo = itemInfos.find(
+							(item) =>
+								fragment.external_id ===
+								(type === 'collection' ? item.external_id : item.id)
+						);
 
-				return collectionOrBundle;
-			} catch (err) {
-				throw new CustomError('Failed to get fragments inside the collection', err, {
-					ids,
-				});
+						if (itemInfo) {
+							fragment.item_meta = itemInfo;
+							if (!fragment.use_custom_fields) {
+								fragment.custom_description = itemInfo.description;
+								fragment.custom_title = itemInfo.title;
+							}
+						}
+					});
+				} catch (err) {
+					throw new CustomError('Failed to get fragments inside the collection', err, {
+						ids,
+					});
+				}
 			}
+			return collectionOrBundle;
 		} catch (err) {
 			throw new CustomError('Failed to get collection or bundle with items', err, {
 				collectionId,
 				type,
+				includeFragments,
 			});
 		}
 	}
@@ -221,7 +225,7 @@ export default class CollectionsService {
 		}[]
 	> {
 		try {
-			const response = await DataService.execute(GET_PUBLIC_COLLECTIONS);
+			const response = await DataService.execute(GET_PUBLIC_COLLECTIONS_OR_BUNDLES);
 
 			if (response.errors) {
 				throw new CustomError('Response contains graphql errors', null, { response });
@@ -230,7 +234,7 @@ export default class CollectionsService {
 			return get(response, 'data.app_collections') || [];
 		} catch (err) {
 			throw new CustomError('Failed to get public collection', err, {
-				query: GET_PUBLIC_COLLECTIONS,
+				query: GET_PUBLIC_COLLECTIONS_OR_BUNDLES,
 			});
 		}
 	}

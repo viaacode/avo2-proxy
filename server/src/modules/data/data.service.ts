@@ -14,7 +14,13 @@ import { AuthTokenResponse } from './data.types';
 
 const fs = require('fs-extra');
 
-checkRequiredEnvs(['GRAPHQL_URL']);
+checkRequiredEnvs([
+	'GRAPHQL_URL',
+	'GRAPHQL_AUTH_SERVER_URL',
+	'GRAPHQL_AUTH_USERNAME',
+	'GRAPHQL_AUTH_PASSWORD',
+	'GRAPHQL_AUTH_APP_NAME',
+]);
 
 export default class DataService {
 	private static clientWhitelist: { [queryName: string]: string };
@@ -87,12 +93,21 @@ export default class DataService {
 				username: process.env.GRAPHQL_AUTH_USERNAME as string,
 				password: process.env.GRAPHQL_AUTH_PASSWORD as string,
 			};
-			const authTokenResponse: AxiosResponse<AuthTokenResponse> = await axios({
+			const accessTokenResponse: AxiosResponse<AuthTokenResponse> = await axios({
 				url,
 				data,
 				method: 'post',
 			});
-			return authTokenResponse.data.access_token;
+			url = `${process.env.GRAPHQL_AUTH_SERVER_URL as string}/hasura_token`;
+			const hasuraTokenResponse: AxiosResponse<AuthTokenResponse> = await axios({
+				url,
+				headers: {
+					X_APP_NAME: process.env.GRAPHQL_AUTH_APP_NAME,
+					Authorization: `Bearer ${accessTokenResponse.data.access_token}`,
+				},
+				method: 'get',
+			});
+			return hasuraTokenResponse.data.access_token;
 		} catch (err) {
 			throw new InternalServerError('Failed to get JWT token from auth server', err, {
 				url,
@@ -183,6 +198,10 @@ export default class DataService {
 		}
 	}
 
+	static getGraphqlQueryName(query: string): string {
+		return query.split(/[{(]/)[0].trim();
+	}
+
 	static async isAllowedToRunQuery(
 		user: Avo.User.User,
 		query: string,
@@ -195,7 +214,7 @@ export default class DataService {
 
 			// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
 			const queryName = keys(whitelist).find(
-				(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
+				(key) => DataService.getGraphqlQueryName(whitelist[key]) === queryStart
 			);
 
 			if (!queryName) {

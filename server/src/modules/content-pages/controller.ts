@@ -164,7 +164,7 @@ export default class ContentPageController {
 					const blockInfo = MEDIA_PLAYER_BLOCKS[mediaPlayerBlock.content_block_type];
 					const externalId = get(mediaPlayerBlock, blockInfo.getItemExternalIdPath);
 					if (externalId) {
-						const itemInfo = await ContentPageService.fetchItemByExternalId(externalId);
+						const itemInfo = await ContentPageService.fetchItemMediaPlayerInfoByExternalId(externalId);
 						let videoSrc: string | undefined;
 						if (itemInfo && itemInfo.browse_path) {
 							videoSrc = await PlayerTicketController.getPlayableUrlFromBrowsePath(

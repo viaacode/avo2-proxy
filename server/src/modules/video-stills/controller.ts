@@ -5,7 +5,7 @@ import { InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import DataService from '../data/data.service';
 
-import { GET_ITEMS_BY_IDS } from './queries.gql';
+import { GET_ITEM_BROWSE_PATHS_BY_IDS } from './queries.gql';
 import VideoStillsService, { VideoStill } from './service';
 import { StillRequest } from './validation';
 
@@ -39,7 +39,7 @@ export default class VideoStillsController {
 			const ids: string[] = stillRequests.map(
 				(stillRequest: StillRequest) => stillRequest.externalId
 			);
-			const response = await DataService.execute(GET_ITEMS_BY_IDS, { ids });
+			const response = await DataService.execute(GET_ITEM_BROWSE_PATHS_BY_IDS, { ids });
 
 			if (response.errors) {
 				throw new InternalServerError('Failed to lookup item info from graphql', null, {
