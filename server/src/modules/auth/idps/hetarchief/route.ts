@@ -15,6 +15,7 @@ import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 import {
 	BadRequestError,
 	CustomError,
+	ExternalServerError,
 	InternalServerError,
 } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
@@ -208,9 +209,7 @@ export default class HetArchiefRoute {
 				// Logout by redirecting to the identity server logout page
 				const url = await HetArchiefService.createLogoutRequestUrl(
 					ldapUser.name_id,
-					`${process.env.HOST}/auth/hetarchief/logout-callback?${queryString.stringify({
-						returnToUrl,
-					})}`
+					returnToUrl
 				);
 
 				// Remove the ldap user from the session
@@ -232,36 +231,9 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
 				),
-				'alert-triangle',
-				['home', 'helpdesk'],
-				error.identifier
-			);
-		}
-	}
-
-	/**
-	 * Called by the identity provider service after the proxy requested the user to be logged out in response to a call from the client (global logout)
-	 * This call should redirect to the return url in the avo client
-	 */
-	@Path('logout-callback')
-	@GET
-	async logoutCallbackGet(@QueryParam('returnToUrl') returnToUrl: string): Promise<any> {
-		try {
-			logger.info(`Received call to GET logout-callback, returnToUrl: ${returnToUrl}`);
-			return new Return.MovedTemporarily(returnToUrl);
-		} catch (err) {
-			const error = new InternalServerError(
-				'Failed during hetarchief auth GET logout-callback route',
-				err,
-				{
-					returnToUrl,
-				}
-			);
-			logger.error(error);
-			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
 				'alert-triangle',
 				['home', 'helpdesk'],
 				error.identifier
@@ -275,15 +247,38 @@ export default class HetArchiefRoute {
 	 */
 	@Path('logout-callback')
 	@POST
-	async logoutCallbackPost(response: SamlCallbackBody): Promise<any> {
+	async logoutCallbackPost(requestOrResponse: SamlCallbackBody): Promise<any> {
 		try {
-			logger.info(`Received call to POST logout-callback, response: ${JSON.stringify(response)}`);
+			logger.info(
+				`Received call to POST logout-callback, response: ${JSON.stringify(
+					requestOrResponse
+				)}`
+			);
 
 			// Remove the ldap user from the session
 			IdpHelper.logout(this.context.request);
 
+			if (requestOrResponse.SAMLResponse) {
+				// response => user was requesting a logout starting in the avo2 client
+				let returnToUrl: string;
+				try {
+					const relayState: any = JSON.parse(requestOrResponse.RelayState);
+					returnToUrl = get(relayState, 'returnToUrl');
+				} catch (err) {
+					logger.error(
+						new ExternalServerError(
+							'Received logout response from dp with invald relayState',
+							err,
+							{ response: requestOrResponse }
+						)
+					);
+				}
+				return new Return.MovedTemporarily(returnToUrl || process.env.CLIENT_HOST);
+			}
+
+			// request => user requested logout starting in another app and the idp is requesting avo to log the user out
 			const responseUrl = await HetArchiefService.createLogoutResponseUrl(
-				response.RelayState
+				requestOrResponse.RelayState
 			);
 			return new Return.MovedTemporarily(responseUrl);
 		} catch (err) {
@@ -291,7 +286,7 @@ export default class HetArchiefRoute {
 				'Failed during hetarchief auth POST logout-callback route',
 				err,
 				{
-					relayState: response.RelayState,
+					relayState: requestOrResponse.RelayState,
 				}
 			);
 			logger.error(error);
