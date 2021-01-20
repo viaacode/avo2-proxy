@@ -14,7 +14,7 @@ import PlayerTicketRoute from '../player-ticket/route';
 
 import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
-import { ContentPageOverviewResponse, ResolvedItemOrCollection } from './types';
+import { ContentPageOverviewResponse, LabelObj, ResolvedItemOrCollection } from './types';
 
 export type MediaItemResponse = Partial<Avo.Collection.Collection | Avo.Item.Item> & {
 	count: number;
@@ -180,11 +180,13 @@ export default class ContentPageController {
 							set(mediaPlayerBlock, blockInfo.setVideoSrcPath, videoSrc);
 						}
 						[
+							['external_id', 'setItemExternalIdPath'],
 							['thumbnail_path', 'setPosterSrcPath'],
 							['title', 'setTitlePath'],
 							['description', 'setDescriptionPath'],
 							['issued', 'setIssuedPath'],
 							['organisation', 'setOrganisationPath'],
+							['duration', 'setDurationPath'],
 						].forEach((props) => {
 							if (
 								itemInfo &&
@@ -459,5 +461,13 @@ export default class ContentPageController {
 
 	static async updatePublishDates() {
 		return ContentPageService.updatePublishDates();
+	}
+
+	static async getContentPageLabelsByTypeAndLabels(contentType: string, labels: string[]): Promise<LabelObj[]> {
+		return ContentPageService.getContentPageLabelsByTypeAndLabels(contentType, labels);
+	}
+
+	static async getContentPageLabelsByTypeAndIds(contentType: string, labelIds: string[]): Promise<LabelObj[]> {
+		return ContentPageService.getContentPageLabelsByTypeAndIds(contentType, labelIds);
 	}
 }

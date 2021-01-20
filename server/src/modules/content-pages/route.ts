@@ -25,7 +25,13 @@ import {
 import { IdpHelper } from '../auth/idp-helper';
 
 import ContentPageController from './controller';
-import { ContentPageOverviewParams, ContentPageOverviewResponse } from './types';
+import ContentPageService from './service';
+import {
+	ContentLabelsRequestBody,
+	ContentPageOverviewParams,
+	ContentPageOverviewResponse,
+	LabelObj,
+} from './types';
 
 @Path('/content-pages')
 export default class ContentPagesRoute {
@@ -67,6 +73,17 @@ export default class ContentPagesRoute {
 			null,
 			{ path }
 		);
+	}
+
+	@Path('path-exist')
+	@GET
+	async doesContentPageExist(@QueryParam('path') path: string): Promise<{ exists: boolean, title: string, id: number }> {
+		try {
+			const contentPage = await ContentPageService.getContentPageByPath(path);
+			return { exists: !!contentPage, title: get(contentPage, 'title') || null, id: get(contentPage, 'id', null) };
+		} catch (err) {
+			throw new InternalServerError('Failed to get content page', null, { path });
+		}
 	}
 
 	@Path('/overview')
@@ -149,6 +166,33 @@ export default class ContentPagesRoute {
 			const error = new CustomError('Failed to update content page publish dates', err);
 			logger.error(error);
 			throw new InternalServerError(error.message);
+		}
+	}
+
+	@Path('labels')
+	@POST
+	async getContentPageLabelsByTypeAndIds(body: ContentLabelsRequestBody): Promise<LabelObj[]> {
+		try {
+			if ((body as any).labelIds) {
+				return await ContentPageController.getContentPageLabelsByTypeAndIds(
+					body.contentType,
+					(body as any).labelIds
+				);
+			}
+
+			// else labels query param is set
+			return await ContentPageController.getContentPageLabelsByTypeAndLabels(
+				body.contentType,
+				(body as any).labels
+			);
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed to get content page labels by type and labels or labelIds',
+				err,
+				{ body }
+			);
+			logger.error(error);
+			throw new InternalServerError(error.message, null, error.additionalInfo);
 		}
 	}
 }

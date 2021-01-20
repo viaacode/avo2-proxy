@@ -33,6 +33,6 @@ export class ErrorMiddleware {
 
 		logger.error(errorJson);
 
-		res.send('Unhandled exception');
+		res.send(errorJson);
 	}
 }

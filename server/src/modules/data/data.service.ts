@@ -1,13 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
-import { keys } from 'lodash';
+import { get, isEmpty, keys, omitBy, without } from 'lodash';
 import path from 'path';
 
-import { Avo } from '@viaa/avo2-types';
+import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 
+import { GET_ASSIGNMENT_OWNER, GET_COLLECTION_OWNER } from './data.gql';
 import { QUERY_PERMISSIONS } from './data.permissions';
 
 const fs = require('fs-extra');
@@ -24,6 +25,45 @@ export default class DataService {
 		try {
 			this.clientWhitelist = JSON.parse(await fs.readFile(clientWhitelistPath));
 			this.proxyWhitelist = JSON.parse(await fs.readFile(proxyWhitelistPath));
+
+			// Check missing permissions
+			const missingClientPermissions = without(
+				keys(this.clientWhitelist),
+				...keys(QUERY_PERMISSIONS.CLIENT)
+			);
+			const oldClientPermissions = without(
+				keys(QUERY_PERMISSIONS.CLIENT),
+				...keys(this.clientWhitelist)
+			);
+			const missingProxyPermissions = without(
+				keys(this.proxyWhitelist),
+				...keys(QUERY_PERMISSIONS.PROXY)
+			);
+			const oldProxyPermissions = without(
+				keys(QUERY_PERMISSIONS.PROXY),
+				...keys(this.proxyWhitelist)
+			);
+
+			if (
+				missingClientPermissions.length ||
+				oldClientPermissions.length ||
+				missingProxyPermissions.length ||
+				oldProxyPermissions.length
+			) {
+				logger.error(
+					`Some permissions need to be updated:${JSON.stringify(
+						omitBy(
+							{
+								missingClientPermissions,
+								oldClientPermissions,
+								missingProxyPermissions,
+								oldProxyPermissions,
+							},
+							isEmpty
+						)
+					)}`
+				);
+			}
 		} catch (err) {
 			throw new InternalServerError('Failed to read whitelists', err, {
 				clientWhitelistPath,
@@ -76,19 +116,80 @@ export default class DataService {
 		query: string,
 		variables: any,
 		type: 'CLIENT' | 'PROXY'
-	): Promise<boolean | null> {
-		const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
-		const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
+	): Promise<string | null> {
+		try {
+			const whitelist = type === 'CLIENT' ? this.clientWhitelist : this.proxyWhitelist;
+			const queryStart = query.replace(/[\s]+/gm, ' ').split(/[{(]/)[0].trim();
 
-		// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
-		const queryName = keys(whitelist).find(
-			(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
-		);
+			// Find query in whitelist by looking for the first part. eg: "query getUserGroups"
+			const queryName = keys(whitelist).find(
+				(key) => whitelist[key].split(/[{(]/)[0].trim() === queryStart
+			);
 
-		if (!queryName) {
-			return null;
+			if (!queryName) {
+				return null;
+			}
+
+			// Use the query from the whitelist instead of the one passed in the request body to avoid tampering
+			const whitelistQuery = whitelist[queryName];
+
+			const isAllowed = await QUERY_PERMISSIONS[type][queryName](
+				user,
+				whitelistQuery,
+				variables
+			);
+			return isAllowed ? whitelistQuery : null;
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to check if query can be executed, defaulting to false',
+				err,
+				{ user, query, variables, type }
+			);
 		}
-		const isAllowed = await QUERY_PERMISSIONS[type][queryName](user, query, variables);
-		return isAllowed;
+	}
+
+	private static async makeRequest(
+		query: string,
+		variables: any,
+		resultPath: string
+	): Promise<string> {
+		try {
+			const response = await DataService.execute(query, variables);
+			if (response.errors) {
+				throw new InternalServerError('graphql response contains errors', null, {
+					response,
+				});
+			}
+			return get(response, resultPath);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch from database', err, {
+				query,
+				variables,
+			});
+		}
+	}
+
+	static async getAssignmentOwner(assignmentUuid: string): Promise<string> {
+		try {
+			return DataService.makeRequest(
+				GET_ASSIGNMENT_OWNER,
+				{ assignmentUuid },
+				'data.app_assignments[0].owner_profile_id'
+			);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch assignment owner', err);
+		}
+	}
+
+	static async getCollectionOwner(collectionId: number): Promise<string> {
+		try {
+			return DataService.makeRequest(
+				GET_COLLECTION_OWNER,
+				{ collectionId },
+				'data.app_collections[0].owner_profile_id'
+			);
+		} catch (err) {
+			throw new InternalServerError('Failed to fetch collection owner', err);
+		}
 	}
 }

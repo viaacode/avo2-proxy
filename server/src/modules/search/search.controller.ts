@@ -6,9 +6,9 @@ import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { BadRequestError, InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/data.service';
 
-import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './queries.gql';
 import QueryBuilder from './queryBuilder';
-import SearchService from './service';
+import { GET_COLLECTION_TITLE_AND_DESCRIPTION_BY_ID } from './search.gql';
+import SearchService from './search.service';
 
 checkRequiredEnvs([
 	'ELASTICSEARCH_INDEX',

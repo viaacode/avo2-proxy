@@ -74,27 +74,26 @@ export class AuthService {
 			((user as unknown) as Avo.User.User).profile = (user.profile || {}) as Avo.User.Profile;
 			const permissions = new Set<string>();
 			const userGroupIds: number[] = [];
-			get(user, 'profile.profile_user_groups', []).forEach((profileUserGroup: any) => {
-				get(profileUserGroup, 'groups', []).forEach((userGroup: any) => {
-					userGroupIds.push(userGroup.id);
-					get(userGroup, 'group_user_permission_groups', []).forEach(
-						(permissionGroup: any) => {
-							get(
-								permissionGroup,
-								'permission_group.permission_group_user_permissions',
-								[]
-							).forEach((permission: any) => {
-								permissions.add(permission.permission.label);
-							});
-						}
-					);
-				});
-			});
+			const userGroup = get(user, 'profile.profile_user_group.group');
+			if (userGroup) {
+				userGroupIds.push(userGroup.id);
+				get(userGroup, 'group_user_permission_groups', []).forEach(
+					(permissionGroup: any) => {
+						get(
+							permissionGroup,
+							'permission_group.permission_group_user_permissions',
+							[]
+						).forEach((permission: any) => {
+							permissions.add(permission.permission.label);
+						});
+					}
+				);
+			}
 			(user as any).profile.userGroupIds = userGroupIds;
 			(user as any).profile.permissions = Array.from(permissions);
 			(user as any).idpmapObjects = user.idpmaps;
 			(user as any).idpmaps = uniq((user.idpmaps || []).map((obj) => obj.idp));
-			delete (user as any).profile.profile_user_groups;
+			delete (user as any).profile.profile_user_group;
 
 			// Simplify linked objects
 			(user as any).profile.educationLevels = (get(user, 'profile.profile_contexts', []) as {
@@ -227,7 +226,7 @@ export class AuthService {
 			}
 
 			// Update profile
-			await ProfileController.updateProfile(avoUser, {});
+			await ProfileController.updateProfile(avoUser, {company_id: avoUser.profile.company_id});
 		} catch (err) {
 			throw new CustomError('Failed to update avo user info', err, { avoUser });
 		}
@@ -261,8 +260,9 @@ export class AuthService {
 			}
 
 			// Update first and last name
+			const companyId = avoUser.profile.company_id;
 			await HetArchiefService.setLdapUserInfo(ldapEntryUuid, {
-				organizations: orgUuids,
+				organizations: [...orgUuids, ...(companyId ? [companyId] : [])],
 				units: unitUuids,
 				edu_levelname: educationLevels,
 				first_name: avoUser.first_name,

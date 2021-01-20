@@ -1,6 +1,6 @@
 export const GET_COLLECTION_BY_ID = `
 	query getCollectionById($id: uuid!) {
-		app_collections(where: { id: { _eq: $id } }) {
+		app_collections(where: { id: { _eq: $id }, is_deleted: { _eq: false } }) {
 			id
 			description
 			description_long
@@ -97,6 +97,47 @@ export const GET_COLLECTION_BY_ID = `
 					title
 				}
 			}
+			is_managed
+			management {
+				id
+				current_status
+				status_valid_until
+				manager {
+					full_name
+				}
+				actualised_at: QC(
+					where: { qc_label: { _eq: KWALITEITSCHECK } }
+					order_by: { created_at: desc_nulls_last }
+					limit: 1
+				) {
+					id
+					created_at
+				}
+				approved_at: QC(
+					where: { qc_label: { _eq: EINDCHECK } }
+					order_by: { created_at: desc_nulls_last }
+					limit: 1
+				) {
+					id
+					created_at
+				}
+				language_check: QC(
+					where: { qc_label: { _eq: TAALCHECK } }
+					order_by: { created_at: desc_nulls_last }
+					limit: 1
+				) {
+					id
+					qc_status
+				}
+				quality_check: QC(
+					where: { qc_label: { _eq: KWALITEITSCHECK } }
+					order_by: { created_at: desc_nulls_last }
+					limit: 1
+				) {
+					id
+					qc_status
+				}
+			}
 		}
 	}
 `;
@@ -134,7 +175,7 @@ export const GET_ITEMS_BY_IDS = `
 
 export const GET_COLLECTIONS_BY_IDS = `
 	query getCollectionsByIds($ids: [uuid!]!) {
-		items: app_collections(where: { id: { _in: $ids } }) {
+		items: app_collections(where: { id: { _in: $ids }, is_deleted: { _eq: false } }) {
 			external_id
 			id
 			thumbnail_path
@@ -165,7 +206,7 @@ export const GET_EXTERNAL_ID_BY_MEDIAMOSA_ID = `
 
 export const GET_COLLECTIONS_BY_AVO1_ID = `
 	query getCollectionsByAvo1Id($avo1Id: String!) {
-		items: app_collections(where: { avo1_id: { _eq: $avo1Id } }) {
+		items: app_collections(where: { avo1_id: { _eq: $avo1Id }, is_deleted: { _eq: false } }) {
 			id
 		}
 	}
@@ -173,7 +214,7 @@ export const GET_COLLECTIONS_BY_AVO1_ID = `
 
 export const GET_PUBLIC_COLLECTIONS = `
 	query getPublicCollections {
-		app_collections(where: {is_public: {_eq: true}}) {
+		app_collections(where: {is_public: {_eq: true}, is_deleted: { _eq: false }}) {
 			id
 			updated_at
 			type_id
@@ -182,9 +223,9 @@ export const GET_PUBLIC_COLLECTIONS = `
 `;
 
 export const GET_COLLECTIONS_LINKED_TO_ASSIGNMENT = `
-	query getAssignmentLinkedToCollection($collectionUuid: String!, $assignmentId: Int!) {
-		app_assignments(where: {content_id: {_eq: $collectionUuid}, id: {_eq: $assignmentId}}, limit: 1) {
-			id
+	query getAssignmentLinkedToCollection($collectionUuid: String!, $assignmentUuid: uuid!) {
+		app_assignments(where: {content_id: {_eq: $collectionUuid}, uuid: {_eq: $assignmentUuid}, is_deleted: { _eq: false }}, limit: 1) {
+			uuid
 		}
 	}
 `;

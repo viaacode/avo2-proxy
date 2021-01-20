@@ -6,20 +6,23 @@ import type { Avo } from '@viaa/avo2-types';
 import { CustomError, ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 import { SpecialPermissionGroups } from '../auth/types';
 import DataService from '../data/data.service';
-import SearchController from '../search/controller';
+import SearchController from '../search/search.controller';
 
 import { MediaItemResponse } from './controller';
 import {
 	GET_COLLECTION_TILE_BY_ID,
 	GET_CONTENT_PAGE_BY_PATH,
-	GET_CONTENT_PAGES, GET_CONTENT_PAGES_BY_IDS,
+	GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID,
+	GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL,
+	GET_CONTENT_PAGES,
+	GET_CONTENT_PAGES_BY_IDS,
 	GET_CONTENT_PAGES_WITH_BLOCKS,
 	GET_ITEM_BY_EXTERNAL_ID,
 	GET_ITEM_TILE_BY_ID,
 	GET_PUBLIC_CONTENT_PAGES,
 	UPDATE_CONTENT_PAGE_PUBLISH_DATES,
 } from './queries.gql';
-import { ContentPageOverviewResponse } from './types';
+import { ContentPageOverviewResponse, LabelObj } from './types';
 
 export default class ContentPageService {
 	public static async getContentPageByPath(path: string): Promise<Avo.ContentPage.Page | null> {
@@ -147,6 +150,7 @@ export default class ContentPageService {
 							{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
 						],
 					},
+					{ is_deleted: { _eq: false } },
 				],
 			},
 			orderBy: { [orderByProp]: orderByDirection },
@@ -199,6 +203,7 @@ export default class ContentPageService {
 								{ publish_at: { _lte: now }, depublish_at: { _gte: now } },
 							],
 						},
+						{ is_deleted: { _eq: false } },
 					],
 				},
 			});
@@ -231,13 +236,69 @@ export default class ContentPageService {
 
 	static async getContentPagesByIds(contentPageIds: number[]): Promise<Avo.ContentPage.Page[]> {
 		try {
-			const response = await DataService.execute(GET_CONTENT_PAGES_BY_IDS, {ids: contentPageIds});
+			const response = await DataService.execute(GET_CONTENT_PAGES_BY_IDS, {
+				ids: contentPageIds,
+			});
 			if (response.errors) {
 				throw new InternalServerError('GraphQL has errors', null, { response });
 			}
 			return get(response, 'data.app_content') || [];
 		} catch (err) {
 			throw new InternalServerError('Failed to fetch content pages by ids');
+		}
+	}
+
+	static async getContentPageLabelsByTypeAndLabels(
+		contentType: string,
+		labels: string[]
+	): Promise<LabelObj[]> {
+		try {
+			const response = await DataService.execute(GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL, {
+				contentType,
+				labels,
+			});
+
+			if (response.errors) {
+				throw new CustomError('graphql response contains errors', null, { response });
+			}
+
+			return get(response, 'data.app_content_labels') || [];
+		} catch (err) {
+			throw new CustomError(
+				'Failed to get content page label objects by type and labels',
+				err,
+				{
+					query: 'GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL',
+					variables: { contentType, labels },
+				}
+			);
+		}
+	}
+
+	static async getContentPageLabelsByTypeAndIds(
+		contentType: string,
+		labelIds: string[]
+	): Promise<LabelObj[]> {
+		try {
+			const response = await DataService.execute(GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID, {
+				contentType,
+				labelIds,
+			});
+
+			if (response.errors) {
+				throw new CustomError('graphql response contains errors', null, { response });
+			}
+
+			return get(response, 'data.app_content_labels') || [];
+		} catch (err) {
+			throw new CustomError(
+				'Failed to get content page label objects by type and label ids',
+				err,
+				{
+					query: 'GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID',
+					variables: { contentType, labelIds },
+				}
+			);
 		}
 	}
 }

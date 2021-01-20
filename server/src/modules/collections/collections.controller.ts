@@ -10,19 +10,20 @@ export default class CollectionsController {
 	public static async fetchCollectionWithItemsById(
 		id: string,
 		type: 'collection' | 'bundle',
-		assignmentId: number | undefined,
+		assignmentUuid: string | undefined,
 		avoUser: Avo.User.User
 	): Promise<Avo.Collection.Collection | null> {
 		const collection: Avo.Collection.Collection | null = await CollectionsService.fetchCollectionOrBundleWithItemsById(
 			id,
-			type
+			type,
+			avoUser
 		);
 		const isOwner =
 			collection.owner_profile_id &&
 			collection.owner_profile_id === get(avoUser, 'profile.id');
-		const isLinkedToAssignment = isNil(assignmentId)
+		const isLinkedToAssignment = isNil(assignmentUuid)
 			? false
-			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentId);
+			: await CollectionsService.isCollectionLinkedToAssignment(id, assignmentUuid);
 		const permissions: string[] = get(avoUser, 'profile.permissions') || [];
 		const { is_public } = collection;
 

@@ -72,7 +72,7 @@ export default class CampaignMonitorRoute {
 					object: templateIds[info.template],
 					object_type: 'mail',
 					message: `sent ${info.template} email to ${info.to}`,
-					action: 'send',
+					action: 'mail',
 					subject: 'avo-proxy',
 					subject_type: 'system',
 					occurred_at: new Date().toISOString(),

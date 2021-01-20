@@ -1,6 +1,6 @@
 export const GET_CONTENT_PAGE_BY_PATH = `
 	query getContentPageByPath($path: String!) {
-		app_content(where: { path: { _eq: $path } }) {
+		app_content(where: { path: { _eq: $path }, is_deleted: { _eq: false } }) {
 			content_type
 			content_width
 			created_at
@@ -90,6 +90,7 @@ export const GET_ITEM_TILE_BY_ID = `
 export const GET_ITEM_BY_EXTERNAL_ID = `
 	query getItemByExternalId($externalId: bpchar!) {
 		app_item_meta(where: {external_id: {_eq: $externalId}}) {
+			external_id
 			browse_path
 			thumbnail_path
 			title
@@ -99,6 +100,7 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 				name
 				logo_url
 			}
+			duration
 			type {
 				label
 			}
@@ -113,7 +115,7 @@ export const GET_ITEM_BY_EXTERNAL_ID = `
 
 export const GET_COLLECTION_TILE_BY_ID = `
 	query getCollectionTileById($id: uuid!) {
-		obj: app_collections(where: {id: {_eq: $id}}) {
+		obj: app_collections(where: {id: {_eq: $id}, is_deleted: { _eq: false }}) {
 			created_at
 			title
 			thumbnail_path
@@ -290,18 +292,20 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
           {publish_at: {_lte: $now, _is_null: false}, depublish_at: {_is_null: true}},
           {publish_at: {_is_null: true}, published_at: {_gte: $now, _is_null: false}}
         ],
-        published_at: {_is_null: true}
+        published_at: {_is_null: true},
+        is_deleted: { _eq: false }
       },
-      _set: {published_at: $publishedAt}
+      _set: {published_at: $publishedAt, is_public: true}
     ) {
       affected_rows
     }
     unpublish_content_pages: update_app_content(
       where: {
         depublish_at: {_lt: $now, _is_null: false},
-        published_at: {_is_null: false}
+        is_public: {_eq: true}
+        is_deleted: { _eq: false }
       },
-      _set: {published_at: null}
+      _set: {is_public: false}
     ) {
       affected_rows
     }
@@ -310,8 +314,28 @@ export const UPDATE_CONTENT_PAGE_PUBLISH_DATES = `
 
 export const GET_CONTENT_PAGES_BY_IDS = `
 	query getContentAssetOwnerId($ids: [Int!]) {
-		app_content(where: {id: {_in: $ids}}) {
+		app_content(where: {id: {_in: $ids}, is_deleted: { _eq: false }}) {
 			user_profile_id
+		}
+	}
+`;
+
+export const GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_LABEL = `
+	query getContentPageLabelsByTypeAndLabels($contentType: String!, $labels: [String!]!) {
+		app_content_labels(
+			where: { label: { _in: $labels }, content_type: { _eq: $contentType } }
+		) {
+			label
+			id
+		}
+	}
+`;
+
+export const GET_CONTENT_PAGE_LABELS_BY_TYPE_AND_ID = `
+	query getContentPageLabelsByTypeAndIds($contentType: String!, $labelIds: [Int!]!) {
+		app_content_labels(where: { id: { _in: $labelIds }, content_type: { _eq: $contentType } }) {
+			label
+			id
 		}
 	}
 `;

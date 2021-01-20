@@ -2,12 +2,14 @@ import type { Avo } from '@viaa/avo2-types';
 
 export interface MediaPlayerPathInfo {
 	getItemExternalIdPath: string;
+	setItemExternalIdPath: string;
 	setVideoSrcPath: string;
 	setPosterSrcPath: string;
 	setTitlePath: string;
 	setDescriptionPath: string;
 	setIssuedPath: string;
 	setOrganisationPath: string;
+	setDurationPath: string;
 }
 
 export type ResolvedItemOrCollection = Partial<Avo.Item.Item | Avo.Collection.Collection> & {
@@ -32,3 +34,18 @@ export interface ContentPageOverviewResponse {
 	count: number;
 	labelCounts: { [id: number]: number };
 }
+
+export type LabelObj = {
+	label: string;
+	id: number;
+};
+
+export type ContentLabelsRequestBody =
+	| {
+			contentType: string;
+			labelIds: string[];
+	  }
+	| {
+			contentType: string;
+			labels: string[];
+	  };
