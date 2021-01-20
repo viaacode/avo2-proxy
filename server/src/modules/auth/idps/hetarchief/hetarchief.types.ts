@@ -2,6 +2,10 @@ export interface UpdateUserBody {
 	data: Data;
 }
 
+export interface DeleteUsersBody {
+	userLdapUuids: string[];
+}
+
 export interface Data {
 	person: LdapPerson;
 	platform: string;

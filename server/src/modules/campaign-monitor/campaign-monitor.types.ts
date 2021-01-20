@@ -37,10 +37,9 @@ export interface EmailUserInfo {
 }
 
 export interface EmailInfo {
-	// TODO use typings version
 	template: keyof typeof templateIds;
-	to: string;
-	data: SharedContentData | EmailUserInfo;
+	to: string | string[];
+	data?: SharedContentData | EmailUserInfo;
 }
 
 export interface HasContent {

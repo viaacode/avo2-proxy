@@ -1,12 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
-import { get, isEmpty, isNil, isString, keys, toPairs, values } from 'lodash';
+import { get, isArray, isNil, isString, keys, toPairs, values } from 'lodash';
 import * as queryString from 'query-string';
 
 import type { Avo } from '@viaa/avo2-types';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
-import { CustomError } from '../../shared/helpers/error';
+import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
 import DataService from '../data/data.service';
 
@@ -38,6 +38,20 @@ export default class CampaignMonitorService {
 		try {
 			checkRequiredEnvs(['CAMPAIGN_MONITOR_API_ENDPOINT', 'CAMPAIGN_MONITOR_API_KEY']);
 
+			if (!templateIds[info.template]) {
+				logger.error(
+					new InternalServerError(
+						'Cannot send email since the requested email template id has not been set as an environment variable',
+						null,
+						{
+							templateName: info.template,
+							envVarPrefix: 'CAMPAIGN_MONITOR_EMAIL_TEMPLATE_',
+						}
+					)
+				);
+				return;
+			}
+
 			url = `${process.env.CAMPAIGN_MONITOR_API_ENDPOINT}/${templateIds[info.template]}/send`;
 
 			await axios(url, {
@@ -50,7 +64,7 @@ export default class CampaignMonitorService {
 					'Content-Type': 'application/json',
 				},
 				data: {
-					To: [info.to],
+					BCC: isArray(info.to) ? info.to : [info.to],
 					Data: info.data,
 					ConsentToTrack: 'unchanged',
 				},
@@ -141,6 +155,29 @@ export default class CampaignMonitorService {
 			);
 		} catch (err) {
 			throw new CustomError('Failed to unsubscribe from newsletter list', err, { email });
+		}
+	}
+
+	public static async deleteFromNewsletterList(listId: string, email: string): Promise<void> {
+		try {
+			if (!email) {
+				return;
+			}
+			await axios(
+				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}.json?email=${email}`,
+				{
+					method: 'DELETE',
+					auth: {
+						username: process.env.CAMPAIGN_MONITOR_API_KEY,
+						password: '.',
+					},
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+		} catch (err) {
+			throw new CustomError('Failed to delete user from newsletter list', err, { email });
 		}
 	}
 
@@ -243,12 +280,17 @@ export default class CampaignMonitorService {
 		}
 	}
 
-	static async bulkUnsubscribe(emailAddresses: string[]): Promise<void> {
+	/**
+	 * Deletes the provided users from all mailing lists:
+	 * https://www.campaignmonitor.com/api/subscribers/#deleting-a-subscriber
+	 * @param emailAddresses
+	 */
+	static async bulkDeleteUsers(emailAddresses: string[]): Promise<void> {
 		await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
 			const newsletterListIds = keys(NEWSLETTER_LISTS);
 			await Promise.all(
 				newsletterListIds.map((listId) => {
-					return CampaignMonitorService.unsubscribeFromNewsletterList(listId, mail);
+					return CampaignMonitorService.deleteFromNewsletterList(listId, mail);
 				})
 			);
 		});

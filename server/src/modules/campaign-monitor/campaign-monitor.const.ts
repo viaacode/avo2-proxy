@@ -16,6 +16,7 @@ export const templateIds = {
 	collection: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_COLLECTION,
 	bundle: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_BUNDLE,
 	blockUser: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_BLOCK_USER,
+	deleteUser: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_DELETE_USER,
 };
 
 export const BULK_UPDATE_BATCH_SIZE = 1000;

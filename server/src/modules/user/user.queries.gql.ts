@@ -1,3 +1,7 @@
+/**
+ * Removes all linkes data to a user/profile entry
+ * Except for educationLevel (contexts) and userGroup
+ */
 export const BULK_STRIP_USERS = `
 	mutation bulkStripUsers($profileIds: [uuid!]!) {
 		delete_users_email_preferences(where: {profile_id: {_in: $profileIds}}) {
@@ -12,13 +16,7 @@ export const BULK_STRIP_USERS = `
 		delete_users_profile_classifications(where: {profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
-		delete_users_profile_contexts(where: {profile_id: {_in: $profileIds}}) {
-			affected_rows
-		}
 		delete_users_profile_organizations(where: {profile_id: {_in: $profileIds}}) {
-			affected_rows
-		}
-		delete_users_profile_user_groups(where: {user_profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
 		delete_app_collection_bookmarks(where: {profile_id: {_in: $profileIds}}) {
