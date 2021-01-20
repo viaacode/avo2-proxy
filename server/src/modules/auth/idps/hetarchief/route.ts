@@ -15,6 +15,7 @@ import { decrypt, encrypt } from '../../../../shared/helpers/encrypt';
 import {
 	BadRequestError,
 	CustomError,
+	ExternalServerError,
 	InternalServerError,
 } from '../../../../shared/helpers/error';
 import { redirectToClientErrorPage } from '../../../../shared/helpers/error-redirect-client';
@@ -69,7 +70,8 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-inloggen'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -133,7 +135,8 @@ export default class HetArchiefRoute {
 				if (errorString.includes('ENOTFOUND')) {
 					// Failed to connect to the database
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/hetarchief/route___de-server-kan-je-gebruikers-informatie-niet-ophalen-uit-de-database'
+						i18n.t(
+							'modules/auth/idps/hetarchief/route___de-server-kan-je-gebruikers-informatie-niet-ophalen-uit-de-database'
 						),
 						'alert-triangle',
 						['home', 'helpdesk']
@@ -143,7 +146,8 @@ export default class HetArchiefRoute {
 				if (errorString.includes('Failed to get role id by role name from the database')) {
 					// User does not have a usergroup in LDAP
 					return redirectToClientErrorPage(
-						i18n.t('modules/auth/idps/hetarchief/route___je-account-heeft-nog-geen-gebruikersgroep-gelieve-de-helpdesk-te-contacteren'
+						i18n.t(
+							'modules/auth/idps/hetarchief/route___je-account-heeft-nog-geen-gebruikersgroep-gelieve-de-helpdesk-te-contacteren'
 						),
 						'alert-triangle',
 						['home', 'helpdesk']
@@ -201,15 +205,16 @@ export default class HetArchiefRoute {
 				this.context.request
 			);
 
-			// Remove the ldap user from the session
-			IdpHelper.logout(this.context.request);
-
 			if (ldapUser) {
 				// Logout by redirecting to the identity server logout page
 				const url = await HetArchiefService.createLogoutRequestUrl(
 					ldapUser.name_id,
 					returnToUrl
 				);
+
+				// Remove the ldap user from the session
+				IdpHelper.logout(this.context.request);
+
 				return new Return.MovedTemporarily<void>(url);
 			}
 			logger.error(
@@ -226,7 +231,8 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-uitloggen'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -236,56 +242,51 @@ export default class HetArchiefRoute {
 	}
 
 	/**
-	 * Called by SAML service to let the proxy know what the logout status is of the user after a logout attempt
-	 * This function has to redirect the browser back to the app
+	 * Called by the identity provider service when a user logs out of another platform and the idp wants all platforms to logout
+	 * This call should redirect to the idp logout response url
 	 */
 	@Path('logout-callback')
 	@POST
-	async logoutCallback(response: SamlCallbackBody): Promise<any> {
+	async logoutCallbackPost(requestOrResponse: SamlCallbackBody): Promise<any> {
 		try {
+			logger.info(
+				`Received call to POST logout-callback, response: ${JSON.stringify(
+					requestOrResponse
+				)}`
+			);
+
 			// Remove the ldap user from the session
 			IdpHelper.logout(this.context.request);
 
-			const info: RelayState = JSON.parse(response.RelayState);
-			return new Return.MovedTemporarily(info.returnToUrl);
-		} catch (err) {
-			const error = new InternalServerError(
-				'Failed during hetarchief auth logout-callback route',
-				err,
-				{
-					relayState: response.RelayState,
+			if (requestOrResponse.SAMLResponse) {
+				// response => user was requesting a logout starting in the avo2 client
+				let returnToUrl: string;
+				try {
+					const relayState: any = JSON.parse(requestOrResponse.RelayState);
+					returnToUrl = get(relayState, 'returnToUrl');
+				} catch (err) {
+					logger.error(
+						new ExternalServerError(
+							'Received logout response from dp with invald relayState',
+							err,
+							{ response: requestOrResponse }
+						)
+					);
 				}
-			);
-			logger.error(error);
-			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-na-het-uitloggen'),
-				'alert-triangle',
-				['home', 'helpdesk'],
-				error.identifier
-			);
-		}
-	}
+				return new Return.MovedTemporarily(returnToUrl || process.env.CLIENT_HOST);
+			}
 
-	/**
-	 * This endpoint is called by the idp when the user signs out on a different platform, and should also be signed out of this platform (single sign out)
-	 * @param response
-	 */
-	@Path('idp-logout')
-	@POST
-	async idpInitiatedLogout(response: SamlCallbackBody): Promise<any> {
-		try {
-			// Remove the ldap user from the session
-			IdpHelper.logout(this.context.request);
-
-			return new Return.MovedTemporarily(
-				await HetArchiefService.createLogoutResponseUrl(response.RelayState)
+			// request => user requested logout starting in another app and the idp is requesting avo to log the user out
+			const responseUrl = await HetArchiefService.createLogoutResponseUrl(
+				requestOrResponse.RelayState
 			);
+			return new Return.MovedTemporarily(responseUrl);
 		} catch (err) {
 			const error = new InternalServerError(
-				'Failed during hetarchief auth idp-logout route',
+				'Failed during hetarchief auth POST logout-callback route',
 				err,
 				{
-					relayState: response.RelayState,
+					relayState: requestOrResponse.RelayState,
 				}
 			);
 			logger.error(error);
@@ -326,7 +327,8 @@ export default class HetArchiefRoute {
 			const error = new InternalServerError('Failed during auth registration route', err, {});
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registreren-gelieve-de-helpdesk-te-contacteren'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -365,7 +367,8 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-verifieren-van-je-email-adres'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
@@ -396,7 +399,8 @@ export default class HetArchiefRoute {
 				);
 				logger.error(error);
 				redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___uw-stamboek-nummer-zit-niet-bij-de-request-we-kunnen-uw-account-niet-registreren'
+					i18n.t(
+						'modules/auth/idps/hetarchief/route___uw-stamboek-nummer-zit-niet-bij-de-request-we-kunnen-uw-account-niet-registreren'
 					),
 					'slash',
 					['home', 'helpdesk'],
@@ -434,7 +438,8 @@ export default class HetArchiefRoute {
 			}
 			if (stamboekValidateStatus === 'ALREADY_IN_USE') {
 				redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-reeds-in-gebruik-gelieve-de-helpdesk-te-contacteren'
+					i18n.t(
+						'modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-reeds-in-gebruik-gelieve-de-helpdesk-te-contacteren'
 					),
 					'users',
 					['home', 'helpdesk']
@@ -442,7 +447,8 @@ export default class HetArchiefRoute {
 			}
 			// INVALID
 			redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-ongeldig-controleer-u-invoer-en-probeer-opnieuw-te-registeren'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___dit-stamboek-nummer-is-ongeldig-controleer-u-invoer-en-probeer-opnieuw-te-registeren'
 				),
 				'x-circle',
 				['home', 'helpdesk']
@@ -456,7 +462,8 @@ export default class HetArchiefRoute {
 				)
 			) {
 				return redirectToClientErrorPage(
-					i18n.t('modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'
+					i18n.t(
+						'modules/auth/idps/hetarchief/route___er-bestaat-reeds-een-avo-gebruiker-met-dit-email-adres-gelieve-de-helpdesk-te-contacteren'
 					),
 					'users',
 					['home', 'helpdesk'],
@@ -464,7 +471,8 @@ export default class HetArchiefRoute {
 				);
 			}
 			return redirectToClientErrorPage(
-				i18n.t('modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registratie-proces-gelieve-de-helpdesk-te-contacteren'
+				i18n.t(
+					'modules/auth/idps/hetarchief/route___er-ging-iets-mis-tijdens-het-registratie-proces-gelieve-de-helpdesk-te-contacteren'
 				),
 				'alert-triangle',
 				['home', 'helpdesk'],
