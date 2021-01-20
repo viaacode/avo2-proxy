@@ -99,8 +99,8 @@ export const BULK_GET_EMAIL_ADDRESSES = `
 	}
 `;
 
-export const DELETE_PUBLIC_CONTENT_FOR_PROFILES = `
-	mutation bulkDeletePublicContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
+export const SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES = `
+	mutation bulkSoftDeletePublicContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
 		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: true}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
@@ -110,8 +110,8 @@ export const DELETE_PUBLIC_CONTENT_FOR_PROFILES = `
 	}
 `;
 
-export const DELETE_PRIVATE_CONTENT_FOR_PROFILES = `
-mutation bulkDeletePrivateContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
+export const SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES = `
+mutation bulkSoftDeletePrivateContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
 		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: false}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
