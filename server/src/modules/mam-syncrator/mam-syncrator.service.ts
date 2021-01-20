@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import queryString from 'query-string';
 
+import { checkRequiredEnvs } from '../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../shared/helpers/error';
 
 import { SyncratorToken } from './mam-syncrator.types';
@@ -80,11 +81,13 @@ export default class MamSyncratorService {
 	static async triggerDeltaSync(): Promise<string> {
 		let url: string;
 		try {
-			if (!process.env.SYNCRATOR_API || !process.env.SYNCRATOR_ENV) {
-				throw new InternalServerError(
-					'Environment variables SYNCRATOR_API and SYNCRATOR_ENV are required'
-				);
-			}
+			checkRequiredEnvs([
+				'SYNCRATOR_API',
+				'SYNCRATOR_AUTH_SERVER_URL',
+				'SYNCRATOR_AUTH_USERNAME',
+				'SYNCRATOR_AUTH_PASSWORD',
+			]);
+
 			url = `${process.env.SYNCRATOR_API}/delta/avo`;
 			const token = await MamSyncratorService.getAuthToken();
 			const response: AxiosResponse = await axios({
