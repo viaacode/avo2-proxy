@@ -61,7 +61,7 @@ export const BULK_SOFT_DELETE_USERS = `
 			affected_rows
 		}
 	}
-`
+`;
 
 export const GET_USER_BLOCK_EVENTS = `
 	query getUserInfoFromEvents($profileId: String) {
@@ -160,7 +160,13 @@ export const TRANSFER_PUBLIC_CONTENT_FOR_PROFILES = `
 `;
 
 export const TRANSFER_PRIVATE_CONTENT_FOR_PROFILES = `
-	mutation bulkTransferPrivateContentForProfiles($profileIds: [uuid!]!, $transferToProfileId: uuid!, $now: timestamptz) {
+	mutation bulkTransferPrivateContentForProfiles(
+		$profileIds: [uuid!]!,
+		$profileIdStrings: [String!]!,
+		$transferToProfileId: uuid!,
+		$transferToProfileIdString: String!,
+		$now: timestamptz
+	) {
 		update_app_collections(
 			where: {
 				profile: {id: {_in: $profileIds}},
@@ -224,17 +230,16 @@ export const TRANSFER_PRIVATE_CONTENT_FOR_PROFILES = `
 			},
 			_set: {
 				owner_profile_id: $transferToProfileId,
-				updated_at: $now
 			}
 		) {
 			affected_rows
 		}
 		update_app_content_assets(
 			where: {
-				owner_id: {_in: $profileIds}
+				owner_id: {_in: $profileIdStrings}
 			},
 			_set: {
-				owner_id: $transferToProfileId,
+				owner_id: $transferToProfileIdString,
 				updated_at: $now
 			}
 		) {

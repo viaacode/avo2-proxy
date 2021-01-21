@@ -226,6 +226,10 @@ export default class UserService {
 			const response = await DataService.execute(TRANSFER_PRIVATE_CONTENT_FOR_PROFILES, {
 				profileIds,
 				transferToProfileId,
+				// GraphQL does not like union types so we need to pass these twice (uuid | String)
+				profileIdStrings: profileIds,
+				transferToProfileIdString: transferToProfileId,
+				now: new Date().toISOString(),
 			});
 
 			if (response.errors) {
