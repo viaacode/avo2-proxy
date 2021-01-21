@@ -252,12 +252,6 @@ export default class HetArchiefRoute {
 	@POST
 	async logoutCallbackPost(requestOrResponse: SamlCallbackBody): Promise<any> {
 		try {
-			logger.info(
-				`Received call to POST logout-callback, response: ${JSON.stringify(
-					requestOrResponse
-				)}`
-			);
-
 			// Remove the ldap user from the session
 			IdpHelper.logout(this.context.request);
 

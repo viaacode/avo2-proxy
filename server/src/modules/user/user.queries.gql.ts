@@ -111,17 +111,17 @@ export const SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES = `
 `;
 
 export const SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES = `
-mutation bulkSoftDeletePrivateContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
+	mutation bulkSoftDeletePrivateContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
 		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: false}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
 		update_app_assignments(where: {owner_profile_id: {_in: $profileIds}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
-		update_app_collection_bookmarks(where: {profile_id: {_in: $profileIds}}, _set: {is_deleted: true, updated_at: $now}) {
+		delete_app_collection_bookmarks(where: {profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
-		update_app_item_bookmarks(where: {profile_id: {_in: $profileIds}}, _set: {is_deleted: true, updated_at: $now}) {
+		delete_app_item_bookmarks(where: {profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
 		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: false}}, _set: {is_deleted: true, updated_at: $now}) {
