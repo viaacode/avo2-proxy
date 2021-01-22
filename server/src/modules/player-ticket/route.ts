@@ -43,7 +43,6 @@ export default class PlayerTicketRoute {
 			const url = await PlayerTicketController.getPlayableUrl(
 				externalId,
 				await PlayerTicketRoute.getIp(this.context.request),
-				this.context.request.header('Referer') || 'http://localhost:8080/',
 				expire
 			);
 			return url

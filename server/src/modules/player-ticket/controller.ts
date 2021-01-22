@@ -12,13 +12,11 @@ export default class PlayerTicketController {
 	 * https://viaadocumentation.atlassian.net/wiki/spaces/SI/pages/1063453019/Media+Service
 	 * @param externalId: external_id of the media item that you want to view
 	 * @param ip
-	 * @param referrer
 	 * @param expire
 	 */
 	public static async getPlayableUrl(
 		externalId: string,
 		ip: string,
-		referrer: string,
 		expire: number
 	): Promise<string> {
 		try {
@@ -41,14 +39,12 @@ export default class PlayerTicketController {
 			return PlayerTicketController.getPlayableUrlFromBrowsePath(
 				browsePath,
 				ip,
-				referrer,
 				expire
 			);
 		} catch (err) {
 			throw new InternalServerError('Failed to get player ticket', err, {
 				externalId,
 				ip,
-				referrer,
 				expire,
 			});
 		}
@@ -57,7 +53,6 @@ export default class PlayerTicketController {
 	public static async getPlayableUrlFromBrowsePath(
 		browsePath: string,
 		ip: string,
-		referrer: string,
 		expire: number
 	): Promise<string> {
 		try {
@@ -79,7 +74,6 @@ export default class PlayerTicketController {
 			const playerTicket: PlayerTicket = await PlayerTicketService.getPlayerTicket(
 				objectName,
 				ip,
-				referrer,
 				expire
 			);
 
@@ -87,7 +81,6 @@ export default class PlayerTicketController {
 		} catch (err) {
 			throw new InternalServerError('Failed to get player ticket', err, {
 				ip,
-				referrer,
 				expire,
 			});
 		}

@@ -170,7 +170,6 @@ export default class ContentPageController {
 							videoSrc = await PlayerTicketController.getPlayableUrlFromBrowsePath(
 								itemInfo.browse_path,
 								await PlayerTicketRoute.getIp(request),
-								request.header('Referer') || 'http://localhost:8080/',
 								8 * 60 * 60 * 1000
 							);
 						}
@@ -422,7 +421,6 @@ export default class ContentPageController {
 				(await PlayerTicketController.getPlayableUrl(
 					externalId,
 					await PlayerTicketRoute.getIp(request),
-					request.header('Referer') || 'http://localhost:8080/',
 					8 * 60 * 60 * 1000
 				)) || null
 			);
@@ -445,7 +443,6 @@ export default class ContentPageController {
 				(await PlayerTicketController.getPlayableUrlFromBrowsePath(
 					browsePath,
 					await PlayerTicketRoute.getIp(request),
-					request.header('Referer') || 'http://localhost:8080/',
 					8 * 60 * 60 * 1000
 				)) || null
 			);
