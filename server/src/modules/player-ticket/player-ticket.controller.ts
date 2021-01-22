@@ -3,8 +3,8 @@ import { get } from 'lodash';
 import { InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/data.service';
 
-import { GET_ITEM_BY_EXTERNAL_ID } from './queries.gql';
-import PlayerTicketService, { PlayerTicket } from './service';
+import { GET_ITEM_BY_EXTERNAL_ID } from './player-ticket.queries.gql';
+import PlayerTicketService, { PlayerTicket } from './player-ticket.service';
 
 export default class PlayerTicketController {
 	/**

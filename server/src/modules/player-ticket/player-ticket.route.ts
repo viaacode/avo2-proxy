@@ -5,7 +5,7 @@ import { BadRequestError, InternalServerError } from '../../shared/helpers/error
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
-import PlayerTicketController from './controller';
+import PlayerTicketController from './player-ticket.controller';
 
 const publicIp = require('public-ip');
 
