@@ -1,5 +1,5 @@
 /**
- * Removes all linkes data to a user/profile entry
+ * Removes all linked data to a user/profile entry
  * Except for educationLevel (contexts) and userGroup
  */
 export const BULK_STRIP_USERS = `
