@@ -5,7 +5,7 @@ import { BadRequestError, InternalServerError } from '../../shared/helpers/error
 import { logger } from '../../shared/helpers/logger';
 import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 
-import PlayerTicketController from './controller';
+import PlayerTicketController from './player-ticket.controller';
 
 const publicIp = require('public-ip');
 
@@ -43,7 +43,6 @@ export default class PlayerTicketRoute {
 			const url = await PlayerTicketController.getPlayableUrl(
 				externalId,
 				await PlayerTicketRoute.getIp(this.context.request),
-				this.context.request.header('Referer') || 'http://localhost:8080/',
 				expire
 			);
 			return url

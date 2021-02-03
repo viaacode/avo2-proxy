@@ -27,8 +27,8 @@ import { ProfileBlockEvents } from './user.types';
 
 export default class UserService {
 	/**
-	 * Deletes all linked objects of the user account except content
-	 * eg: organisations, subjects, education levels, idp maps, roles
+	 * Deletes all linked objects of the user account except content, educationLevel and userGroup
+	 * eg: organisations, subjects, idp maps, bookmarks, notification settings, ...
 	 * Also nulls any fields that are not the first_name or last_name of the user
 	 * Sets the email address to <user_id>@hetarchief.be
 	 * @param profileIds
@@ -90,6 +90,8 @@ export default class UserService {
 
 	static async bulkSoftDeleteUsers(profileIds: string[]): Promise<void> {
 		try {
+			await UserService.stripUserAccount(profileIds, true);
+
 			const stripResponse = await DataService.execute(BULK_STRIP_USERS, {
 				profileIds,
 			});
@@ -224,6 +226,10 @@ export default class UserService {
 			const response = await DataService.execute(TRANSFER_PRIVATE_CONTENT_FOR_PROFILES, {
 				profileIds,
 				transferToProfileId,
+				// GraphQL does not like union types so we need to pass these twice (uuid | String)
+				profileIdStrings: profileIds,
+				transferToProfileIdString: transferToProfileId,
+				now: new Date().toISOString(),
 			});
 
 			if (response.errors) {

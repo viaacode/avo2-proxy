@@ -1,3 +1,7 @@
+/**
+ * Removes all linked data to a user/profile entry
+ * Except for educationLevel (contexts) and userGroup
+ */
 export const BULK_STRIP_USERS = `
 	mutation bulkStripUsers($profileIds: [uuid!]!) {
 		delete_users_email_preferences(where: {profile_id: {_in: $profileIds}}) {
@@ -12,13 +16,7 @@ export const BULK_STRIP_USERS = `
 		delete_users_profile_classifications(where: {profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
-		delete_users_profile_contexts(where: {profile_id: {_in: $profileIds}}) {
-			affected_rows
-		}
 		delete_users_profile_organizations(where: {profile_id: {_in: $profileIds}}) {
-			affected_rows
-		}
-		delete_users_profile_user_groups(where: {user_profile_id: {_in: $profileIds}}) {
 			affected_rows
 		}
 		delete_app_collection_bookmarks(where: {profile_id: {_in: $profileIds}}) {
@@ -63,7 +61,7 @@ export const BULK_SOFT_DELETE_USERS = `
 			affected_rows
 		}
 	}
-`
+`;
 
 export const GET_USER_BLOCK_EVENTS = `
 	query getUserInfoFromEvents($profileId: String) {
@@ -102,62 +100,149 @@ export const BULK_GET_EMAIL_ADDRESSES = `
 `;
 
 export const SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES = `
-	mutation bulkSoftDeletePublicContentForProfiles($profileIds: [uuid!]!) {
-		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: true}}, _set: {is_deleted: true}) {
+	mutation bulkSoftDeletePublicContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
+		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: true}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
-		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: true}}, _set: {is_deleted: true}) {
+		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: true}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
 	}
 `;
 
 export const SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES = `
-	mutation bulkSoftDeletePrivateContentForProfiles($profileIds: [uuid!]!) {
-		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: false}}, _set: {is_deleted: true}) {
+	mutation bulkSoftDeletePrivateContentForProfiles($profileIds: [uuid!]!, $now: timestamptz) {
+		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: false}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
-		update_app_assignments(where: {owner_profile_id: {_in: $profileIds}}, _set: {is_deleted: true}) {
+		update_app_assignments(where: {owner_profile_id: {_in: $profileIds}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
-		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: false}}, _set: {is_deleted: true}) {
+		delete_app_collection_bookmarks(where: {profile_id: {_in: $profileIds}}) {
+			affected_rows
+		}
+		delete_app_item_bookmarks(where: {profile_id: {_in: $profileIds}}) {
+			affected_rows
+		}
+		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: false}}, _set: {is_deleted: true, updated_at: $now}) {
 			affected_rows
 		}
 	}
 `;
 
 export const TRANSFER_PUBLIC_CONTENT_FOR_PROFILES = `
-	mutation bulkTransferPublicContentForProfiles($profileIds: [uuid!]!, $transferToProfileId: uuid!) {
-		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: true}}, _set: {owner_profile_id: $transferToProfileId}) {
+	mutation bulkTransferPublicContentForProfiles($profileIds: [uuid!]!, $transferToProfileId: uuid!, $now: timestamptz) {
+		update_app_collections(
+			where: {
+				profile: {id: {_in: $profileIds}},
+				is_public: {_eq: true}
+			},
+			_set: {
+				owner_profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
-		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: true}}, _set: {user_profile_id: $transferToProfileId}) {
+		update_app_content(
+			where: {
+				user_profile_id: {_in: $profileIds},
+				is_public: {_eq: true}
+			},
+			_set: {
+				user_profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
 	}
 `;
 
 export const TRANSFER_PRIVATE_CONTENT_FOR_PROFILES = `
-	mutation bulkTransferPrivateContentForProfiles($profileIds: [uuid!]!, $transferToProfileId: uuid!) {
-		update_app_collections(where: {profile: {id: {_in: $profileIds}}, is_public: {_eq: false}}, _set: {owner_profile_id: $transferToProfileId}) {
+	mutation bulkTransferPrivateContentForProfiles(
+		$profileIds: [uuid!]!,
+		$profileIdStrings: [String!]!,
+		$transferToProfileId: uuid!,
+		$transferToProfileIdString: String!,
+		$now: timestamptz
+	) {
+		update_app_collections(
+			where: {
+				profile: {id: {_in: $profileIds}},
+				is_public: {_eq: false}
+			},
+			_set: {
+				owner_profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
-		update_app_assignments(where: {owner_profile_id: {_in: $profileIds}}, _set: {owner_profile_id: $transferToProfileId}) {
+		update_app_assignments(
+			where: {
+				owner_profile_id: {_in: $profileIds}
+			},
+			_set: {
+				owner_profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
-		update_app_collection_bookmarks(where: {profile_id: {_in: $profileIds}}, _set: {profile_id: $transferToProfileId}) {
+		update_app_collection_bookmarks(
+			where: {
+				profile_id: {_in: $profileIds}
+			},
+			_set: {
+				profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
-		update_app_item_bookmarks(where: {profile_id: {_in: $profileIds}}, _set: {profile_id: $transferToProfileId}) {
+		update_app_item_bookmarks(
+			where: {
+				profile_id: {_in: $profileIds}
+			},
+			_set: {
+				profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
-		update_app_content(where: {user_profile_id: {_in: $profileIds}, is_public: {_eq: false}}, _set: {user_profile_id: $transferToProfileId}) {
+		update_app_content(
+			where: {
+				user_profile_id: {_in: $profileIds},
+				is_public: {_eq: false}
+			},
+			_set: {
+				user_profile_id: $transferToProfileId,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
-		update_app_assignment_labels(where: {owner_profile_id: {_in: $profileIds}}, _set: {owner_profile_id: $transferToProfileId}) {
+		update_app_assignment_labels(
+			where: {
+				owner_profile_id: {_in: $profileIds}
+			},
+			_set: {
+				owner_profile_id: $transferToProfileId,
+			}
+		) {
 			affected_rows
 		}
-		update_app_content_assets(where: {owner_id: {_in: $profileIds}}, _set: {owner_id: $transferToProfileId}) {
+		update_app_content_assets(
+			where: {
+				owner_id: {_in: $profileIdStrings}
+			},
+			_set: {
+				owner_id: $transferToProfileIdString,
+				updated_at: $now
+			}
+		) {
 			affected_rows
 		}
 	}

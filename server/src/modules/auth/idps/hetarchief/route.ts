@@ -1,4 +1,4 @@
-import { get, trimEnd } from 'lodash';
+import { get, isArray, trimEnd } from 'lodash';
 import * as queryString from 'querystring';
 import {
 	Context,
@@ -24,12 +24,15 @@ import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 import { jsonStringify } from '../../../../shared/helpers/single-line-logging';
 import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
+import CampaignMonitorService from '../../../campaign-monitor/campaign-monitor.service';
 import StamboekController from '../../../stamboek-validate/controller';
+import UserController from '../../../user/user.controller';
 import { IdpHelper } from '../../idp-helper';
+import { AuthService } from '../../service';
 import { LdapUser } from '../../types';
 
 import HetArchiefController from './controller';
-import { LdapPerson, UpdateUserBody } from './hetarchief.types';
+import { DeleteUsersBody, LdapPerson, UpdateUserBody } from './hetarchief.types';
 import HetArchiefService, { SamlCallbackBody } from './service';
 
 interface RelayState {
@@ -249,12 +252,6 @@ export default class HetArchiefRoute {
 	@POST
 	async logoutCallbackPost(requestOrResponse: SamlCallbackBody): Promise<any> {
 		try {
-			logger.info(
-				`Received call to POST logout-callback, response: ${JSON.stringify(
-					requestOrResponse
-				)}`
-			);
-
 			// Remove the ldap user from the session
 			IdpHelper.logout(this.context.request);
 
@@ -514,6 +511,55 @@ export default class HetArchiefRoute {
 			);
 			logger.error(error);
 			throw error;
+		}
+	}
+
+	/**
+	 * This route is called from the account manager (ACM) when some users are deleted
+	 * We need to delete these users from Campaign Monitor and also from the avo database
+	 */
+	@Path('delete-users')
+	@POST
+	@PreProcessor(checkApiKeyRouteGuard)
+	async deleteUsers(body: DeleteUsersBody): Promise<{ status: 'ok' | 'error'; error?: CustomError }> {
+		if (!get(body, 'userLdapUuids') || !isArray(!get(body, 'userLdapUuids'))) {
+			throw new BadRequestError(
+				'Body should contain userLdapUuids with the ldap user uuids of the users that should be deleted',
+				null,
+				{ body }
+			);
+		}
+		try {
+			const currentUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
+			const profileInfos: {
+				profileId: string;
+				mail: string;
+			}[] = await HetArchiefService.getProfileIdsByLdapIds(body.userLdapUuids);
+
+			// Send emails now that the users are still in campaign monitor
+			await CampaignMonitorService.send({
+				to: profileInfos.map((info) => info.mail),
+				template: 'deleteUser',
+			});
+
+			// Delete the users
+			await UserController.bulkDeleteUsers(
+				profileInfos.map((profileInfo) => profileInfo.profileId),
+				'DELETE_ALL',
+				null,
+				currentUser
+			);
+
+			return { status: 'ok' };
+		} catch (err) {
+			const error = new InternalServerError(
+				'Failed during update user route (hetarchief)',
+				err,
+				{
+					body,
+				}
+			);
+			return { error, status: 'error' };
 		}
 	}
 }

@@ -32,7 +32,7 @@ import EventLoggingRoute from './modules/event-logging/route';
 import InteractiveTourRoute from './modules/interactive-tours/route';
 import KlaarRoute from './modules/klaar/route';
 import NavigationItemsRoute from './modules/navigation-items/route';
-import PlayerTicketRoute from './modules/player-ticket/route';
+import PlayerTicketRoute from './modules/player-ticket/player-ticket.route';
 import ProfileRoute from './modules/profile/route';
 import SearchRoute from './modules/search/search.route';
 import TranslationsRoute from './modules/site-variables/route/translations.route';
@@ -52,6 +52,7 @@ import UserRoute from './modules/user/user.route';
 
 // This route must be imported as the last route, otherwise it will resolve before the other routes
 import FallbackRoute from './modules/fallback/route';
+
 // tslint:enable
 
 export class App {

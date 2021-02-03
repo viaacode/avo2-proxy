@@ -20,7 +20,7 @@ export default class UserController {
 	) {
 		// Remove them from campaign monitor
 		const emailAddresses = await UserService.bulkGetEmails(profileIds);
-		await CampaignMonitorService.bulkUnsubscribe(emailAddresses);
+		await CampaignMonitorService.bulkDeleteUsers(emailAddresses);
 
 		switch (deleteOption) {
 			case 'DELETE_PRIVATE_KEEP_NAME':

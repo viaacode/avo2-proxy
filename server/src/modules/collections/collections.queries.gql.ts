@@ -102,41 +102,52 @@ export const GET_COLLECTION_BY_ID = `
 				id
 				current_status
 				status_valid_until
+				updated_at
+				manager_profile_id
 				manager {
+					profile_id
+					full_name
+					mail
+				}
+				note
+			}
+			management_actualised_at: QC(
+				where: { qc_label: { _eq: KWALITEITSCHECK } }
+				order_by: { created_at: desc_nulls_last }
+				limit: 1
+			) {
+				id
+				created_at
+			}
+			management_approved_at: QC(
+				where: { qc_label: { _eq: EINDCHECK } }
+				order_by: { created_at: desc_nulls_last }
+				limit: 1
+			) {
+				id
+				created_at
+			}
+			management_language_check: QC(
+				where: { qc_label: { _eq: TAALCHECK } }
+				order_by: { created_at: desc_nulls_last }
+				limit: 1
+			) {
+				id
+				qc_status
+				assignee_profile_id
+				assignee {
+					profile_id
 					full_name
 				}
-				actualised_at: QC(
-					where: { qc_label: { _eq: KWALITEITSCHECK } }
-					order_by: { created_at: desc_nulls_last }
-					limit: 1
-				) {
-					id
-					created_at
-				}
-				approved_at: QC(
-					where: { qc_label: { _eq: EINDCHECK } }
-					order_by: { created_at: desc_nulls_last }
-					limit: 1
-				) {
-					id
-					created_at
-				}
-				language_check: QC(
-					where: { qc_label: { _eq: TAALCHECK } }
-					order_by: { created_at: desc_nulls_last }
-					limit: 1
-				) {
-					id
-					qc_status
-				}
-				quality_check: QC(
-					where: { qc_label: { _eq: KWALITEITSCHECK } }
-					order_by: { created_at: desc_nulls_last }
-					limit: 1
-				) {
-					id
-					qc_status
-				}
+				comment
+			}
+			management_quality_check: QC(
+				where: { qc_label: { _eq: KWALITEITSCHECK } }
+				order_by: { created_at: desc_nulls_last }
+				limit: 1
+			) {
+				id
+				qc_status
 			}
 		}
 	}

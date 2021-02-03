@@ -9,8 +9,9 @@ import { BadRequestError, CustomError, ExternalServerError } from '../../shared/
 import { logger } from '../../shared/helpers/logger';
 import { getUserGroupIds } from '../auth/helpers/get-user-group-ids';
 import OrganisationService from '../organization/service';
-import PlayerTicketController from '../player-ticket/controller';
-import PlayerTicketRoute from '../player-ticket/route';
+import { PLAYER_TICKET_EXPIRY } from '../player-ticket/player-ticket.consts';
+import PlayerTicketController from '../player-ticket/player-ticket.controller';
+import PlayerTicketRoute from '../player-ticket/player-ticket.route';
 
 import { DEFAULT_AUDIO_STILL, MEDIA_PLAYER_BLOCKS } from './consts';
 import ContentPageService from './service';
@@ -170,8 +171,7 @@ export default class ContentPageController {
 							videoSrc = await PlayerTicketController.getPlayableUrlFromBrowsePath(
 								itemInfo.browse_path,
 								await PlayerTicketRoute.getIp(request),
-								request.header('Referer') || 'http://localhost:8080/',
-								8 * 60 * 60 * 1000
+								PLAYER_TICKET_EXPIRY
 							);
 						}
 
@@ -230,11 +230,11 @@ export default class ContentPageController {
 		searchQueryLimit: string | undefined,
 		mediaItems:
 			| {
-			mediaItem: {
-				type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
-				value: string;
-			};
-		}[]
+					mediaItem: {
+						type: 'ITEM' | 'COLLECTION' | 'BUNDLE';
+						value: string;
+					};
+			  }[]
 			| undefined,
 		request: Request
 	): Promise<Partial<Avo.Item.Item | Avo.Collection.Collection>[]> {
@@ -422,8 +422,7 @@ export default class ContentPageController {
 				(await PlayerTicketController.getPlayableUrl(
 					externalId,
 					await PlayerTicketRoute.getIp(request),
-					request.header('Referer') || 'http://localhost:8080/',
-					8 * 60 * 60 * 1000
+					PLAYER_TICKET_EXPIRY
 				)) || null
 			);
 		} catch (err) {
@@ -445,8 +444,7 @@ export default class ContentPageController {
 				(await PlayerTicketController.getPlayableUrlFromBrowsePath(
 					browsePath,
 					await PlayerTicketRoute.getIp(request),
-					request.header('Referer') || 'http://localhost:8080/',
-					8 * 60 * 60 * 1000
+					PLAYER_TICKET_EXPIRY
 				)) || null
 			);
 		} catch (err) {
@@ -463,11 +461,17 @@ export default class ContentPageController {
 		return ContentPageService.updatePublishDates();
 	}
 
-	static async getContentPageLabelsByTypeAndLabels(contentType: string, labels: string[]): Promise<LabelObj[]> {
+	static async getContentPageLabelsByTypeAndLabels(
+		contentType: string,
+		labels: string[]
+	): Promise<LabelObj[]> {
 		return ContentPageService.getContentPageLabelsByTypeAndLabels(contentType, labels);
 	}
 
-	static async getContentPageLabelsByTypeAndIds(contentType: string, labelIds: string[]): Promise<LabelObj[]> {
+	static async getContentPageLabelsByTypeAndIds(
+		contentType: string,
+		labelIds: string[]
+	): Promise<LabelObj[]> {
 		return ContentPageService.getContentPageLabelsByTypeAndIds(contentType, labelIds);
 	}
 }
