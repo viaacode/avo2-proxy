@@ -138,7 +138,6 @@ export const GET_COLLECTION_BY_ID = `
 				assignee {
 					profile_id
 					full_name
-					mail
 				}
 				comment
 			}
