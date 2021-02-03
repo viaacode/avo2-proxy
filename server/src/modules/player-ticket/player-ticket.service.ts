@@ -44,13 +44,11 @@ export default class PlayerTicketService {
 	 * https://viaadocumentation.atlassian.net/wiki/spaces/SI/pages/108342960/Ticket+Service
 	 * @param objectName
 	 * @param clientIp
-	 * @param referer
 	 * @param expire
 	 */
 	public static async getPlayerTicket(
 		objectName: string,
 		clientIp: string,
-		referer: string,
 		expire: number
 	): Promise<PlayerTicket> {
 		try {
@@ -61,7 +59,7 @@ export default class PlayerTicketService {
 			}
 
 			const data = {
-				referer,
+				referer: '',
 				app: 'OR-avo2',
 				client: clientIp,
 				maxage: expire,
@@ -83,7 +81,6 @@ export default class PlayerTicketService {
 				err,
 				{
 					clientIp,
-					referer,
 					expire,
 				}
 			);

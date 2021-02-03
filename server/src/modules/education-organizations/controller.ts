@@ -55,7 +55,7 @@ export default class EducationOrganizationsController {
 			);
 
 			const uniqueOrgs = uniqBy([...simplifiedOrgs, ...simplifiedUnits], 'label');
-			return sortBy(uniqueOrgs, ['label']);
+			return sortBy(uniqueOrgs, [(org: any) => get(org, 'label', '').toLowerCase()]);
 		} catch (err) {
 			throw new InternalServerError('Failed to get organizations from the ldap api', err, {
 				zipCode,
