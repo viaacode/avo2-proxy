@@ -1,7 +1,6 @@
 import 'jest';
 
-import OrganisationService, { OrganisationInfo } from './service';
-
+// TODO: Write Organization tests.
 const VRT = {
 	or_id: 'OR-rf5kf25',
 	cp_name: 'VRT',
