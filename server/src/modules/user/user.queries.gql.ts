@@ -4,9 +4,6 @@
  */
 export const BULK_STRIP_USERS = `
 	mutation bulkStripUsers($profileIds: [uuid!]!) {
-		delete_users_email_preferences(where: {profile_id: {_in: $profileIds}}) {
-			affected_rows
-		}
 		delete_users_idp_map(where: {local_user: {profile: {id: {_in: $profileIds}}}}) {
 			affected_rows
 		}
