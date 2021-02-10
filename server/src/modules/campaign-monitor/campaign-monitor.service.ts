@@ -164,7 +164,7 @@ export default class CampaignMonitorService {
 				return;
 			}
 			await axios(
-				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${listId}.json?email=${email}`,
+				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${NEWSLETTER_LISTS[listId]}.json?email=${email}`,
 				{
 					method: 'DELETE',
 					auth: {
@@ -177,7 +177,16 @@ export default class CampaignMonitorService {
 				}
 			);
 		} catch (err) {
-			throw new CustomError('Failed to delete user from newsletter list', err, { email });
+			logger.error(
+				new CustomError('Failed to delete user from newsletter list', err, {
+					email,
+					listIdKey: listId,
+					listIdValue: NEWSLETTER_LISTS[listId],
+					statusText: get(err, 'response.statusText'),
+					status: get(err, 'response.status'),
+					data: get(err, 'response.data'),
+				})
+			);
 		}
 	}
 
@@ -286,14 +295,20 @@ export default class CampaignMonitorService {
 	 * @param emailAddresses
 	 */
 	static async bulkDeleteUsers(emailAddresses: string[]): Promise<void> {
-		await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
-			const newsletterListIds = keys(NEWSLETTER_LISTS);
-			await Promise.all(
-				newsletterListIds.map((listId) => {
-					return CampaignMonitorService.deleteFromNewsletterList(listId, mail);
-				})
-			);
-		});
+		try {
+			await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
+				const newsletterListIds = keys(NEWSLETTER_LISTS);
+				await Promise.all(
+					newsletterListIds.map((listId) => {
+						return CampaignMonitorService.deleteFromNewsletterList(listId, mail);
+					})
+				);
+			});
+		} catch (err) {
+			throw new InternalServerError('Failed to delete users from Campaign Monitor', err, {
+				emailAddresses,
+			});
+		}
 	}
 
 	static async getContentCounts(profileId: string): Promise<HasContent> {

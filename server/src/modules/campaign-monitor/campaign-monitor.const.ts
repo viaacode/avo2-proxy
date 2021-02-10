@@ -2,7 +2,7 @@ import { keys } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
-export const NEWSLETTER_LISTS = {
+export const NEWSLETTER_LISTS: Record<string, string> = {
 	newsletter: process.env.CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID,
 	ambassador: process.env.CAMPAIGN_MONITOR_AMBASSADOR_LIST_ID,
 	workshop: process.env.CAMPAIGN_MONITOR_WORKSHOP_LIST_ID,
