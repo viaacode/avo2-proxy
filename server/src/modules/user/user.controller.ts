@@ -59,49 +59,67 @@ export default class UserController {
 		}
 
 		// create delete user events
-		await EventLoggingService.insertEvents(profileIds.map((profileId): LogEvent => ({
-			action: 'delete',
-			component: 'server',
-			created_at: new Date().toISOString(),
-			is_system: false,
-			message: `Gebruiker ${currentUser.first_name} ${currentUser.last_name} heeft een gebruiker geblokkeerd`,
-			namespace: 'avo',
-			object: profileId,
-			object_type: 'profile',
-			source_url: '',
-			occurred_at: new Date().toISOString(),
-			subject: currentUser.uid,
-			subject_type: 'user',
-			parent_id: null,
-			id: undefined,
-			subject_ip: null,
-			trace_id: null,
-		})));
+		let message: string;
+		if (currentUser) {
+			message = `Gebruiker ${currentUser.first_name} ${currentUser.last_name} heeft een gebruiker verwijderd`;
+		} else {
+			message = 'Een gebruiker werdt gewist via de delete user API endpoint';
+		}
+		await EventLoggingService.insertEvents(
+			profileIds.map(
+				(profileId): LogEvent => ({
+					message,
+					action: 'delete',
+					component: 'server',
+					created_at: new Date().toISOString(),
+					is_system: false,
+					namespace: 'avo',
+					object: profileId,
+					object_type: 'profile',
+					source_url: '',
+					occurred_at: new Date().toISOString(),
+					subject: currentUser ? currentUser.uid : 'API request',
+					subject_type: currentUser ? 'user' : 'system',
+					parent_id: null,
+					id: undefined,
+					subject_ip: null,
+					trace_id: null,
+				})
+			)
+		);
 	}
 
-	static async bulkUpdateBlockStatus(profileIds: string[], isBlocked: boolean, currentUser: Avo.User.User): Promise<void> {
+	static async bulkUpdateBlockStatus(
+		profileIds: string[],
+		isBlocked: boolean,
+		currentUser: Avo.User.User
+	): Promise<void> {
 		try {
 			await UserService.updateBlockStatusByProfileIds(profileIds, isBlocked);
 
 			// create block/unblock user events
-			await EventLoggingService.insertEvents(profileIds.map((profileId): LogEvent => ({
-				action: isBlocked ? 'activate' : 'deactivate',
-				component: 'server',
-				created_at: new Date().toISOString(),
-				is_system: false,
-				message: `Gebruiker ${currentUser.first_name} ${currentUser.last_name} heeft een gebruiker geblokkeerd`,
-				namespace: 'avo',
-				object: profileId,
-				object_type: 'profile',
-				source_url: '',
-				occurred_at: new Date().toISOString(),
-				subject: currentUser.uid,
-				subject_type: 'user',
-				parent_id: null,
-				id: undefined,
-				subject_ip: null,
-				trace_id: null,
-			})));
+			await EventLoggingService.insertEvents(
+				profileIds.map(
+					(profileId): LogEvent => ({
+						action: isBlocked ? 'activate' : 'deactivate',
+						component: 'server',
+						created_at: new Date().toISOString(),
+						is_system: false,
+						message: `Gebruiker ${currentUser.first_name} ${currentUser.last_name} heeft een gebruiker geblokkeerd`,
+						namespace: 'avo',
+						object: profileId,
+						object_type: 'profile',
+						source_url: '',
+						occurred_at: new Date().toISOString(),
+						subject: currentUser.uid,
+						subject_type: 'user',
+						parent_id: null,
+						id: undefined,
+						subject_ip: null,
+						trace_id: null,
+					})
+				)
+			);
 
 			if (isBlocked) {
 				// Send blocked mail

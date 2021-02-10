@@ -2,6 +2,7 @@ import { get, isArray, trimEnd } from 'lodash';
 import * as queryString from 'querystring';
 import {
 	Context,
+	DELETE,
 	GET,
 	Path,
 	POST,
@@ -28,7 +29,6 @@ import CampaignMonitorService from '../../../campaign-monitor/campaign-monitor.s
 import StamboekController from '../../../stamboek-validate/controller';
 import UserController from '../../../user/user.controller';
 import { IdpHelper } from '../../idp-helper';
-import { AuthService } from '../../service';
 import { LdapUser } from '../../types';
 
 import HetArchiefController from './controller';
@@ -508,10 +508,11 @@ export default class HetArchiefRoute {
 	 * We need to delete these users from Campaign Monitor and also from the avo database
 	 */
 	@Path('delete-users')
-	@POST
+	@DELETE
 	@PreProcessor(checkApiKeyRouteGuard)
-	async deleteUsers(body: DeleteUsersBody): Promise<{ status: 'ok' | 'error'; error?: CustomError }> {
-		if (!get(body, 'userLdapUuids') || !isArray(!get(body, 'userLdapUuids'))) {
+	async deleteUsers(body: DeleteUsersBody): Promise<{ status: 'ok' | 'error'; error?: CustomError, deletions?: number }> {
+		const userLdapUuids = get(body, 'userLdapUuids');
+		if (!userLdapUuids || !isArray(userLdapUuids)) {
 			throw new BadRequestError(
 				'Body should contain userLdapUuids with the ldap user uuids of the users that should be deleted',
 				null,
@@ -532,17 +533,18 @@ export default class HetArchiefRoute {
 			});
 
 			// Delete the users
+			const profileIds = profileInfos.map((profileInfo) => profileInfo.profileId);
 			await UserController.bulkDeleteUsers(
-				profileInfos.map((profileInfo) => profileInfo.profileId),
+				profileIds,
 				'DELETE_ALL',
 				null,
 				currentUser
 			);
 
-			return { status: 'ok' };
+			return { status: 'ok', deletions: profileIds.length };
 		} catch (err) {
 			const error = new InternalServerError(
-				'Failed during update user route (hetarchief)',
+				'Failed during delete user route (hetarchief)',
 				err,
 				{
 					body,
