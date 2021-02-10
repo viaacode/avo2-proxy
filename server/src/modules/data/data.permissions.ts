@@ -415,14 +415,6 @@ export const QUERY_PERMISSIONS: {
 			);
 		},
 		INSERT_ASSIGNMENT_RESPONSE: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
-		GET_COLLECTION_BY_ID: or(
-			PermissionName.CREATE_BUNDLES,
-			PermissionName.EDIT_ANY_COLLECTIONS,
-			PermissionName.EDIT_OWN_COLLECTIONS,
-			PermissionName.EDIT_ANY_BUNDLES,
-			PermissionName.EDIT_OWN_BUNDLES,
-			PermissionName.ADD_ITEM_TO_COLLECTION_BY_PID
-		),
 		UPDATE_COLLECTION: async (user: Avo.User.User, query: string, variables: any) => {
 			if (
 				AuthService.hasPermission(user, PermissionName.EDIT_ANY_COLLECTIONS) ||
@@ -808,5 +800,6 @@ export const QUERY_PERMISSIONS: {
 		GET_ASSIGNMENT_OWNER: ALL_LOGGED_IN_USERS,
 		GET_COLLECTION_OWNER: ALL_LOGGED_IN_USERS,
 		GET_USER_BLOCK_EVENTS: ALL_LOGGED_IN_USERS,
+		GET_PROFILE_IDS_BY_LDAP_IDS: ALL_LOGGED_IN_USERS,
 	},
 };

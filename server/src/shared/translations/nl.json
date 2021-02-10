@@ -27,7 +27,6 @@
   "modules/auth/idps/smartschool/route___er-ging-iets-mis-tijdens-het-uitloggen-met-smartschool": "Er ging iets mis tijdens het uitloggen met Smartschool.",
   "modules/auth/idps/smartschool/route___gelieve-eerst-in-te-loggen-met-je-avo-account-en-je-smartschool-te-koppelen-in-je-account-instellingen": "Log eerst in op Het Archief voor Onderwijs en koppel je account met je  Smartschool-account in je instellingen. Deze vind je onder je profiel rechtsboven in de navigatiebalk.",
   "modules/auth/idps/smartschool/route___link-eerst-je-accounts": "Je Smartschool-account is nog niet gekoppeld aan je account op Het Archief voor Onderwijs. Log eerst in en koppel je account met je Smartschool-account. Deze vind je onder je profiel rechtsboven in de navigatiebalk.",
-  "modules/auth/route___er-ging-iets-mis-tijdens-het-uitloggen": "Er ging iets mis tijdens het uitloggen.",
   "modules/auth/route___het-koppelen-van-de-account-is-mislukt": "Het koppelen van de accounts is mislukt.",
   "modules/auth/route___het-ontkoppelen-van-de-account-is-mislukt": "Het ontkoppelen van de accounts is mislukt.",
   "modules/user/user___anonieme": "Anonieme",
