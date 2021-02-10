@@ -132,7 +132,7 @@ export default class UserService {
 				});
 			}
 
-			return get(response, 'shared_users', []).map((user: Avo.User.User) => user.mail);
+			return get(response, 'data.shared_users', []).map((user: Avo.User.User) => user.mail);
 		} catch (err) {
 			throw new CustomError('Failed to bulk get email adresses', err, {
 				profileIds,

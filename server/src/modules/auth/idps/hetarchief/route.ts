@@ -526,12 +526,6 @@ export default class HetArchiefRoute {
 				mail: string;
 			}[] = await HetArchiefService.getProfileIdsByLdapIds(body.userLdapUuids);
 
-			// Send emails now that the users are still in campaign monitor
-			await CampaignMonitorService.send({
-				to: profileInfos.map((info) => info.mail),
-				template: 'deleteUser',
-			});
-
 			// Delete the users
 			const profileIds = profileInfos.map((profileInfo) => profileInfo.profileId);
 			await UserController.bulkDeleteUsers(

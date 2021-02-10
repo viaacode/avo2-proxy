@@ -36,10 +36,14 @@ export interface EmailUserInfo {
 	UserGroup: string;
 }
 
+export interface DeleteUserInfo {
+	email: string;
+}
+
 export interface EmailInfo {
 	template: keyof typeof templateIds;
 	to: string | string[];
-	data?: SharedContentData | EmailUserInfo;
+	data?: SharedContentData | EmailUserInfo | DeleteUserInfo;
 }
 
 export interface HasContent {
