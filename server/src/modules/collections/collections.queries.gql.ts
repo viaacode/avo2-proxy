@@ -1,10 +1,10 @@
 export const GET_COLLECTION_BY_ID = `
 	query getCollectionById($id: uuid!) {
-		app_collections(where: { id: { _eq: $id }, is_deleted: { _eq: false } }) {
+		app_collections(where: {id: {_eq: $id}, is_deleted: {_eq: false}}) {
 			id
 			description
 			description_long
-			collection_fragments(order_by: { position: asc }) {
+			collection_fragments(order_by: {position: asc}) {
 				use_custom_fields
 				updated_at
 				start_oc
@@ -91,7 +91,7 @@ export const GET_COLLECTION_BY_ID = `
 				label
 				id
 			}
-			relations(where: { predicate: { _eq: "IS_COPY_OF" } }) {
+			relations(where: {predicate: {_eq: "IS_COPY_OF"}}) {
 				object_meta {
 					id
 					title
@@ -111,27 +111,15 @@ export const GET_COLLECTION_BY_ID = `
 				}
 				note
 			}
-			management_actualised_at: QC(
-				where: { qc_label: { _eq: KWALITEITSCHECK } }
-				order_by: { created_at: desc_nulls_last }
-				limit: 1
-			) {
+			management_actualised_at: QC(where: {qc_label: {_eq: KWALITEITSCHECK}}, order_by: {created_at: desc_nulls_last}, limit: 1) {
 				id
 				created_at
 			}
-			management_approved_at: QC(
-				where: { qc_label: { _eq: EINDCHECK } }
-				order_by: { created_at: desc_nulls_last }
-				limit: 1
-			) {
+			management_approved_at: QC(where: {qc_label: {_eq: EINDCHECK}}, order_by: {created_at: desc_nulls_last}, limit: 1) {
 				id
 				created_at
 			}
-			management_language_check: QC(
-				where: { qc_label: { _eq: TAALCHECK } }
-				order_by: { created_at: desc_nulls_last }
-				limit: 1
-			) {
+			management_language_check: QC(where: {qc_label: {_eq: TAALCHECK}}, order_by: {created_at: desc_nulls_last}, limit: 1) {
 				id
 				qc_status
 				assignee_profile_id
@@ -141,13 +129,13 @@ export const GET_COLLECTION_BY_ID = `
 				}
 				comment
 			}
-			management_quality_check: QC(
-				where: { qc_label: { _eq: KWALITEITSCHECK } }
-				order_by: { created_at: desc_nulls_last }
-				limit: 1
-			) {
+			management_quality_check: QC(where: {qc_label: {_eq: KWALITEITSCHECK}}, order_by: {created_at: desc_nulls_last}, limit: 1) {
 				id
 				qc_status
+			}
+			marcom_note {
+				id
+				note
 			}
 		}
 	}
