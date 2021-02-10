@@ -14,8 +14,6 @@ import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authentica
 import { IdpHelper } from '../auth/idp-helper';
 
 import AssetController from './assets.controller';
-import { AuthService } from '../auth/service';
-import DataService from '../data/data.service';
 
 @Path('/assets')
 export default class AssetRoute {
@@ -34,7 +32,7 @@ export default class AssetRoute {
 		if (!assetInfo || !assetInfo.filename || !assetInfo.type) {
 			throw new BadRequestError(
 				'the body must contain the filename, content and type (' +
-				'\'BUNDLE_COVER\',\'COLLECTION_COVER\',\'CONTENT_PAGE_IMAGE\',\'PROFILE_AVATAR\',\'ITEM_SUBTITLE\''
+					"'BUNDLE_COVER','COLLECTION_COVER','CONTENT_PAGE_IMAGE','PROFILE_AVATAR','ITEM_SUBTITLE'"
 			);
 		}
 		if (!this.context.request.files || !this.context.request.files.length) {

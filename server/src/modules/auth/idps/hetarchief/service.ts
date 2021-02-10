@@ -6,8 +6,10 @@ import convert = require('xml-js');
 import { checkRequiredEnvs } from '../../../../shared/helpers/env-check';
 import { ExternalServerError, InternalServerError } from '../../../../shared/helpers/error';
 import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
+import DataService from '../../../data/data.service';
 import { IdpMetaData, LdapUser } from '../../types';
 
+import { GET_PROFILE_IDS_BY_LDAP_IDS } from './hetarchief.gql';
 import { LdapApiUserInfo } from './hetarchief.types';
 
 export interface SamlCallbackBody {
@@ -241,7 +243,7 @@ export default class HetArchiefService {
 				});
 			}
 		} catch (err) {
-			const error = new InternalServerError(
+			throw new InternalServerError(
 				'Failed to set user info from the ldap api',
 				err,
 				{
@@ -249,8 +251,37 @@ export default class HetArchiefService {
 					ldapUserId,
 				}
 			);
-			logger.error(error);
-			throw error;
+		}
+	}
+
+	static async getProfileIdsByLdapIds(
+		userLdapUuids: string[]
+	): Promise<{ profileId: string; mail: string }[]> {
+		try {
+			const response = await DataService.execute(GET_PROFILE_IDS_BY_LDAP_IDS, {
+				userLdapUuids,
+			});
+
+			if (response.errors) {
+				throw new InternalServerError(
+					'Failed to fetch profileIds by ldap uuids from the database',
+					null,
+					{ response }
+				);
+			}
+
+			return get(response, 'data.users_idp_map', []).map((userInfo: any) => ({
+				profileId: get(userInfo, 'local_user.profile.id'),
+				mail: get(userInfo, 'local_user.mail'),
+			}));
+		} catch (err) {
+			throw new InternalServerError(
+				'Failed to get profileIds by ldap uuids from the database',
+				err,
+				{
+					userLdapUuids,
+				}
+			);
 		}
 	}
 }

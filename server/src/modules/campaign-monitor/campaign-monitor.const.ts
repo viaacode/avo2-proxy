@@ -2,7 +2,7 @@ import { keys } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
-export const NEWSLETTER_LISTS = {
+export const NEWSLETTER_LISTS: Record<string, string> = {
 	newsletter: process.env.CAMPAIGN_MONITOR_NEWSLETTER_LIST_ID,
 	ambassador: process.env.CAMPAIGN_MONITOR_AMBASSADOR_LIST_ID,
 	workshop: process.env.CAMPAIGN_MONITOR_WORKSHOP_LIST_ID,
@@ -16,6 +16,7 @@ export const templateIds = {
 	collection: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_COLLECTION,
 	bundle: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_SHARE_BUNDLE,
 	blockUser: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_BLOCK_USER,
+	deleteUser: process.env.CAMPAIGN_MONITOR_EMAIL_TEMPLATE_DELETE_USER,
 };
 
 export const BULK_UPDATE_BATCH_SIZE = 1000;

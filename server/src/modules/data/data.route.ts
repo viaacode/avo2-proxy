@@ -31,21 +31,19 @@ export default class DataRoute {
 			const avoUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 
 			// Check if user can execute query
-			const permissionCheck: boolean | null = await DataService.isAllowedToRunQuery(
+			const whitelistedQuery: string | null = await DataService.isAllowedToRunQuery(
 				avoUser,
 				body.query,
 				body.variables,
 				'CLIENT'
 			);
-			if (isNil(permissionCheck)) {
-				throw new BadRequestError('This query is not whitelisted');
-			}
-			if (!permissionCheck) {
+			const enableWhitelist = process.env.GRAPHQL_ENABLE_WHITELIST === undefined || process.env.GRAPHQL_ENABLE_WHITELIST === 'true';
+			if (isNil(whitelistedQuery) && enableWhitelist) {
 				throw new BadRequestError('You are not allowed to run this query');
 			}
 
 			return await DataController.execute(
-				body.query,
+				enableWhitelist ? whitelistedQuery : body.query,
 				body.variables,
 				{
 					...this.context.request.headers,

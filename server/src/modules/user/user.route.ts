@@ -1,3 +1,4 @@
+import * as promiseUtils from 'blend-promise-utils';
 import {
 	Context,
 	DELETE,
@@ -20,8 +21,11 @@ import {
 } from '../../shared/middleware/is-authenticated';
 import { PermissionName } from '../../shared/permissions';
 import { IdpHelper } from '../auth/idp-helper';
+import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
 
 import UserController from './user.controller';
+import { BULK_GET_EMAIL_ADDRESSES } from './user.queries.gql';
+import UserService from './user.service';
 import { ProfileBlockEvents } from './user.types';
 
 @Path('/user')
@@ -46,6 +50,19 @@ export default class UserRoute {
 		try {
 			const currentUser = IdpHelper.getAvoUserInfoFromSession(this.context.request);
 			const typedBody: Avo.User.BulkDeleteUsersBody = body;
+			const emails: string[] = await UserService.bulkGetEmails(typedBody.profileIds);
+
+			// Send emails now that the users are still in campaign monitor
+			await promiseUtils.mapLimit(emails, 20, async (email) => {
+				await CampaignMonitorService.send({
+					to: emails,
+					template: 'deleteUser',
+					data: {
+						email,
+					},
+				});
+			});
+
 			await UserController.bulkDeleteUsers(
 				typedBody.profileIds,
 				typedBody.deleteOption,

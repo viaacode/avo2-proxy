@@ -36,11 +36,14 @@ export interface EmailUserInfo {
 	UserGroup: string;
 }
 
+export interface DeleteUserInfo {
+	email: string;
+}
+
 export interface EmailInfo {
-	// TODO use typings version
 	template: keyof typeof templateIds;
-	to: string;
-	data: SharedContentData | EmailUserInfo;
+	to: string | string[];
+	data?: SharedContentData | EmailUserInfo | DeleteUserInfo;
 }
 
 export interface HasContent {
