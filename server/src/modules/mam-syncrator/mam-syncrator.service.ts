@@ -13,13 +13,14 @@ export default class MamSyncratorService {
 
 	private static async getAuthTokenFromNetwork(): Promise<SyncratorToken> {
 		let url: string | undefined;
-		let data: { username: string; password: string } | undefined;
+		let data: { username: string; password: string; grant_type: string } | undefined;
 		try {
 			// Fetch new access token
 			url = process.env.SYNCRATOR_AUTH_SERVER_URL as string;
 			data = {
 				username: process.env.SYNCRATOR_AUTH_USERNAME as string,
 				password: process.env.SYNCRATOR_AUTH_PASSWORD as string,
+				grant_type: 'client_credentials',
 			};
 			const authTokenResponse: AxiosResponse<SyncratorToken> = await axios.post(
 				url,
