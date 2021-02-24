@@ -80,7 +80,7 @@ export const UPDATE_NAME_AND_MAIL = `
 `;
 
 export const UPDATE_MAIL = `
-	mutation updateNameAndMail($profileId: uuid!, $mail: String!) {
+	mutation updateMail($profileId: uuid!, $mail: String!) {
 		update_shared_users(where: {profile: {id: {_eq: $profileId}}}, _set: {mail: $mail}) {
 			affected_rows
 		}

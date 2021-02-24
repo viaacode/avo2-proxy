@@ -3,7 +3,7 @@ import { get } from 'lodash';
 import { InternalServerError } from '../../shared/helpers/error';
 import DataService from '../data/data.service';
 
-import { GET_ITEM_BY_EXTERNAL_ID } from './player-ticket.queries.gql';
+import { GET_ITEM_BROWSE_PATH_BY_EXTERNAL_ID } from './player-ticket.queries.gql';
 import PlayerTicketService, { PlayerTicket } from './player-ticket.service';
 
 export default class PlayerTicketController {
@@ -20,7 +20,7 @@ export default class PlayerTicketController {
 		expire: number
 	): Promise<string> {
 		try {
-			const response = await DataService.execute(GET_ITEM_BY_EXTERNAL_ID, { externalId });
+			const response = await DataService.execute(GET_ITEM_BROWSE_PATH_BY_EXTERNAL_ID, { externalId });
 
 			const browsePath: string = get(response, 'data.app_item_meta[0].browse_path');
 
@@ -31,7 +31,7 @@ export default class PlayerTicketController {
 					{
 						browsePath,
 						externalId,
-						query: GET_ITEM_BY_EXTERNAL_ID,
+						query: GET_ITEM_BROWSE_PATH_BY_EXTERNAL_ID,
 					}
 				);
 			}

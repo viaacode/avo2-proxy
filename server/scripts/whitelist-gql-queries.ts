@@ -40,6 +40,16 @@ async function fetchPost(body: any) {
 	return response.data;
 }
 
+/**
+ * Extracts label of query
+ * example: query getCollectionNamesByOwner($owner_profile_id: uuid) { app_collections( wher...
+ * would return: getCollectionNamesByOwner
+ * @param query
+ */
+function getQueryLabel(query: string): string {
+	return _.split(query, /[ ({]/)[1];
+}
+
 function whitelistQueries(collectionName: string, collectionDescription: string, gqlRegex: RegExp) {
 	const options = {
 		cwd: path.join(__dirname, '../src'),
@@ -47,6 +57,7 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 
 	glob('**/*.gql.ts', options, async (err, files) => {
 		const queries: { [queryName: string]: string } = {};
+		const queryLabels: string[] = [];
 
 		try {
 			if (err) {
@@ -71,6 +82,21 @@ function whitelistQueries(collectionName: string, collectionDescription: string,
 									`Extracting graphql queries with javascript template parameters isn't supported: ${name}`
 								);
 							}
+
+							if (queries[name]) {
+								logger.warn(
+									`Query with the same variable name is found twice. This will cause a conflicts in the query whitelist: ${name}`
+								);
+							}
+
+							const label = getQueryLabel(query);
+							if (queryLabels.includes(label)) {
+								logger.warn(
+									`Query with the same label is found twice. This will cause a conflicts in the query whitelist: ${label}`
+								);
+							}
+							queryLabels.push(label);
+
 							// Remove new lines and tabs
 							// Trim whitespace
 							queries[name] = query.replace(/[\t\r\n]+/gm, ' ').trim();

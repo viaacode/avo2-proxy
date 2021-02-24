@@ -7,7 +7,7 @@ export const GET_INTERACTIVE_TOUR_ROUTE_IDS = `
 `;
 
 export const GET_INTERACTIVE_TOUR_WITH_STATUSES = `
-	query getInteractiveTour(
+	query getInteractiveTourWithStatuses(
 		$routeId: String!
 		$notificationKeyPrefix: String!
 		$profileId: uuid!
@@ -26,7 +26,7 @@ export const GET_INTERACTIVE_TOUR_WITH_STATUSES = `
 `;
 
 export const GET_INTERACTIVE_TOUR_WITHOUT_STATUSES = `
-	query getInteractiveTour($routeId: String!) {
+	query getInteractiveTourWithoutStatuses($routeId: String!) {
 		app_interactive_tour(where: { page: { _eq: $routeId } }, order_by: { created_at: asc }) {
 			steps
 			id
