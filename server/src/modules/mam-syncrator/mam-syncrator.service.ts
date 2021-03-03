@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import queryString from 'query-string';
 
 import { checkRequiredEnvs } from '../../shared/helpers/env-check';
@@ -6,25 +6,33 @@ import { ExternalServerError, InternalServerError } from '../../shared/helpers/e
 
 import { SyncratorToken } from './mam-syncrator.types';
 
+interface AxiosSyncratorRequestData {
+	grant_type: string;
+}
+
 export default class MamSyncratorService {
 	private static authToken: SyncratorToken;
 	private static authTokenExpire: Date;
 	private static tokenPromise: Promise<SyncratorToken> | null;
 
 	private static async getAuthTokenFromNetwork(): Promise<SyncratorToken> {
-		let url: string | undefined;
-		let data: { username: string; password: string; grant_type: string } | undefined;
-		try {
-			// Fetch new access token
-			url = process.env.SYNCRATOR_AUTH_SERVER_URL as string;
-			data = {
+		const url: string | undefined = process.env.SYNCRATOR_AUTH_SERVER_URL as string;
+		const data: AxiosSyncratorRequestData | undefined = {
+			grant_type: 'client_credentials',
+		};
+		const config: AxiosRequestConfig = {
+			auth: {
 				username: process.env.SYNCRATOR_AUTH_USERNAME as string,
 				password: process.env.SYNCRATOR_AUTH_PASSWORD as string,
-				grant_type: 'client_credentials',
-			};
+			},
+		};
+
+		try {
+			// Fetch new access token
 			const authTokenResponse: AxiosResponse<SyncratorToken> = await axios.post(
 				url,
-				queryString.stringify(data)
+				queryString.stringify(data),
+				config
 			);
 
 			if (authTokenResponse.status < 200 || authTokenResponse.status >= 400) {
