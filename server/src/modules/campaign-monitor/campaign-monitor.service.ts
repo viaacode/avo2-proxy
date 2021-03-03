@@ -164,7 +164,9 @@ export default class CampaignMonitorService {
 				return;
 			}
 			await axios(
-				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${NEWSLETTER_LISTS[listId]}.json?email=${email}`,
+				`${process.env.CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT}/${
+					NEWSLETTER_LISTS[listId]
+				}.json?${queryString.stringify({ email })}`,
 				{
 					method: 'DELETE',
 					auth: {
