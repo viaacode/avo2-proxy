@@ -1,12 +1,12 @@
 import { Request } from 'express';
-import _ from 'lodash';
+import { get, set } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError, ServerError } from '../../shared/helpers/error';
 import DataService from '../data/data.service';
 
-import HetArchiefService from './idps/hetarchief/service';
+import HetArchiefService from './idps/het-archief/het-archief.service';
 import { GET_IDP_MAP, INSERT_IDP_MAP } from './queries.gql';
 import { AuthService } from './service';
 import { IdpMap } from './types';
@@ -18,7 +18,7 @@ const IDP_TYPE_PATH = 'session.idpType';
 export class IdpHelper {
 	public static getIdpUserInfoFromSession(request: Request): any | null {
 		const idpType = IdpHelper.getIdpTypeFromSession(request);
-		return _.get(request, `${IDP_USER_INFO_PATH}.${idpType}`, null);
+		return get(request, `${IDP_USER_INFO_PATH}.${idpType}`, null);
 	}
 
 	public static setIdpUserInfoOnSession(
@@ -27,8 +27,8 @@ export class IdpHelper {
 		idpType: Avo.Auth.IdpType | null
 	): void {
 		if (request.session) {
-			_.set(request, `${IDP_USER_INFO_PATH}.${idpType}`, idpUserInfo);
-			_.set(request, IDP_TYPE_PATH, idpUserInfo ? idpType : null); // clear the idpType if idpUserInfo is null
+			set(request, `${IDP_USER_INFO_PATH}.${idpType}`, idpUserInfo);
+			set(request, IDP_TYPE_PATH, idpUserInfo ? idpType : null); // clear the idpType if idpUserInfo is null
 		} else {
 			throw new InternalServerError(
 				'Failed to store idp user info / ipd type because no session was found on the request object',
@@ -50,7 +50,7 @@ export class IdpHelper {
 		if (IdpHelper.isSessionExpired(request)) {
 			return null;
 		}
-		return _.get(request, AVO_USER_INFO_PATH, null);
+		return get(request, AVO_USER_INFO_PATH, null);
 	}
 
 	public static async getUpdatedAvoUserInfoFromSession(request: Request): Promise<Avo.User.User> {
@@ -75,7 +75,7 @@ export class IdpHelper {
 	): void {
 		try {
 			if (request.session) {
-				_.set(request, AVO_USER_INFO_PATH, user);
+				set(request, AVO_USER_INFO_PATH, user);
 			} else {
 				throw new InternalServerError(
 					'Failed to store avo user info because no session was found on the request object',
@@ -93,11 +93,11 @@ export class IdpHelper {
 		if (IdpHelper.isSessionExpired(request)) {
 			return null;
 		}
-		return _.get(request, IDP_TYPE_PATH, null);
+		return get(request, IDP_TYPE_PATH, null);
 	}
 
 	public static isSessionExpired(request: Request): boolean {
-		const expires = _.get(request, 'session.cookie.expires', null);
+		const expires = get(request, 'session.cookie.expires', null);
 		return !expires || !expires.valueOf || expires.valueOf() < Date.now();
 	}
 
@@ -128,7 +128,7 @@ export class IdpHelper {
 				});
 			}
 
-			const entry = _.get(getResponse, 'data.users_idp_map[0]');
+			const entry = get(getResponse, 'data.users_idp_map[0]');
 			if (entry) {
 				return; // The required entry already exists
 			}
