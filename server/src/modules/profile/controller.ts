@@ -74,7 +74,7 @@ export default class ProfileController {
 				bio: profile.bio || null,
 				stamboek: profile.stamboek,
 				is_exception: profile.is_exception || false,
-				business_category: (profile as any).business_category || null, // TODO remove cast after update to typings v2.25.0
+				business_category: (profile as any).business_category || null, // TODO: type
 				...variables, // Override current profile variables with the variables in the parameter
 			};
 			delete completeVars.userId;

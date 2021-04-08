@@ -30,5 +30,5 @@
   "modules/auth/route___het-koppelen-van-de-account-is-mislukt": "Het koppelen van de accounts is mislukt.",
   "modules/auth/route___het-ontkoppelen-van-de-account-is-mislukt": "Het ontkoppelen van de accounts is mislukt.",
   "modules/user/user___anonieme": "Anonieme",
-  "modules/user/user___gebruiker": "gebruiker"
+  "modules/user/user___gebruiker": "Gebruiker"
 }
