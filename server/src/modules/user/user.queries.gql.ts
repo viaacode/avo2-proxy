@@ -33,7 +33,8 @@ export const BULK_STRIP_USERS = `
 				company_id: null,
 				is_exception: false,
 				stamboek: null,
-				title: null
+				title: null,
+				is_deleted: true
 			}
 		) {
 			affected_rows
