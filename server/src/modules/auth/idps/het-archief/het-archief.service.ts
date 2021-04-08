@@ -9,8 +9,8 @@ import { logger, logIfNotTestEnv } from '../../../../shared/helpers/logger';
 import DataService from '../../../data/data.service';
 import { IdpMetaData, LdapUser } from '../../types';
 
-import { GET_PROFILE_IDS_BY_LDAP_IDS } from './hetarchief.gql';
-import { LdapApiUserInfo } from './hetarchief.types';
+import { GET_PROFILE_IDS_BY_LDAP_IDS } from './het-archief.gql';
+import { LdapApiUserInfo } from './het-archief.types';
 
 export interface SamlCallbackBody {
 	SAMLResponse: string;
@@ -238,19 +238,15 @@ export default class HetArchiefService {
 				data: ldapUserInfo,
 			});
 			if (response.status < 200 || response.status >= 400) {
-				throw new ExternalServerError('response status code was unexpected', null, {
+				throw new ExternalServerError('Response status code was unexpected.', null, {
 					response,
 				});
 			}
 		} catch (err) {
-			throw new InternalServerError(
-				'Failed to set user info from the ldap api',
-				err,
-				{
-					url,
-					ldapUserId,
-				}
-			);
+			throw new InternalServerError('Failed to set user info from the ldap api', err, {
+				url,
+				ldapUserId,
+			});
 		}
 	}
 
@@ -282,6 +278,70 @@ export default class HetArchiefService {
 					userLdapUuids,
 				}
 			);
+		}
+	}
+
+	static async addAvoAppToLdapUsers(emails: string[]): Promise<void> {
+		const url = `${process.env.LDAP_API_ENDPOINT}/attribute`;
+
+		try {
+			const response: AxiosResponse<any> = await axios(url, {
+				method: 'post',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+				data: {
+					mod: {
+						'x-be-viaa-apps': ['avo'],
+					},
+					entries: emails.map((email: string) => ({
+						dn: `mail=${email},ou=people,dc=hetarchief,dc=be`,
+					})),
+				},
+			});
+
+			if (response.status < 200 || response.status >= 400) {
+				throw new ExternalServerError('Response status code was unexpected.', null, {
+					response,
+				});
+			}
+		} catch (err) {
+			throw new InternalServerError('Failed to add AvO app to LDAP user.', err, {
+				emails,
+			});
+		}
+	}
+
+	static async removeAvoAppFromLdapUsers(emails: string[]): Promise<void> {
+		const url = `${process.env.LDAP_API_ENDPOINT}attribute`;
+
+		try {
+			const response: AxiosResponse<any> = await axios(url, {
+				method: 'delete',
+				auth: {
+					username: process.env.LDAP_API_USERNAME,
+					password: process.env.LDAP_API_PASSWORD,
+				},
+				data: {
+					mod: {
+						'x-be-viaa-apps': ['avo'],
+					},
+					entries: emails.map((email: string) => ({
+						dn: `mail=${email},ou=people,dc=hetarchief,dc=be`,
+					})),
+				},
+			});
+
+			if (response.status < 200 || response.status >= 400) {
+				throw new ExternalServerError('Response status code was unexpected.', null, {
+					response,
+				});
+			}
+		} catch (err) {
+			throw new InternalServerError('Failed to remove AvO app from LDAP user.', err, {
+				emails,
+			});
 		}
 	}
 }

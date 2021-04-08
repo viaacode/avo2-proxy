@@ -3,8 +3,8 @@ import { get } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
-import { IdpHelper } from '../../idp-helper';
-import { LdapUser } from '../../types';
+import { IdpHelper } from '../../../idp-helper';
+import { LdapUser } from '../../../types';
 
 export default function isLoggedIn(request: Request): boolean {
 	const idpType: Avo.Auth.IdpType | null = IdpHelper.getIdpTypeFromSession(request);

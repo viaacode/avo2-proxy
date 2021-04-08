@@ -11,7 +11,7 @@ import { getUserByIdpId } from '../../helpers/get-user-by-idp-id';
 import { IdpHelper } from '../../idp-helper';
 import { GET_PROFILE_IDS_BY_USER_UID } from '../../queries.gql';
 import { AuthService } from '../../service';
-import { BasicIdpUserInfo } from '../hetarchief/controller';
+import { BasicIdpUserInfo } from '../het-archief/het-archief.controller';
 
 import SmartschoolService, { SmartschoolToken, SmartschoolUserInfo } from './service';
 

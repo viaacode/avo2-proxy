@@ -12,7 +12,7 @@ import EducationOrganizationsService, {
 } from '../education-organizations/service';
 import ProfileController from '../profile/controller';
 
-import HetArchiefService from './idps/hetarchief/service';
+import HetArchiefService from './idps/het-archief/het-archief.service';
 import {
 	GET_USER_GROUPS,
 	GET_USER_INFO_BY_ID,
@@ -226,7 +226,9 @@ export class AuthService {
 			}
 
 			// Update profile
-			await ProfileController.updateProfile(avoUser, {company_id: avoUser.profile.company_id});
+			await ProfileController.updateProfile(avoUser, {
+				company_id: avoUser.profile.company_id,
+			});
 		} catch (err) {
 			throw new CustomError('Failed to update avo user info', err, { avoUser });
 		}
