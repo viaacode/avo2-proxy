@@ -314,7 +314,7 @@ export default class HetArchiefService {
 	}
 
 	static async removeAvoAppFromLdapUsers(emails: string[]): Promise<void> {
-		const url = `${process.env.LDAP_API_ENDPOINT}attribute`;
+		const url = `${process.env.LDAP_API_ENDPOINT}/attribute`;
 
 		try {
 			const response: AxiosResponse<any> = await axios(url, {
