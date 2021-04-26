@@ -1,6 +1,6 @@
 {
   "name": "avo2-proxy",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,6 @@
     "Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be>"
   ],
   "homepage": "https://github.com/viaacode/avo2-proxy",
-  "dependencies": {},
   "devDependencies": {
     "@commitlint/cli": "8.1.0",
     "@commitlint/config-conventional": "8.1.0",

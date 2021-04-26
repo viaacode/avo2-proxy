@@ -6,6 +6,7 @@ import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError, InternalServerError } from '../../shared/helpers/error';
 import i18n from '../../shared/translations/i18n';
+import HetArchiefService from '../auth/idps/het-archief/het-archief.service';
 import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
 import DataService from '../data/data.service';
 
@@ -251,8 +252,10 @@ export default class UserService {
 		profileIds: string[],
 		isBlocked: boolean
 	): Promise<void> {
+		let emails: string[];
+
 		try {
-			const response = await DataService.execute(
+			const blockUsersResponse = await DataService.execute(
 				BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
 				{
 					profileIds,
@@ -260,9 +263,9 @@ export default class UserService {
 				}
 			);
 
-			if (response.errors) {
+			if (blockUsersResponse.errors) {
 				throw new CustomError('Response from gragpql contains errors', null, {
-					response,
+					blockUsersResponse,
 				});
 			}
 		} catch (err) {
@@ -275,6 +278,32 @@ export default class UserService {
 					query: BULK_UPDATE_USER_BLOCKED_STATUS_BY_PROFILE_IDS,
 				}
 			);
+		}
+
+		try {
+			emails = await UserService.bulkGetEmails(profileIds);
+
+			if (!emails) {
+				throw new CustomError('Could not retrieve emails by profileIds.', null, {
+					emails,
+				});
+			}
+		} catch (err) {
+			throw new CustomError('Failed to retrieve emails by profileIds.', err, {
+				profileIds,
+			});
+		}
+
+		try {
+			if (isBlocked) {
+				await HetArchiefService.removeAvoAppFromLdapUsers(emails);
+			} else {
+				await HetArchiefService.addAvoAppToLdapUsers(emails);
+			}
+		} catch (err) {
+			throw new CustomError('Failed to update AvO app from LDAP users.', err, {
+				profileIds,
+			});
 		}
 	}
 

@@ -16,7 +16,7 @@ import EventLoggingController from '../event-logging/controller';
 
 import { ACCEPTED_TERMS_OF_USE_AND_PRIVACY_CONDITIONS, IDP_ADAPTERS } from './consts';
 import { IdpHelper } from './idp-helper';
-import { BasicIdpUserInfo } from './idps/hetarchief/controller';
+import { BasicIdpUserInfo } from './idps/het-archief/het-archief.controller';
 import {
 	DELETE_IDP_MAPS,
 	GET_NOTIFICATION,

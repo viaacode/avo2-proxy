@@ -25,15 +25,14 @@ import { isRelativeUrl } from '../../../../shared/helpers/relative-url';
 import { jsonStringify } from '../../../../shared/helpers/single-line-logging';
 import { checkApiKeyRouteGuard, isLoggedIn } from '../../../../shared/middleware/is-authenticated';
 import i18n from '../../../../shared/translations/i18n';
-import CampaignMonitorService from '../../../campaign-monitor/campaign-monitor.service';
 import StamboekController from '../../../stamboek-validate/controller';
 import UserController from '../../../user/user.controller';
 import { IdpHelper } from '../../idp-helper';
 import { LdapUser } from '../../types';
 
-import HetArchiefController from './controller';
-import { DeleteUsersBody, LdapPerson, UpdateUserBody } from './hetarchief.types';
-import HetArchiefService, { SamlCallbackBody } from './service';
+import HetArchiefController from './het-archief.controller';
+import HetArchiefService, { SamlCallbackBody } from './het-archief.service';
+import { DeleteUsersBody, LdapPerson, UpdateUserBody } from './het-archief.types';
 
 interface RelayState {
 	returnToUrl: string;
@@ -510,7 +509,9 @@ export default class HetArchiefRoute {
 	@Path('delete-users')
 	@DELETE
 	@PreProcessor(checkApiKeyRouteGuard)
-	async deleteUsers(body: DeleteUsersBody): Promise<{ status: 'ok' | 'error'; error?: CustomError, deletions?: number }> {
+	async deleteUsers(
+		body: DeleteUsersBody
+	): Promise<{ status: 'ok' | 'error'; error?: CustomError; deletions?: number }> {
 		const userLdapUuids = get(body, 'userLdapUuids');
 		if (!userLdapUuids || !isArray(userLdapUuids)) {
 			throw new BadRequestError(
@@ -528,12 +529,7 @@ export default class HetArchiefRoute {
 
 			// Delete the users
 			const profileIds = profileInfos.map((profileInfo) => profileInfo.profileId);
-			await UserController.bulkDeleteUsers(
-				profileIds,
-				'DELETE_ALL',
-				null,
-				currentUser
-			);
+			await UserController.bulkDeleteUsers(profileIds, 'DELETE_ALL', null, currentUser);
 
 			return { status: 'ok', deletions: profileIds.length };
 		} catch (err) {

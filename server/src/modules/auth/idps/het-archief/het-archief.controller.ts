@@ -1,6 +1,5 @@
-import * as promiseUtils from 'blend-promise-utils';
 import { Request } from 'express';
-import { cloneDeep, compact, get, isEqual, uniq, without } from 'lodash';
+import { cloneDeep, compact, get, isEqual, uniq } from 'lodash';
 
 import type { Avo } from '@viaa/avo2-types';
 
@@ -13,7 +12,7 @@ import { logger } from '../../../../shared/helpers/logger';
 import CampaignMonitorController from '../../../campaign-monitor/campaign-monitor.controller';
 import DataService from '../../../data/data.service';
 import EducationOrganizationsService, {
-	LdapEducationOrganisation, LdapEducationOrganizationWithUnits,
+	LdapEducationOrganisation,
 	LdapEduOrgUnit,
 } from '../../../education-organizations/service';
 import EventLoggingController from '../../../event-logging/controller';
@@ -24,7 +23,7 @@ import { GET_USER_BY_LDAP_UUID } from '../../queries.gql';
 import { AuthService } from '../../service';
 import { LdapUser, UserGroup } from '../../types';
 
-import { LdapPerson } from './hetarchief.types';
+import { LdapPerson } from './het-archief.types';
 
 export interface BasicIdpUserInfo {
 	first_name: string;
@@ -240,7 +239,8 @@ export default class HetArchiefController {
 				get(ldapUserInfo, 'organizational_status[0]')
 			);
 			newAvoUser.profile.stamboek = get(ldapUserInfo, 'employee_nr[0]', null);
-			newAvoUser.profile.alias = newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
+			newAvoUser.profile.alias =
+				newAvoUser.profile.alias || get(ldapUserInfo, 'display_name[0]');
 			newAvoUser.profile.educationLevels = get(ldapUserInfo, 'edu_levelname') || [];
 			newAvoUser.profile.subjects = uniq(newAvoUser.profile.subjects || []);
 			(newAvoUser.profile as any).is_exception =
@@ -255,8 +255,8 @@ export default class HetArchiefController {
 				);
 
 			// Split educational organisations from company id
-			const eduOrgIds = orgIds.filter(id => !id.startsWith('OR-'));
-			const companyId = orgIds.find(id => id.startsWith('OR-'));
+			const eduOrgIds = orgIds.filter((id) => !id.startsWith('OR-'));
+			const companyId = orgIds.find((id) => id.startsWith('OR-'));
 			const orgUnitIds: string[] =
 				get(ldapUserInfo, 'educationalOrganisationUnitIds') ||
 				get(ldapUserInfo, 'units', []).map((org: LdapEduOrgUnit) => org.ou_id);
@@ -274,7 +274,7 @@ export default class HetArchiefController {
 				while (index < eduOrgIds.length && !orgInfo) {
 					orgInfo = await EducationOrganizationsService.getOrganization(
 						eduOrgIds[index],
-						orgUnitIds.find(orgUnitId => orgUnitId.startsWith(eduOrgIds[0])),
+						orgUnitIds.find((orgUnitId) => orgUnitId.startsWith(eduOrgIds[0]))
 					);
 					if (orgInfo) {
 						(newAvoUser.profile as any).business_category = orgInfo.type;
