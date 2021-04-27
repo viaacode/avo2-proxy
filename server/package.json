@@ -14,7 +14,9 @@
 	"homepage": "https://github.com/viaacode/avo2-proxy",
 	"scripts": {
 		"start": "npm run serve",
-		"start-with-env": "dotenv -e .env/local.env npm run serve",
+		"start-with-env": "dotenv -e .env/.env npm run serve",
+		"start-with-env-dev": "dotenv -e .env/.env.dev npm run serve",
+		"start-with-env-qas": "dotenv -e .env/.env.qas npm run serve",
 		"serve": "ts-node-dev --transpile-only --poll -- index.ts",
 		"prebuild": "npm run clean:build",
 		"build": "tsc -p tsconfig.json && cp ./scripts/*.json ./dist/scripts",
@@ -28,8 +30,12 @@
 		"clean:coverage": "rm -rf ./test/coverage",
 		"open:coverage": "open ./test/coverage/lcov-report/index.html",
 		"whitelist-queries": "ts-node --transpile-only --require dotenv/config scripts/whitelist-gql-queries.ts dotenv_config_path=.env/.env",
+		"whitelist-queries-dev": "ts-node --transpile-only --require dotenv/config scripts/whitelist-gql-queries.ts dotenv_config_path=.env/.env.dev",
+		"whitelist-queries-qas": "ts-node --transpile-only --require dotenv/config scripts/whitelist-gql-queries.ts dotenv_config_path=.env/.env.qas",
 		"licenses": "license-checker --csv --out licenses.csv",
-		"extract-translations": "ts-node --transpile-only --require dotenv/config scripts/extract-and-replace-translations.ts dotenv_config_path=.env/.env && npm run format"
+		"extract-translations": "ts-node --transpile-only --require dotenv/config scripts/extract-and-replace-translations.ts dotenv_config_path=.env/.env && npm run format",
+		"extract-translations-dev": "ts-node --transpile-only --require dotenv/config scripts/extract-and-replace-translations.ts dotenv_config_path=.env/.env.dev && npm run format",
+		"extract-translations-qas": "ts-node --transpile-only --require dotenv/config scripts/extract-and-replace-translations.ts dotenv_config_path=.env/.env.qas && npm run format"
 	},
 	"dependencies": {
 		"@hapi/joi": "15.1.1",
