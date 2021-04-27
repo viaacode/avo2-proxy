@@ -12,7 +12,7 @@ import DataService from '../data/data.service';
 
 import { NEWSLETTER_LISTS, NEWSLETTERS_TO_FETCH, templateIds } from './campaign-monitor.const';
 import { COUNT_ACTIVE_USERS, GET_ACTIVE_USERS, HAS_CONTENT } from './campaign-monitor.gql';
-import { CmUserInfo, CustomFields, EmailInfo, HasContent } from './campaign-monitor.types';
+import { CmUserInfo, EmailInfo, HasContent } from './campaign-monitor.types';
 
 checkRequiredEnvs([
 	'CAMPAIGN_MONITOR_SUBSCRIBERS_ENDPOINT',
