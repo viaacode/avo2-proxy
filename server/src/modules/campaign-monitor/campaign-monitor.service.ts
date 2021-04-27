@@ -54,7 +54,19 @@ export default class CampaignMonitorService {
 
 			url = `${process.env.CAMPAIGN_MONITOR_API_ENDPOINT}/${templateIds[info.template]}/send`;
 
+			const data: any = {
+				Data: info.data,
+				ConsentToTrack: 'unchanged',
+			};
+
+			if (isArray(info.to)) {
+				data.BCC = info.to;
+			} else {
+				data.To = [info.to];
+			}
+
 			await axios(url, {
+				data,
 				method: 'post',
 				auth: {
 					username: process.env.CAMPAIGN_MONITOR_API_KEY,
@@ -62,11 +74,6 @@ export default class CampaignMonitorService {
 				},
 				headers: {
 					'Content-Type': 'application/json',
-				},
-				data: {
-					BCC: isArray(info.to) ? info.to : [info.to],
-					Data: info.data,
-					ConsentToTrack: 'unchanged',
 				},
 			});
 		} catch (err) {

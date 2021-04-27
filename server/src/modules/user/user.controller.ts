@@ -126,6 +126,7 @@ export default class UserController {
 				const userInfos: EmailUserInfo[] = (
 					await UserService.getEmailUserInfo(profileIds)
 				).filter((info) => !!info.email);
+
 				await promiseUtils.mapLimit(userInfos, 10, async (userInfo) => {
 					await CampaignMonitorService.send({
 						template: 'blockUser',

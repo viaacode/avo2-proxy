@@ -24,7 +24,6 @@ import { IdpHelper } from '../auth/idp-helper';
 import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
 
 import UserController from './user.controller';
-import { BULK_GET_EMAIL_ADDRESSES } from './user.queries.gql';
 import UserService from './user.service';
 import { ProfileBlockEvents } from './user.types';
 
@@ -55,11 +54,9 @@ export default class UserRoute {
 			// Send emails now that the users are still in campaign monitor
 			await promiseUtils.mapLimit(emails, 20, async (email) => {
 				await CampaignMonitorService.send({
-					to: emails,
+					to: email,
 					template: 'deleteUser',
-					data: {
-						email,
-					},
+					data: { email },
 				});
 			});
 
@@ -69,6 +66,7 @@ export default class UserRoute {
 				typedBody.transferToProfileId || null,
 				currentUser
 			);
+
 			return { message: 'ok' };
 		} catch (err) {
 			const error = new InternalServerError('Failed to bulk delete users', err, { body });
