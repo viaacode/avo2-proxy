@@ -73,7 +73,7 @@
 		"reflect-metadata": "0.1.13",
 		"remove-accents": "0.4.2",
 		"saml2-js": "^2.0.6",
-		"sanitize-html": "^1.20.1",
+		"sanitize-html": "^2.3.2",
 		"session-file-store": "1.2.0",
 		"simple-oauth2": "^3.0.1",
 		"srt-to-vtt": "^1.1.3",
