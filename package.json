@@ -1,6 +1,6 @@
 {
   "name": "avo2-proxy",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,8 @@
     "husky": "3.0.4",
     "lint-staged": "9.2.4"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "acorn": "^8.2.4"
+  }
 }
