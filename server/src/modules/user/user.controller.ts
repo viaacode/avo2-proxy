@@ -3,6 +3,7 @@ import * as promiseUtils from 'blend-promise-utils';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
+import HetArchiefService from '../auth/idps/het-archief/het-archief.service';
 import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
 import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
 import EventLoggingService from '../event-logging/service';
@@ -21,6 +22,7 @@ export default class UserController {
 		// Remove them from campaign monitor
 		const emailAddresses = await UserService.bulkGetEmails(profileIds);
 		await CampaignMonitorService.bulkDeleteUsers(emailAddresses);
+		await HetArchiefService.removeAvoAppFromLdapUsers(emailAddresses);
 
 		switch (deleteOption) {
 			case 'DELETE_PRIVATE_KEEP_NAME':
