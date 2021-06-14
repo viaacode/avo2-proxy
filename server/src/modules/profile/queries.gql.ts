@@ -58,7 +58,10 @@ export const UPDATE_PROFILE_INFO = `
 			affected_rows
 		}
 		update_alias: update_users_profiles(
-			where: { id: { _eq: $profileId }, is_deleted: { _eq: false }, alias: {_neq: $alias} }
+			where: { id: { _eq: $profileId }, is_deleted: { _eq: false },  _or: [
+				{ alias: { _is_null: true } },
+			  	{ alias: { _neq: $alias } }
+		  	] }
 			_set: {
 				alias: $alias
 			}
