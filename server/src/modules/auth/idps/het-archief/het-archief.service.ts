@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { get } from 'lodash';
+import { get, isEmpty } from 'lodash';
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
 import convert = require('xml-js');
 
@@ -315,6 +315,10 @@ export default class HetArchiefService {
 
 	static async removeAvoAppFromLdapUsers(emails: string[]): Promise<void> {
 		const url = `${process.env.LDAP_API_ENDPOINT}/attribute`;
+
+		if (!isEmpty(emails)) {
+			return;
+		}
 
 		try {
 			const response: AxiosResponse<any> = await axios(url, {

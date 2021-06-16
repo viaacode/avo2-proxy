@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import * as promiseUtils from 'blend-promise-utils';
-import { get, isArray, isNil, isString, keys, toPairs, values } from 'lodash';
+import { get, isArray, isEmpty, isNil, isString, keys, toPairs, values } from 'lodash';
 import * as queryString from 'query-string';
 
 import type { Avo } from '@viaa/avo2-types';
@@ -305,11 +305,16 @@ export default class CampaignMonitorService {
 	 */
 	static async bulkDeleteUsers(emailAddresses: string[]): Promise<void> {
 		try {
-			await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
+			await promiseUtils.mapLimit(emailAddresses, 10, async (email: string) => {
+				if (isEmpty(email)) {
+					return;
+				}
+
 				const newsletterListIds = keys(NEWSLETTER_LISTS);
+
 				await Promise.all(
 					newsletterListIds.map((listId) => {
-						return CampaignMonitorService.deleteFromNewsletterList(listId, mail);
+						return CampaignMonitorService.deleteFromNewsletterList(listId, email);
 					})
 				);
 			});
