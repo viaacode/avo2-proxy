@@ -121,6 +121,7 @@
   "INSERT_COLLECTION_MANAGEMENT_QC_ENTRY": "mutation insertCollectionManagementQualityCheckEntry( $collection_id: uuid! $comment: String $assignee_profile_id: uuid $qc_label: lookup_enum_collection_management_qc_label_enum $qc_status: Boolean ) { insert_app_collection_management_QC_one( object: { comment: $comment assignee_profile_id: $assignee_profile_id qc_label: $qc_label qc_status: $qc_status collection_id: $collection_id } ) { id } }",
   "GET_MARCOM_ENTRIES": "query getCollectionMarcomEntries($collectionUuid: uuid!) { app_collection_marcom_log( where: { collection_id: { _eq: $collectionUuid } } limit: 10 order_by: [{ created_at: desc_nulls_last }] ) { id channel_name channel_type external_link publish_date } }",
   "INSERT_MARCOM_ENTRY": "mutation insertMarcomEntry($objects: [app_collection_marcom_log_insert_input!]!) { insert_app_collection_marcom_log(objects: $objects) { affected_rows } }",
+  "DELETE_MARCOM_ENTRY": "mutation deleteMarcomEntry($id: Int) { delete_app_collection_marcom_log(where: { id: { _eq: $id } }) { affected_rows } }",
   "INSERT_MARCOM_NOTE": "mutation insertMarcomNote($collectionId: uuid, $note: String) { insert_app_collection_marcom_notes(objects: { note: $note, collection_id: $collectionId }) { returning { id } } }",
   "UPDATE_MARCOM_NOTE": "mutation updateMarcomNote($id: Int, $note: String) { update_app_collection_marcom_notes(where: { id: { _eq: $id } }, _set: { note: $note }) { returning { id } } }",
   "GET_EDUCATION_LEVELS": "query getEducationLevels { lookup_enum_lom_context { description } }",
