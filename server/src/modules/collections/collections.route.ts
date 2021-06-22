@@ -1,9 +1,10 @@
-import { Context, GET, Path, QueryParam, ServiceContext } from 'typescript-rest';
+import { Context, GET, Path, PreProcessor, QueryParam, ServiceContext } from 'typescript-rest';
 
 import type { Avo } from '@viaa/avo2-types';
 
 import { InternalServerError, NotFoundError } from '../../shared/helpers/error';
 import { logger } from '../../shared/helpers/logger';
+import { isAuthenticatedRouteGuard } from '../../shared/middleware/is-authenticated';
 import { IdpHelper } from '../auth/idp-helper';
 
 import CollectionsController from './collections.controller';
@@ -15,6 +16,7 @@ export default class CollectionsRoute {
 
 	@Path('/fetch-with-items-by-id')
 	@GET
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async fetchCollectionOrBundleWithItemsById(
 		@QueryParam('id') id: string,
 		@QueryParam('type') type: 'collection' | 'bundle',
@@ -45,6 +47,7 @@ export default class CollectionsRoute {
 
 	@Path('/fetch-external-id-by-mediamosa-id')
 	@GET
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async fetchItemExternalIdByMediamosaId(
 		@QueryParam('id') id: string
 	): Promise<{ externalId: string | null }> {
@@ -63,6 +66,7 @@ export default class CollectionsRoute {
 
 	@Path('/fetch-uuid-by-avo1-id')
 	@GET
+	@PreProcessor(isAuthenticatedRouteGuard)
 	async fetchUuidByAvo1Id(@QueryParam('id') id: string): Promise<{ uuid: string | null }> {
 		try {
 			return { uuid: await CollectionsController.fetchUuidByAvo1Id(id) };
