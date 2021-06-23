@@ -339,6 +339,7 @@ export default class HetArchiefService {
 				});
 			}
 		} catch (err) {
+			console.log('Throwing internal server error - Archief Service remove avo app from ldap users', { emails, err });
 			throw new InternalServerError('Failed to remove AvO app from LDAP user.', err, {
 				emails,
 			});
