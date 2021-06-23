@@ -19,12 +19,9 @@ export default class UserController {
 		transferToProfileId: string | null,
 		currentUser: Avo.User.User
 	) {
-		console.log('Start Bulk delete users');
 		// Remove them from campaign monitor
 		const emailAddresses = await UserService.bulkGetEmails(profileIds);
-		console.log('email addresses:', { emailAddresses });
 		await CampaignMonitorService.bulkDeleteUsers(emailAddresses);
-		console.log('Remove Avo users');
 		await HetArchiefService.removeAvoAppFromLdapUsers(emailAddresses);
 
 		switch (deleteOption) {
@@ -54,11 +51,8 @@ export default class UserController {
 				break;
 
 			case 'DELETE_ALL':
-				console.log('1. Soft delete private');
 				await UserService.softDeletePrivateContentForProfiles(profileIds);
-				console.log('2. Soft delete public');
 				await UserService.softDeletePublicContentForProfiles(profileIds);
-				console.log('3. Soft delete Users');
 				await UserService.bulkSoftDeleteUsers(profileIds);
 				break;
 
@@ -73,7 +67,6 @@ export default class UserController {
 		} else {
 			message = 'Een gebruiker werdt gewist via de delete user API endpoint';
 		}
-		console.log('4 Event logging');
 		await EventLoggingService.insertEvents(
 			profileIds.map(
 				(profileId): LogEvent => ({
@@ -96,7 +89,6 @@ export default class UserController {
 				})
 			)
 		);
-		console.log('5 Done');
 	}
 
 	static async bulkUpdateBlockStatus(

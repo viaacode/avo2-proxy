@@ -314,7 +314,6 @@ export default class CampaignMonitorService {
 				);
 			});
 		} catch (err) {
-			console.log('Throwing internal server error - Campaign monitor bulk delete users', { emailAddresses, err });
 			throw new InternalServerError('Failed to delete users from Campaign Monitor', err, {
 				emailAddresses,
 			});

@@ -115,7 +115,6 @@ export default class UserService {
 				});
 			}
 		} catch (err) {
-			console.log('Throwing custom error - bulk soft delete users', { profileIds, err });
 			throw new CustomError('Failed to bulk soft delete profiles', err, {
 				profileIds,
 			});
@@ -157,7 +156,6 @@ export default class UserService {
 				throw new CustomError('Response contains graphql errors', null, { response });
 			}
 		} catch (err) {
-			console.log('Throwing custom error - soft delete public contents', { profileIds, err });
 			throw new CustomError('Failed to bulk delete public content for profile ids', err, {
 				profileIds,
 				query: SOFT_DELETE_PUBLIC_CONTENT_FOR_PROFILES,
@@ -179,7 +177,6 @@ export default class UserService {
 				throw new CustomError('Response contains graphql errors', null, { response });
 			}
 		} catch (err) {
-			console.log('Throwing custom error - soft delete private contents', { profileIds, err });
 			throw new CustomError('Failed to bulk delete private content for profile ids', err, {
 				profileIds,
 				query: SOFT_DELETE_PRIVATE_CONTENT_FOR_PROFILES,

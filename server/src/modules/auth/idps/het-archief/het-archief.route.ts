@@ -513,9 +513,7 @@ export default class HetArchiefRoute {
 		body: DeleteUsersBody
 	): Promise<{ status: 'ok' | 'error'; error?: CustomError; deletions?: number }> {
 		const userLdapUuids = get(body, 'userLdapUuids');
-		console.log('Start Delete users', { userLdapUuids });
 		if (!userLdapUuids || !isArray(userLdapUuids)) {
-			console.log('Throwing bad request error - invalid userLdapUuids');
 			throw new BadRequestError(
 				'Body should contain userLdapUuids with the ldap user uuids of the users that should be deleted',
 				null,
@@ -528,14 +526,13 @@ export default class HetArchiefRoute {
 				profileId: string;
 				mail: string;
 			}[] = await HetArchiefService.getProfileIdsByLdapIds(body.userLdapUuids);
+
 			// Delete the users
 			const profileIds = profileInfos.map((profileInfo) => profileInfo.profileId);
-			console.log('Bulk deleting users: ', { currentUser, profileInfos, profileIds });
 			await UserController.bulkDeleteUsers(profileIds, 'DELETE_ALL', null, currentUser);
 
 			return { status: 'ok', deletions: profileIds.length };
 		} catch (err) {
-			console.log('Throwing internal server error - delete users', err);
 			const error = new InternalServerError(
 				'Failed during delete user route (hetarchief)',
 				err,
