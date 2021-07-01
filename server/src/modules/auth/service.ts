@@ -261,10 +261,12 @@ export class AuthService {
 				});
 			}
 
-			// Update first and last name
-			const companyId = avoUser.profile.company_id;
+			// convert company (organization) or_id to it's ID (uuid), as requested by LDAP api (similar as above).
+			const organizationUuid = get(await EducationOrganizationsService.getOrganization(avoUser.profile.company_id, null), 'id');
+
+			// Update first and last name, company
 			await HetArchiefService.setLdapUserInfo(ldapEntryUuid, {
-				organizations: [...orgUuids, ...(companyId ? [companyId] : [])],
+				organizations: [...orgUuids, ...(organizationUuid ? [organizationUuid] : [])],
 				units: unitUuids,
 				edu_levelname: educationLevels,
 				first_name: avoUser.first_name,
