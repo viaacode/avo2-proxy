@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { get, isEmpty } from 'lodash';
+import { get } from 'lodash';
 import saml2, { IdentityProvider, ServiceProvider } from 'saml2-js';
 import convert = require('xml-js');
 
@@ -130,7 +130,7 @@ export default class HetArchiefService {
 				{
 					relay_state: JSON.stringify({ returnToUrl }),
 				},
-				(error: any, loginUrl: string, requestId: string) => {
+				(error: any, loginUrl: string) => {
 					if (error) {
 						reject(
 							new InternalServerError(
@@ -212,14 +212,6 @@ export default class HetArchiefService {
 				}
 			);
 		});
-	}
-
-	static getLoginUrl(): string | undefined {
-		return this.ssoLoginUrl;
-	}
-
-	static getLogoutUrl(): string | undefined {
-		return this.ssoLogoutUrl;
 	}
 
 	static async setLdapUserInfo(
@@ -316,7 +308,7 @@ export default class HetArchiefService {
 	static async removeAvoAppFromLdapUsers(emails: string[]): Promise<void> {
 		const url = `${process.env.LDAP_API_ENDPOINT}/attribute`;
 
-		if (!isEmpty(emails)) {
+		if (!emails || !emails.length) {
 			return;
 		}
 

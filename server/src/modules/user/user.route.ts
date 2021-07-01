@@ -1,5 +1,4 @@
 import * as promiseUtils from 'blend-promise-utils';
-import { isEmpty } from 'lodash';
 import {
 	Context,
 	DELETE,
@@ -54,7 +53,7 @@ export default class UserRoute {
 
 			// Send emails now that the users are still in campaign monitor
 			await promiseUtils.mapLimit(emails, 20, async (email: string) => {
-				if (isEmpty(email)) {
+				if (!email) {
 					return;
 				}
 
