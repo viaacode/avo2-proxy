@@ -47,7 +47,6 @@ export default class CollectionsRoute {
 
 	@Path('/fetch-external-id-by-mediamosa-id')
 	@GET
-	@PreProcessor(isAuthenticatedRouteGuard)
 	async fetchItemExternalIdByMediamosaId(
 		@QueryParam('id') id: string
 	): Promise<{ externalId: string | null }> {
@@ -66,7 +65,6 @@ export default class CollectionsRoute {
 
 	@Path('/fetch-uuid-by-avo1-id')
 	@GET
-	@PreProcessor(isAuthenticatedRouteGuard)
 	async fetchUuidByAvo1Id(@QueryParam('id') id: string): Promise<{ uuid: string | null }> {
 		try {
 			return { uuid: await CollectionsController.fetchUuidByAvo1Id(id) };
