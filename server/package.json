@@ -64,7 +64,7 @@
 		"moment": "^2.27.0",
 		"multer": "^1.4.2",
 		"node-cron": "^2.0.3",
-		"node-zendesk": "^1.4.0",
+		"node-zendesk": "^2.1.0",
 		"passport-saml": "^1.1.0",
 		"public-ip": "^3.2.0",
 		"query-string": "^6.8.1",
