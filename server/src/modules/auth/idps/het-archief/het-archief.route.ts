@@ -526,6 +526,7 @@ export default class HetArchiefRoute {
 				profileId: string;
 				mail: string;
 			}[] = await HetArchiefService.getProfileIdsByLdapIds(body.userLdapUuids);
+
 			// Delete the users
 			const profileIds = profileInfos.map((profileInfo) => profileInfo.profileId);
 			await UserController.bulkDeleteUsers(profileIds, 'DELETE_ALL', null, currentUser);
