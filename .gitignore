@@ -127,9 +127,7 @@ server/logs
 .idea
 dist
 server/dist
-server/.env/.env
-server/.env/.env.qas
-server/.env/.env.dev
+server/.env/.env*
 server/src/**/*.js
 server/src/**/*.js.map
 server/scripts/**/*.js
