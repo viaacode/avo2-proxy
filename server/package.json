@@ -24,7 +24,7 @@
 		"lint": "tslint -c tslint.json -p tsconfig.json -t stylish",
 		"format": "npm run lint -- --fix",
 		"pretest": "npm run clean:coverage",
-		"test": "jest --config jest.config.js --runInBand",
+		"test": "dotenv -e .env/.env.qas.test jest --config jest.config.js --runInBand",
 		"test:watch": "npm run test -- --watchAll",
 		"posttest": "npm run lint",
 		"clean:build": "rm -rf ./dist",
