@@ -52,7 +52,11 @@ export default class UserRoute {
 			const emails: string[] = await UserService.bulkGetEmails(typedBody.profileIds);
 
 			// Send emails now that the users are still in campaign monitor
-			await promiseUtils.mapLimit(emails, 20, async (email) => {
+			await promiseUtils.mapLimit(emails, 20, async (email: string) => {
+				if (!email) {
+					return;
+				}
+
 				await CampaignMonitorService.send({
 					to: email,
 					template: 'deleteUser',

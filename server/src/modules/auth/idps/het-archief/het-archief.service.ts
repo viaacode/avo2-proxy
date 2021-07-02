@@ -130,7 +130,7 @@ export default class HetArchiefService {
 				{
 					relay_state: JSON.stringify({ returnToUrl }),
 				},
-				(error: any, loginUrl: string, requestId: string) => {
+				(error: any, loginUrl: string) => {
 					if (error) {
 						reject(
 							new InternalServerError(
@@ -212,14 +212,6 @@ export default class HetArchiefService {
 				}
 			);
 		});
-	}
-
-	static getLoginUrl(): string | undefined {
-		return this.ssoLoginUrl;
-	}
-
-	static getLogoutUrl(): string | undefined {
-		return this.ssoLogoutUrl;
 	}
 
 	static async setLdapUserInfo(
@@ -315,6 +307,10 @@ export default class HetArchiefService {
 
 	static async removeAvoAppFromLdapUsers(emails: string[]): Promise<void> {
 		const url = `${process.env.LDAP_API_ENDPOINT}/attribute`;
+
+		if (!emails || !emails.length) {
+			return;
+		}
 
 		try {
 			const response: AxiosResponse<any> = await axios(url, {

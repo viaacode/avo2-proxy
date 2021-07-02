@@ -15,7 +15,6 @@ describe('[UNIT - CORE] GlobalMiddleware', () => {
 			'jsonParser',
 			'cookieParser',
 			'hidePoweredBy',
-			'ienoopen',
 			'nosniff',
 			'xXssProtection',
 		]);

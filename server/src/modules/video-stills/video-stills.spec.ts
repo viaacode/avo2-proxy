@@ -35,8 +35,8 @@ describe('Video stills', () => {
 		expect(response.body).toHaveLength(stillRequests.length);
 		expect(response.body[0]).toBeDefined();
 		expect(response.body[0]).toContainAllKeys(['previewImagePath', 'thumbnailImagePath']);
-		expect(response.body[0].thumbnailImagePath).toContain('41feeda0461246a2bfbb51f9ec4e1de12c5a51beea3544dc94b5c05e8468559a');
-		expect(response.body[1].thumbnailImagePath).not.toContain('41feeda0461246a2bfbb51f9ec4e1de12c5a51beea3544dc94b5c05e8468559a');
+		expect(response.body[0].thumbnailImagePath).toContain('82694db09788419a926cb278c83d6059039243c8db8743a1b083f0cc34245661');
+		expect(response.body[1].thumbnailImagePath).not.toContain('82694db09788419a926cb278c83d6059039243c8db8743a1b083f0cc34245661');
 	});
 
 	it('should return different stills if starttime is different', async () => {

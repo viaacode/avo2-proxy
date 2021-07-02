@@ -63,7 +63,7 @@ export default class PlayerTicketRoute {
 			request.headers['X-Forwarded-For'] || request.headers['x-forwarded-for'];
 		const ip = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor || request.ip;
 
-		if (ip.includes('::ffff:')) {
+		if (ip?.includes('::ffff:')) {
 			return ip.replace('::ffff:', '');
 		}
 

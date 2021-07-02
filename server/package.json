@@ -1,6 +1,6 @@
 {
 	"name": "avo2-proxy-server",
-	"version": "1.7.5",
+	"version": "1.8.0",
 	"description": "Deze repo bevat de NodeJS service die de communicatie regelt tussen de Archief voor Onderwijs frontend applicaties enerzijds en de backend services anderzijds.",
 	"main": "index.ts",
 	"repository": {
@@ -9,7 +9,8 @@
 	},
 	"author": "Bert Verhelst <bert.verhelst@studiohyperdrive.be>",
 	"contributors": [
-		"Enzo Eghermanne <enzo.eghermanne@studiohyperdrive.be>"
+		"Bart Naessens <bart.naessens@studiohyperdrive.be>",
+		"Benjamin Naesen <benjamin.naesen@studiohyperdrive.be>"
 	],
 	"homepage": "https://github.com/viaacode/avo2-proxy",
 	"scripts": {
@@ -69,7 +70,7 @@
 		"public-ip": "^3.2.0",
 		"query-string": "^6.8.1",
 		"ramda": "0.26.1",
-		"redis": "^3.1.1",
+		"redis": "3.0.2",
 		"reflect-metadata": "0.1.13",
 		"remove-accents": "0.4.2",
 		"saml2-js": "^2.0.6",
@@ -118,14 +119,14 @@
 		"dotenv": "^8.1.0",
 		"dotenv-cli": "^3.1.0",
 		"glob": "^7.1.6",
-		"jest": "24.8.0",
-		"jest-extended": "0.11.2",
+		"jest": "^27.0.6",
+		"jest-extended": "^0.11.5",
 		"license-checker": "^25.0.1",
 		"sinon": "7.4.1",
 		"sinon-express-mock": "2.2.1",
 		"sort-object-keys": "^1.1.3",
 		"supertest": "4.0.2",
-		"ts-jest": "^26.4.1",
+		"ts-jest": "^27.0.3",
 		"ts-node": "^9.1.1",
 		"ts-node-dev": "1.0.0-pre.63",
 		"tslint": "5.18.0",
