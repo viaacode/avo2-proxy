@@ -21,7 +21,7 @@ const sessionConfig: session.SessionOptions = {
 let redisStore: any;
 let redisClient: any;
 
-if (process.env.NODE_ENV !== 'local') {
+if (process.env.NODE_ENV !== 'local' && process.env.NODE_ENV !== 'test') {
 	// Use the redis database as session storage
 	checkRequiredEnvs(['COOKIES_SECRET', 'REDIS_CONNECTION_STRING']);
 
@@ -40,7 +40,7 @@ export function clearRedis() {
 	});
 }
 
-if (process.env.NODE_ENV !== 'local') {
+if (process.env.NODE_ENV !== 'local' && process.env.NODE_ENV !== 'test') {
 	// Clear sessions stored in redis every day at 05:00
 	/* istanbul ignore next */
 	cron.schedule('0 0 05 * * *', clearRedis, {

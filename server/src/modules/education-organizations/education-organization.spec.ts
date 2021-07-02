@@ -9,7 +9,7 @@ const api = supertest(new App(false).app);
 
 describe('Education organizations ldap api', () => {
 	it('cities: should return a list of cities', async () => {
-		const response = await api.get('/education-organizations/cities');
+		const response = await api.get('/education-organisations/cities');
 		expect(response.body).toBeArray();
 		(response.body as string[]).forEach((city: string) => {
 			expect(city).toBeString();
@@ -20,7 +20,7 @@ describe('Education organizations ldap api', () => {
 	});
 
 	it('organizations: should return list for organizations for cityName', async () => {
-		const response = await api.get('/education-organizations/organizations').query({
+		const response = await api.get('/education-organisations/organisations').query({
 			city: 'Kachtem',
 		});
 		expect(response.body).toBeArray();
@@ -31,7 +31,7 @@ describe('Education organizations ldap api', () => {
 	});
 
 	it('organizations: should return list for organizations for zipCode', async () => {
-		const response = await api.get('/education-organizations/organizations').query({
+		const response = await api.get('/education-organisations/organisations').query({
 			zipCode: '8870',
 		});
 		expect(response.body).toBeArray();
@@ -42,7 +42,7 @@ describe('Education organizations ldap api', () => {
 	});
 
 	it('organizations: should return list for organizations for cityName and zipCode', async () => {
-		const response = await api.get('/education-organizations/organizations').query({
+		const response = await api.get('/education-organisations/organisations').query({
 			zipCode: '8870',
 			city: 'Kachtem',
 		});
@@ -54,9 +54,9 @@ describe('Education organizations ldap api', () => {
 	});
 
 	it('organizations: should throw an error if no city or zipCode is passed', async () => {
-		const response = await api.get('/education-organizations/organizations');
+		const response = await api.get('/education-organisations/organisations');
 		expect(response.body.message).toEqual(
-			'Failed to get organizations because neither the city nor the zipCode queryParams were provided'
+			'Failed to get organisations because neither the city nor the zipCode queryParams were provided'
 		);
 	});
 });

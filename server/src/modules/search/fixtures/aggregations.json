@@ -1,139 +1,191 @@
 {
-	"lom_keywords.filter": {
+	"collection_labels": {
 		"doc_count_error_upper_bound": 0,
 		"sum_other_doc_count": 0,
 		"buckets": [
 			{
-				"key": "armoede",
-				"doc_count": 2
+				"key": "PARTNER",
+				"doc_count": 9
 			},
 			{
-				"key": "schulden",
-				"doc_count": 2
+				"key": "REDACTIE",
+				"doc_count": 7
 			},
 			{
-				"key": "afbetaling",
+				"key": "UITGEVERIJ",
+				"doc_count": 3
+			}
+		]
+	},
+	"lom_context": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "Secundair onderwijs",
+				"doc_count": 911
+			},
+			{
+				"key": "Lager onderwijs",
+				"doc_count": 310
+			},
+			{
+				"key": "Kleuteronderwijs",
+				"doc_count": 7
+			},
+			{
+				"key": "Deeltijds kunstonderwijs",
 				"doc_count": 1
 			},
 			{
-				"key": "armoedegrens",
+				"key": "Hoger onderwijs",
 				"doc_count": 1
 			},
 			{
-				"key": "economie",
-				"doc_count": 1
-			},
-			{
-				"key": "factuur",
-				"doc_count": 1
-			},
-			{
-				"key": "geld",
-				"doc_count": 1
-			},
-			{
-				"key": "gerechtsdeurwaarder",
-				"doc_count": 1
-			},
-			{
-				"key": "kansarmoede",
-				"doc_count": 1
-			},
-			{
-				"key": "rekening",
-				"doc_count": 1
-			},
-			{
-				"key": "schuldbemiddeling",
-				"doc_count": 1
-			},
-			{
-				"key": "veiling",
-				"doc_count": 1
-			},
-			{
-				"key": "voedselbank",
-				"doc_count": 1
-			},
-			{
-				"key": "voedselbedeling",
+				"key": "Volwassenenonderwijs",
 				"doc_count": 1
 			}
 		]
 	},
-	"dc_titles_serie.filter": {
-		"doc_count_error_upper_bound": 0,
-		"sum_other_doc_count": 0,
+	"dc_titles_serie": {
+		"doc_count_error_upper_bound": 2,
+		"sum_other_doc_count": 188,
 		"buckets": [
+			{
+				"key": "Volt",
+				"doc_count": 108
+			},
+			{
+				"key": "Journaal",
+				"doc_count": 96
+			},
+			{
+				"key": "Ook getest op mensen",
+				"doc_count": 82
+			},
+			{
+				"key": "Het Lichaam van Coppens",
+				"doc_count": 56
+			},
+			{
+				"key": "Generatie K",
+				"doc_count": 37
+			},
+			{
+				"key": "Karrewiet",
+				"doc_count": 29
+			},
+			{
+				"key": "Terzake",
+				"doc_count": 25
+			},
+			{
+				"key": "Voor hetzelfde geld",
+				"doc_count": 22
+			},
+			{
+				"key": "Hoe?Zo!",
+				"doc_count": 21
+			},
+			{
+				"key": "Koppen",
+				"doc_count": 21
+			},
+			{
+				"key": "Factcheckers",
+				"doc_count": 17
+			},
+			{
+				"key": "Overleven",
+				"doc_count": 17
+			},
+			{
+				"key": "VTM Nieuws",
+				"doc_count": 17
+			},
 			{
 				"key": "Pano",
-				"doc_count": 2
-			}
-		]
-	},
-	"lom_classification.filter": {
-		"doc_count_error_upper_bound": 0,
-		"sum_other_doc_count": 0,
-		"buckets": [
-			{
-				"key": "PAV - MAVO - GASV - ASPV",
-				"doc_count": 2
+				"doc_count": 15
 			},
 			{
-				"key": "economie - SEI - boekhouding - bedrijfsbeheer",
-				"doc_count": 2
+				"key": "Alle vijf",
+				"doc_count": 12
 			},
 			{
-				"key": "gedrags- en cultuurwetenschappen",
-				"doc_count": 2
+				"key": "Over eten",
+				"doc_count": 11
 			},
 			{
-				"key": "levensbeschouwing",
-				"doc_count": 2
+				"key": "Panorama",
+				"doc_count": 11
 			},
 			{
-				"key": "politieke en sociale wetenschappen - maatschappijleer",
-				"doc_count": 2
+				"key": "Copy beest",
+				"doc_count": 9
 			},
 			{
-				"key": "handel - kantoor - verkoop",
-				"doc_count": 1
+				"key": "De Afspraak",
+				"doc_count": 9
 			},
 			{
-				"key": "psychologie en pedagogie",
-				"doc_count": 1
+				"key": "Iedereen beroemd",
+				"doc_count": 9
 			},
 			{
-				"key": "recht",
-				"doc_count": 1
+				"key": "Schooltelevisie: fysica",
+				"doc_count": 8
 			},
 			{
-				"key": "wijsbegeerte en moraalwetenschappen",
-				"doc_count": 1
-			}
-		]
-	},
-	"lom_typical_age_range.filter": {
-		"doc_count_error_upper_bound": 0,
-		"sum_other_doc_count": 0,
-		"buckets": [
-			{
-				"key": "Secundair 2de graad",
-				"doc_count": 2
+				"key": "@elindo",
+				"doc_count": 7
 			},
 			{
-				"key": "Secundair 3de graad",
-				"doc_count": 2
-			}
-		]
-	},
-	"administrative_type.filter": {
-		"doc_count_error_upper_bound": 0,
-		"sum_other_doc_count": 0,
-		"buckets": [
+				"key": "De schuur van Scheire",
+				"doc_count": 7
+			},
 			{
-				"key": "video",
-				"doc_count": 2
+				"key": "De zevende dag",
+				"doc_count": 7
+			},
+			{
+				"key": "Durf te vragen",
+				"doc_count": 6
+			},
+			{
+				"key": "Telefacts",
+				"doc_count": 6
+			},
+			{
+				"key": "Van Gils & gasten",
+				"doc_count": 6
+			},
+			{
+				"key": "Doe ik het goed?",
+				"doc_count": 5
+			},
+			{
+				"key": "Kijk uit",
+				"doc_count": 5
+			},
+			{
+				"key": "Op de koop toe",
+				"doc_count": 5
+			},
+			{
+				"key": "Reizen Waes",
+				"doc_count": 5
+			},
+			{
+				"key": "Wonen.tv",
+				"doc_count": 5
+			},
+			{
+				"key": "Bedweters",
+				"doc_count": 4
+			},
+			{
+				"key": "Hautekiet",
+				"doc_count": 4
 			}
 		]
 	},
@@ -143,23 +195,226 @@
 		"buckets": [
 			{
 				"key": "nl",
+				"doc_count": 915
+			},
+			{
+				"key": "en",
+				"doc_count": 104
+			},
+			{
+				"key": "fr",
+				"doc_count": 43
+			},
+			{
+				"key": "de",
+				"doc_count": 11
+			},
+			{
+				"key": "es",
+				"doc_count": 8
+			},
+			{
+				"key": "it",
+				"doc_count": 3
+			},
+			{
+				"key": "ko",
+				"doc_count": 3
+			},
+			{
+				"key": "ja",
+				"doc_count": 2
+			},
+			{
+				"key": "ru",
+				"doc_count": 2
+			},
+			{
+				"key": "sw",
+				"doc_count": 2
+			},
+			{
+				"key": "tr",
+				"doc_count": 2
+			},
+			{
+				"key": "zh",
 				"doc_count": 2
 			}
 		]
 	},
-	"lom_context.filter": {
+	"lom_keywords": {
+		"doc_count_error_upper_bound": 16,
+		"sum_other_doc_count": 8109,
+		"buckets": [
+			{
+				"key": "gezondheid",
+				"doc_count": 157
+			},
+			{
+				"key": "reclame",
+				"doc_count": 87
+			},
+			{
+				"key": "voeding",
+				"doc_count": 74
+			},
+			{
+				"key": "ethiek",
+				"doc_count": 53
+			},
+			{
+				"key": "reclametest",
+				"doc_count": 49
+			},
+			{
+				"key": "sport",
+				"doc_count": 38
+			},
+			{
+				"key": "verkeer",
+				"doc_count": 36
+			},
+			{
+				"key": "ziekte",
+				"doc_count": 34
+			},
+			{
+				"key": "auto",
+				"doc_count": 33
+			}
+		]
+	},
+	"administrative_type": {
 		"doc_count_error_upper_bound": 0,
 		"sum_other_doc_count": 0,
 		"buckets": [
 			{
-				"key": "Secundair onderwijs",
-				"doc_count": 2
+				"key": "video",
+				"doc_count": 894
+			},
+			{
+				"key": "collectie",
+				"doc_count": 31
+			},
+			{
+				"key": "audio",
+				"doc_count": 23
+			},
+			{
+				"key": "bundel",
+				"doc_count": 7
 			}
 		]
 	},
-	"original_cp.filter": {
+	"original_cp": {
 		"doc_count_error_upper_bound": 0,
 		"sum_other_doc_count": 0,
-		"buckets": []
+		"buckets": [
+			{
+				"key": "VRT",
+				"doc_count": 829
+			},
+			{
+				"key": "DPG Media",
+				"doc_count": 81
+			},
+			{
+				"key": "Zomerschool.Vlaanderen",
+				"doc_count": 2
+			},
+			{
+				"key": "BRUZZ",
+				"doc_count": 1
+			},
+			{
+				"key": "ROB-tv",
+				"doc_count": 1
+			},
+			{
+				"key": "RTV",
+				"doc_count": 1
+			},
+			{
+				"key": "TV Limburg",
+				"doc_count": 1
+			},
+			{
+				"key": "TV Oost",
+				"doc_count": 1
+			}
+		]
+	},
+	"lom_typical_age_range": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 0,
+		"buckets": [
+			{
+				"key": "Secundair 2de graad",
+				"doc_count": 789
+			},
+			{
+				"key": "Secundair 3de graad",
+				"doc_count": 727
+			},
+			{
+				"key": "Secundair 1ste graad",
+				"doc_count": 570
+			},
+			{
+				"key": "Lager 3de graad",
+				"doc_count": 293
+			},
+			{
+				"key": "Lager 2de graad",
+				"doc_count": 100
+			},
+			{
+				"key": "Lager 1ste graad",
+				"doc_count": 48
+			},
+			{
+				"key": "Secundair",
+				"doc_count": 30
+			}
+		]
+	},
+	"lom_classification": {
+		"doc_count_error_upper_bound": 0,
+		"sum_other_doc_count": 249,
+		"buckets": [
+			{
+				"key": "PAV - MAVO - GASV - ASPV",
+				"doc_count": 593
+			},
+			{
+				"key": "natuurwetenschappen",
+				"doc_count": 346
+			},
+			{
+				"key": "biologie",
+				"doc_count": 288
+			},
+			{
+				"key": "gedragswetenschappen",
+				"doc_count": 267
+			},
+			{
+				"key": "psychologie en pedagogie",
+				"doc_count": 233
+			},
+			{
+				"key": "cultuurwetenschappen",
+				"doc_count": 214
+			},
+			{
+				"key": "levensbeschouwing",
+				"doc_count": 204
+			},
+			{
+				"key": "techniek - technologische opvoeding",
+				"doc_count": 195
+			}
+		]
 	}
 }
