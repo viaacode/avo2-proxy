@@ -3,6 +3,7 @@ import * as promiseUtils from 'blend-promise-utils';
 import type { Avo } from '@viaa/avo2-types';
 
 import { CustomError } from '../../shared/helpers/error';
+import { logger } from '../../shared/helpers/logger';
 import HetArchiefService from '../auth/idps/het-archief/het-archief.service';
 import CampaignMonitorService from '../campaign-monitor/campaign-monitor.service';
 import { EmailUserInfo } from '../campaign-monitor/campaign-monitor.types';
@@ -19,13 +20,11 @@ export default class UserController {
 		transferToProfileId: string | null,
 		currentUser: Avo.User.User
 	) {
-		console.log('Start Bulk delete users');
 		// Remove them from campaign monitor
 		const emailAddresses = await UserService.bulkGetEmails(profileIds);
-		console.log('email addresses:', { emailAddresses });
 		await CampaignMonitorService.bulkDeleteUsers(emailAddresses);
-		console.log('Remove Avo users');
-		await HetArchiefService.removeAvoAppFromLdapUsers(emailAddresses);
+		await HetArchiefService.removeAvoAppFromLdapUsers(emailAddresses)
+			.catch(error => logger.info('Avo app delete failed - probably already deleted.', { emailAddresses, error }));
 
 		switch (deleteOption) {
 			case 'DELETE_PRIVATE_KEEP_NAME':
@@ -54,11 +53,8 @@ export default class UserController {
 				break;
 
 			case 'DELETE_ALL':
-				console.log('1. Soft delete private');
 				await UserService.softDeletePrivateContentForProfiles(profileIds);
-				console.log('2. Soft delete public');
 				await UserService.softDeletePublicContentForProfiles(profileIds);
-				console.log('3. Soft delete Users');
 				await UserService.bulkSoftDeleteUsers(profileIds);
 				break;
 
@@ -73,7 +69,6 @@ export default class UserController {
 		} else {
 			message = 'Een gebruiker werdt gewist via de delete user API endpoint';
 		}
-		console.log('4 Event logging');
 		await EventLoggingService.insertEvents(
 			profileIds.map(
 				(profileId): LogEvent => ({
@@ -96,7 +91,6 @@ export default class UserController {
 				})
 			)
 		);
-		console.log('5 Done');
 	}
 
 	static async bulkUpdateBlockStatus(

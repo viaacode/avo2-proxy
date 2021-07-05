@@ -36,7 +36,7 @@ describe('Stamboek number', () => {
 			});
 		expect(response.body).toBeObject();
 		expect(response.body).toContainAllKeys(['status']);
-		expect(response.body.status).toEqual('VALID');
+		expect(response.body.status).toEqual('ALREADY_IN_USE');
 	});
 
 	it('should return false for an invalid stamboek number too short', async () => {

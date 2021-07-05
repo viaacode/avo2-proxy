@@ -103,7 +103,7 @@ describe('[UNIT - CONFIG] EnvHelper', () => {
 
 			expect(() => {
 				EnvHelper.envToObject('CONVERT');
-			}).toThrowError('Environment variable CONVERT is not a valid JSON string');
+			}).toThrowError('Environment variable is not a valid JSON string');
 			done();
 		});
 

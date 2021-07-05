@@ -1,12 +1,9 @@
-const { pathsToModuleNameMapper } = require('ts-jest/utils');
-
-const { compilerOptions } = require('./tsconfig.json');
-
 module.exports = {
 	displayName: 'SERVER',
 	rootDir: '.',
 	preset: 'ts-jest',
 	testEnvironment: 'node',
+	testTimeout: 60000,
 	globals: {
 		'ts-jest': {
 			diagnostics: false,

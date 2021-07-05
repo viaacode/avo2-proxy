@@ -305,16 +305,20 @@ export default class CampaignMonitorService {
 	 */
 	static async bulkDeleteUsers(emailAddresses: string[]): Promise<void> {
 		try {
-			await promiseUtils.mapLimit(emailAddresses, 10, async (mail: string) => {
+			await promiseUtils.mapLimit(emailAddresses, 10, async (email: string) => {
+				if (!email) {
+					return;
+				}
+
 				const newsletterListIds = keys(NEWSLETTER_LISTS);
+
 				await Promise.all(
 					newsletterListIds.map((listId) => {
-						return CampaignMonitorService.deleteFromNewsletterList(listId, mail);
+						return CampaignMonitorService.deleteFromNewsletterList(listId, email);
 					})
 				);
 			});
 		} catch (err) {
-			console.log('Throwing internal server error - Campaign monitor bulk delete users', { emailAddresses, err });
 			throw new InternalServerError('Failed to delete users from Campaign Monitor', err, {
 				emailAddresses,
 			});
