@@ -1,0 +1,674 @@
+<html lang="nl">
+<head>
+	<title>Pagina niet gevonden | Het Archief voor Onderwijs</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<link rel="shortcut icon" href="{{client-url}}/favicon.ico">
+	<style>
+	.o-svg-icon {
+		display: inline-block;
+		width: 2rem;
+		height: 2rem;
+		vertical-align: middle
+	}
+
+	.o-svg-icon svg {
+		display: block;
+		height: 100%;
+		width: 100%
+	}
+
+	.o-svg-icon:not([class*=multicolor]) svg * {
+		fill: currentColor
+	}
+
+	.o-svg-icon--large {
+		width: 3.2rem;
+		height: 3.2rem
+	}
+
+	.c-toolbar {
+		width: 100%;
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 6.4rem
+	}
+
+	.c-toolbar__left {
+		justify-content: flex-start
+	}
+
+	.c-toolbar__left .c-toolbar__item {
+		margin-right: 1.6rem
+	}
+
+	.c-toolbar__left .c-toolbar__item:only-child {
+		margin: 0
+	}
+
+	.c-toolbar__right .c-toolbar__item {
+		margin-left: 1.6rem
+	}
+
+	.c-toolbar__right .c-toolbar__item:only-child {
+		margin: 0
+	}
+
+	.c-toolbar__center {
+		position: absolute;
+		margin-left: 50%;
+		left: 0
+	}
+
+	.c-toolbar__center-inner {
+		margin-left: -50%;
+		display: flex;
+		flex: 1 0 auto;
+		align-items: center
+	}
+
+	.c-toolbar__center-inner .c-toolbar__item {
+		margin: 0 .8rem
+	}
+
+	.c-toolbar__center-inner .c-toolbar__item:only-child {
+		margin: 0
+	}
+
+	.c-toolbar__item {
+		position: relative
+	}
+
+	.c-button {
+		text-decoration: none;
+		cursor: pointer;
+		vertical-align: middle;
+		border-radius: .3rem;
+		padding: .6rem 1.6rem;
+		max-height: 3.6rem;
+		font-size: 1.5rem;
+		text-align: center;
+		align-items: center;
+		font-weight: 400
+	}
+
+	a.c-button {
+		display: inline-flex;
+		justify-content: center
+	}
+
+	.c-button {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		margin: 0
+	}
+
+	.c-button::-moz-focus-inner {
+		border: 0;
+		padding: 0
+	}
+
+	.c-button .c-button__content {
+		align-items: center;
+		display: flex;
+		justify-content: center
+	}
+
+	.c-button__label {
+		line-height: 2.4rem;
+		white-space: nowrap
+	}
+
+	.c-button + .c-button {
+		margin-left: 1rem;
+	}
+
+	.c-button {
+		padding: .6rem 2rem;
+	}
+
+	.c-button {
+		transition: background .18s ease-in
+	}
+
+	.c-button.c-button--primary {
+		border: 1px solid #25a4cf;
+		background: #25a4cf;
+		color: #fff
+	}
+
+	.c-button.c-button--primary svg * {
+		fill: #fff
+	}
+
+	.c-button.c-button--primary:active, .c-button.c-button--primary:active:focus, .c-button.c-button--primary:hover {
+		background: #19718e;
+		border-color: #19718e
+	}
+
+	.c-button.c-button--danger {
+		border: 1px solid #da3f34;
+		background: #da3f34;
+		color: #fff
+	}
+
+	.c-button.c-button--danger svg * {
+		fill: #fff
+	}
+
+	.c-button.c-button--danger:active, .c-button.c-button--danger:focus, .c-button.c-button--danger:hover {
+		background: #b92c22;
+		border-color: #b92c22
+	}
+
+	.c-button.c-button--danger:disabled, .c-button.c-button--primary:disabled {
+		background: #d6dee3;
+		color: #9cafbd;
+		border: 1px solid #d6dee3;
+		pointer-events: auto;
+		cursor: default
+	}
+
+	.c-blankslate {
+		background: #edeff2;
+		border-radius: .3rem;
+		padding: 4.8rem;
+		text-align: center
+	}
+
+	.c-blankslate__icon {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 9.6rem;
+		height: 9.6rem;
+		background-color: #cfe3e9;
+		border-radius: 50%;
+		margin: 0 auto
+	}
+
+	.c-blankslate__icon svg {
+		color: #25a4cf
+	}
+
+	.c-blankslate > .c-h4 {
+		margin-bottom: .8rem
+	}
+
+	.c-blankslate > .o-svg-icon {
+		opacity: .5
+	}
+
+	.o-container {
+		margin: 0 auto;
+		max-width: 130rem;
+		width: calc(100% - 2.4rem)
+	}
+
+	@media (min-width: 700px) {
+		.o-container {
+			width: calc(100% - 3.2rem)
+		}
+	}
+
+	@media (min-width: 900px) {
+		.o-container {
+			width: calc(100% - 4.8rem)
+		}
+	}
+
+	@media (min-width: 1200px) {
+		.o-container {
+			width: calc(100% - 6.4rem)
+		}
+	}
+
+	.o-container--medium {
+		max-width: 72rem;
+		padding: 0 5px
+	}
+
+	.o-container-vertical {
+		padding: 3.6rem 0
+	}
+
+	.o-container-vertical--bg-alt {
+		background: #edeff2
+	}
+
+	.c-meta-data-item--icon .o-svg-icon {
+		width: 1.4rem;
+		height: 1.4rem;
+		margin-right: .4rem
+	}
+
+	.c-image img {
+		display: block;
+		margin: 0 auto
+	}
+
+	.c-navbar {
+		height: 6.4rem;
+		width: 100%
+	}
+
+	.c-navbar--inverse {
+		background: #314b5e
+	}
+
+	.c-navbar--fixed {
+		position: fixed;
+		top: 0
+	}
+
+	.c-navbar--fixed {
+		left: 0;
+		z-index: 30;
+		box-shadow: 0 0 .8rem 0 rgba(69, 100, 123, .35)
+	}
+
+	.c-navbar--bordered-bottom {
+		border-bottom: .1rem solid #d6dee3
+	}
+
+	.c-navbar--bordered-bottom.c-navbar--inverse {
+		border-bottom: .1rem solid #283d4e;
+		box-shadow: none
+	}
+
+	.c-nav ul {
+		margin: 0;
+		padding: 0
+	}
+
+	.c-nav li {
+		display: inline-block;
+		margin-right: .4rem
+	}
+
+	.c-nav__item {
+		display: block;
+		padding: .8rem 1.6rem;
+		color: #385265;
+		text-decoration: none;
+		border-radius: .3rem
+	}
+
+	.c-nav__item:focus, .c-nav__item:hover {
+		background: #edeff2;
+		color: #2b414f
+	}
+
+	.c-nav__item--i {
+		color: #fff
+	}
+
+	.c-nav__item--i:focus, .c-nav__item--i:hover {
+		background: #436580;
+		color: #fff
+	}
+
+	.c-nav.c-nav .o-svg-icon {
+		width: 1.8rem;
+		height: 1.8rem;
+		position: relative;
+		bottom: .2rem
+	}
+
+	.c-nav.c-nav .o-svg-icon * {
+		fill: #557891
+	}
+
+	.c-nav.c-nav .o-svg-icon + span {
+		width: 1.8rem;
+		height: 1.8rem;
+		position: relative;
+		margin-left: .75rem
+	}
+
+	.c-nav.c-nav .o-svg-icon + span * {
+		fill: #557891
+	}
+
+	.c-global-footer {
+		border-top: 1px solid #d6dee3;
+		padding: 2.4rem 0;
+		margin-top: auto;
+		font-size: 1.3rem;
+		color: #45647b
+	}
+
+	.c-global-footer a {
+		display: flex;
+		align-items: center;
+		color: #45647b;
+		text-decoration: none;
+		padding: 0;
+		box-sizing: border-box;
+		margin-bottom: 1px
+	}
+
+	.c-global-footer a:hover {
+		border-bottom: 1px solid #9cafbd;
+		margin-bottom: 0
+	}
+
+	.c-global-footer a img {
+		height: 35px;
+		transform: translate(0, 3px)
+	}
+
+	.c-global-footer ul li {
+		padding: .4rem;
+		display: inline-block;
+		margin-right: .8rem
+	}
+
+	.c-global-footer .c-nav__item--i {
+		color: #45647b
+	}
+
+	.c-global-footer .c-nav__item--i:focus, .c-global-footer .c-nav__item--i:hover {
+		background: 0 0;
+		color: #45647b
+	}
+
+	@media (min-width: 700px) {
+		.c-global-footer__inner {
+			display: flex;
+			justify-content: space-between
+		}
+	}
+
+	@keyframes flash {
+		50%, from, to {
+			background-color: #9fdaee
+		}
+		25%, 75% {
+			background-color: #fff
+		}
+	}
+
+	.c-item-view__main .c-button-toolbar .c-button + .c-button {
+		margin-left: 0
+	}
+
+	.c-item-view__main .c-button-toolbar .c-button {
+		margin-bottom: .8rem
+	}
+
+	.c-item-view__main .c-button-toolbar .c-button:not(:last-child) {
+		margin-right: .8rem
+	}
+
+	@media (max-width: 700px) {
+		.c-search-view .c-navbar {
+			min-height: 13rem
+		}
+	}
+
+	a, b, body, center, div, footer, h1, h2, h3, h4, h5, h6, html, i, iframe, img, label, li, nav, s, span, u, ul, var {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		font-size: 100%;
+		vertical-align: baseline
+	}
+
+	footer, nav {
+		display: block
+	}
+
+	body {
+		line-height: 1
+	}
+
+	ul {
+		list-style: none
+	}
+
+	#launcher {
+		bottom: 100px !important
+	}
+
+	.o-app > .o-container {
+		overflow-x: hidden
+	}
+
+	*, :after, :before {
+		box-sizing: border-box
+	}
+
+	body, html {
+		overflow-x: hidden
+	}
+
+	html {
+		font-size: 54.16%
+	}
+
+	@media (min-width: 900px) {
+		html {
+			font-size: 58.33%
+		}
+	}
+
+	@media (min-width: 1200px) {
+		html {
+			font-size: 62.5%
+		}
+	}
+
+	body {
+		position: relative;
+		font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+		font-size: 1.5rem;
+		line-height: 1.5;
+		color: #2b414f;
+		background: #fff
+	}
+
+	img {
+		max-width: 100%
+	}
+
+	button {
+		font-family: inherit;
+		font-size: inherit
+	}
+
+	a {
+		color: #25a4cf
+	}
+
+	i {
+		font-style: italic
+	}
+
+	b {
+		font-weight: 500
+	}
+
+	.o-app {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		padding-top: 6.4rem
+	}
+
+	.o-app > .c-navbar {
+		max-width: 100vw
+	}
+
+	.c-brand {
+		width: 14.3rem;
+		height: 2.9rem
+	}
+
+	.c-brand a, .c-brand img {
+		display: block;
+		height: 100%;
+		width: 100%
+	}
+
+	.c-navbar .c-brand {
+		margin-right: 1.2rem;
+		position: relative;
+		bottom: .3rem
+	}
+
+	.c-content-type .o-svg-icon {
+		margin-right: .4rem;
+		width: 1.8rem;
+		height: 1.8rem
+	}
+
+	.c-content h4, .c-h4 {
+		font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+		font-size: 1.5rem;
+		font-weight: 500;
+		margin: 1.5rem 0
+	}
+
+	.c-content--no-m > :first-child, .c-content--no-m > :only-child {
+		margin: 0
+	}
+
+	.c-content a {
+		text-decoration: underline
+	}
+
+	.c-content ul {
+		padding: 0;
+		margin: 1.5rem 0 1.5rem 1.75rem
+	}
+
+	.c-content ul ul {
+		margin: 0;
+		padding-left: 2.25rem
+	}
+
+	.c-content ul ul li {
+		list-style: circle
+	}
+
+	.c-content ul {
+		list-style: disc
+	}
+
+	.c-content li {
+		padding-left: .5rem
+	}
+
+	.c-content .c-button {
+		text-decoration: none
+	}
+
+	.c-navbar {
+		height: 6.4rem;
+		width: 100%
+	}
+
+	.c-navbar--inverse {
+		background: #314b5e
+	}
+
+	.c-navbar--fixed {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 30;
+		box-shadow: 0 0 .8rem 0 rgba(69, 100, 123, .35)
+	}
+
+	.c-navbar--bordered-bottom {
+		border-bottom: .1rem solid #d6dee3
+	}
+
+	.c-navbar--bordered-bottom.c-navbar--inverse {
+		border-bottom: .1rem solid #283d4e;
+		box-shadow: none
+	}
+
+	.u-spacer-left-s {
+		margin-left: .8rem !important
+	}
+
+	.u-spacer-bottom-l {
+		margin-bottom: 2.4rem !important
+	}
+
+	@media (max-width: 700px) {
+		.c-toolbar {
+			position: relative;
+			width: auto;
+			display: block;
+		}
+
+		.c-toolbar__center {
+			position: relative;
+			left: 0;
+			margin-left: 0;
+			width: 100%;
+		}
+
+		.c-toolbar__center-inner {
+			position: relative;
+			margin-left: 0;
+			width: 100%;
+			display: block;
+			flex: none;
+		}
+
+		.c-button-toolbar {
+			width: 100%;
+		}
+
+		.c-button {
+			display: block;
+			width: 100%;
+			margin: 10px auto;
+		}
+
+		.c-button + .c-button {
+			margin-left: 0;
+		}
+
+		.c-blankslate {
+			background: #edeff2;
+			border-radius: .3rem;
+			padding: 1.8rem;
+			text-align: center;
+		}
+
+		.c-brand {
+			margin-top: 17px;
+		}
+
+		#launcher {
+			bottom: 115px !important;
+		}
+	}
+</style>
+</head>
+<body><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MNSTNVJ" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript><div id="root"><div class="o-app"><div class="c-navbar c-navbar--bordered-bottom c-navbar--fixed c-navbar--inverse"><div class="o-container"><div class="c-toolbar"><div class="c-toolbar__left"><div class="c-toolbar__item"><h1 class="c-brand"><a href="{{client-url}}/"><img class="c-brand__image" src="{{client-url}}/images/avo-logo-i.svg" alt="Logo Het Archief voor Onderwijs"></a></h1></div></div></div></div></div><div class="m-error-view o-container-vertical o-container-vertical--bg-alt"><div class="o-container o-container--medium"><div class="c-blankslate"><div class="u-spacer-bottom-l"><div class="c-blankslate__icon"><div class="o-svg-icon o-svg-icon--search o-svg-icon--large"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M11 20c-4.962 0-9-4.037-9-9 0-4.962 4.038-9 9-9 4.963 0 9 4.038 9 9 0 4.963-4.037 9-9 9zm0-16c-3.86 0-7 3.14-7 7 0 3.859 3.14 7 7 7 3.859 0 7-3.141 7-7 0-3.86-3.141-7-7-7z" fill="#000"></path><path d="M21 22a.997.997 0 01-.707-.293l-4.35-4.35a.999.999 0 111.414-1.414l4.35 4.35A.999.999 0 0121 22z" fill="#000"></path></svg></div></div></div><h4 class="c-h4">{{message}}</h4>
+
+
+	<div class="c-toolbar"><div class="c-toolbar__center"><div class="c-toolbar__center-inner">
+
+	<div class="c-button-toolbar">
+		<a href="{{client-url}}/" class="c-button c-button--primary">
+			<div class="c-button__content">
+				<div class="c-button__label">Ga terug naar de startpagina</div>
+			</div>
+		</a>
+		<button class="c-button c-button--danger" onclick="window.zE('webWidget','toggle')"><span class="c-button__content"><span class="c-button__label">Contacteer onze helpdesk</span></span>
+		</button>
+	</div>
+
+</div></div></div></div></div></div><footer class="c-global-footer"><div class="c-global-footer__inner o-container"><ul><li><a href="https://meemoo.be/nl" title="meemoo"><span class="c-nav__item-label">Een initiatief van</span><div class="u-spacer-left-s"><img src="{{client-url}}/images/meemoo-logo.png" alt="Logo van meemoo"></div></a></li><li><a class="c-nav__item c-nav__item--i" href="{{client-url}}/hulp"><span class="c-nav__item-label">Gebruiksvoorwaarden</span></a></li><li><a class="c-nav__item c-nav__item--i" href="{{client-url}}/privacy"><span class="c-nav__item-label">Privacyverklaring</span></a></li><li><a class="c-nav__item c-nav__item--i" href="{{client-url}}/cookiebeleid"><span class="c-nav__item-label">Cookieverklaring</span></a></li></ul><ul><li><a class="c-nav__item c-nav__item--i" title="Hulp" href="{{client-url}}/hulp"></a></li><li><a href="https://www.vlaanderen.be/" title="Vlaamse Overheid"><span class="c-nav__item-label">Gesteund door</span><div class="u-spacer-left-s"><img src="{{client-url}}/images/vlaanderen-logo.png" alt="Logo van de Vlaamse Overheid"></div></a></li></ul></div></footer></div></div>
+<script src="{{client-url}}/old-browser-detector.min.js" type="text/javascript"></script><script type="text/javascript">var Detector=new oldBrowserDetector(null,function(){window.open("/unsupported-browser.html")});Detector.detect();</script>
+<script async id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=6bfc8294-ce0c-4e40-92de-35b855c49a84"></script><iframe data-product="web_widget" title="No content" tabindex="-1" aria-hidden="true" src="about:blank" style="width:0;height:0;border:0;position:absolute;top:-9999px"></iframe><div><iframe title="Opens a widget where you can find more information" id="launcher" tabindex="0" style="width:143px;height:50px;padding:0;margin:10px 20px 107px;position:fixed;bottom:0;overflow:visible;opacity:1;border:0;z-index:999998;transition-duration:250ms;transition-timing-function:cubic-bezier(.645,.045,.355,1);transition-property:opacity,top,bottom;right:0"></iframe></div></body></html>

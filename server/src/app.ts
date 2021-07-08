@@ -19,6 +19,7 @@ import HetArchiefRoute from './modules/auth/idps/het-archief/het-archief.route';
 import HetArchiefService from './modules/auth/idps/het-archief/het-archief.service';
 import KlascementRoute from './modules/auth/idps/klascement/route';
 import KlascementService from './modules/auth/idps/klascement/service';
+import NotFoundRoute from './modules/not-found/not-found.route';
 import SmartschoolRoute from './modules/auth/idps/smartschool/route';
 import SmartschoolService from './modules/auth/idps/smartschool/service';
 import DataService from './modules/data/data.service';
@@ -157,6 +158,7 @@ export class App {
 			UserRoute,
 			NavigationItemsRoute,
 			ContentPagesRoute,
+			NotFoundRoute,
 			PlayerTicketRoute,
 			VideoStillsRoute,
 			StamboekRoute,
