@@ -165,8 +165,8 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.VIEW_BUNDLES_OVERVIEW
 		),
 		BULK_UPDATE_PUBLISH_STATE_FOR_COLLECTIONS: or(
-			PermissionName.PUBLISH_ALL_COLLECTIONS,
-			PermissionName.PUBLISH_ALL_BUNDLES
+			PermissionName.PUBLISH_ANY_COLLECTIONS,
+			PermissionName.PUBLISH_ANY_BUNDLES
 		),
 		BULK_UPDATE_AUTHOR_FOR_COLLECTIONS: or(
 			PermissionName.EDIT_ANY_COLLECTIONS,
@@ -378,14 +378,20 @@ export const QUERY_PERMISSIONS: {
 		GET_CONTENT_COUNTS_FOR_USERS: or(PermissionName.EDIT_ANY_USER),
 		GET_ASSIGNMENT_BY_UUID: or(
 			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.EDIT_OWN_ASSIGNMENTS,
+			PermissionName.EDIT_ANY_ASSIGNMENTS,
 			PermissionName.VIEW_ASSIGNMENTS
 		),
 		GET_ASSIGNMENT_UUID_FROM_LEGACY_ID: or(
 			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.EDIT_OWN_ASSIGNMENTS,
+			PermissionName.EDIT_ANY_ASSIGNMENTS,
 			PermissionName.VIEW_ASSIGNMENTS
 		),
 		GET_ASSIGNMENT_BY_CONTENT_ID_AND_TYPE: or(
 			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.EDIT_OWN_ASSIGNMENTS,
+			PermissionName.EDIT_ANY_ASSIGNMENTS,
 			PermissionName.EDIT_ANY_COLLECTIONS,
 			PermissionName.EDIT_ANY_BUNDLES,
 			PermissionName.DELETE_ANY_COLLECTIONS,
@@ -393,34 +399,53 @@ export const QUERY_PERMISSIONS: {
 			PermissionName.DELETE_ANY_BUNDLES,
 			PermissionName.DELETE_OWN_BUNDLES
 		),
-		GET_ASSIGNMENTS_BY_OWNER_ID: or(PermissionName.EDIT_ASSIGNMENTS),
+		GET_ASSIGNMENTS_BY_OWNER_ID: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
 		GET_ASSIGNMENTS_BY_RESPONSE_OWNER_ID: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
 		GET_ASSIGNMENT_RESPONSES: or(
 			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.EDIT_OWN_ASSIGNMENTS,
+			PermissionName.EDIT_ANY_ASSIGNMENTS,
 			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
 		GET_ASSIGNMENT_WITH_RESPONSE: or(PermissionName.VIEW_ASSIGNMENTS),
 		INSERT_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
-			return (
-				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) &&
-				variables.assignment.owner_profile_id === user.profile.id
-			);
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_ASSIGNMENTS)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_ASSIGNMENTS) ||
+				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS)
+			) {
+				return variables.assignment.owner_profile_id === user.profile.id;
+			}
+			return false;
 		},
 		UPDATE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
-			const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid);
-			return (
-				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) &&
-				assignmentOwner === user.profile.id
-			);
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_ASSIGNMENTS)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_ASSIGNMENTS) ||
+				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS)
+			) {
+				const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid);
+				return assignmentOwner === user.profile.id;
+
+			}
+			return false;
 		},
-		UPDATE_ASSIGNMENT_ARCHIVE_STATUS: or(PermissionName.EDIT_ASSIGNMENTS),
+		UPDATE_ASSIGNMENT_ARCHIVE_STATUS: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
 		UPDATE_ASSIGNMENT_RESPONSE_SUBMITTED_STATUS: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
 		DELETE_ASSIGNMENT: async (user: Avo.User.User, query: string, variables: any) => {
-			const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid);
-			return (
-				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) &&
-				assignmentOwner === user.profile.id
-			);
+			if (AuthService.hasPermission(user, PermissionName.EDIT_ANY_ASSIGNMENTS)) {
+				return true;
+			}
+			if (AuthService.hasPermission(user, PermissionName.EDIT_OWN_ASSIGNMENTS) ||
+				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS)
+			) {
+				const assignmentOwner = await DataService.getAssignmentOwner(variables.assignmentUuid);
+				return assignmentOwner === user.profile.id;
+
+			}
+			return false;
 		},
 		INSERT_ASSIGNMENT_RESPONSE: or(PermissionName.CREATE_ASSIGNMENT_RESPONSE),
 		UPDATE_COLLECTION: async (user: Avo.User.User, query: string, variables: any) => {
@@ -514,9 +539,9 @@ export const QUERY_PERMISSIONS: {
 		),
 		GET_COLLECTION_BY_TITLE_OR_DESCRIPTION: or(
 			PermissionName.PUBLISH_OWN_COLLECTIONS,
-			PermissionName.PUBLISH_ALL_COLLECTIONS,
+			PermissionName.PUBLISH_ANY_COLLECTIONS,
 			PermissionName.PUBLISH_OWN_BUNDLES,
-			PermissionName.PUBLISH_ALL_BUNDLES
+			PermissionName.PUBLISH_ANY_BUNDLES
 		),
 		GET_COLLECTIONS_BY_FRAGMENT_ID: or(
 			PermissionName.VIEW_ANY_PUBLISHED_ITEMS,
@@ -531,14 +556,16 @@ export const QUERY_PERMISSIONS: {
 		GET_SUBJECTS: ALL_LOGGED_IN_USERS,
 		GET_ASSIGNMENT_LABELS_BY_PROFILE_ID: or(
 			PermissionName.EDIT_ASSIGNMENTS,
+			PermissionName.EDIT_ANY_ASSIGNMENTS,
+			PermissionName.EDIT_OWN_ASSIGNMENTS,
 			PermissionName.CREATE_ASSIGNMENT_RESPONSE
 		),
-		INSERT_ASSIGNMENT_LABELS: or(PermissionName.EDIT_ASSIGNMENTS),
-		UPDATE_ASSIGNMENT_LABEL: or(PermissionName.EDIT_ASSIGNMENTS),
-		DELETE_ASSIGNMENT_LABELS: or(PermissionName.EDIT_ASSIGNMENTS),
-		LINK_ASSIGNMENT_LABELS_FROM_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
-		UNLINK_ASSIGNMENT_LABELS_FROM_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS),
-		GET_ALL_ASSIGNMENT_LABEL_COLORS: or(PermissionName.EDIT_ASSIGNMENTS),
+		INSERT_ASSIGNMENT_LABELS: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
+		UPDATE_ASSIGNMENT_LABEL: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
+		DELETE_ASSIGNMENT_LABELS: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
+		LINK_ASSIGNMENT_LABELS_FROM_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
+		UNLINK_ASSIGNMENT_LABELS_FROM_ASSIGNMENT: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
+		GET_ALL_ASSIGNMENT_LABEL_COLORS: or(PermissionName.EDIT_ASSIGNMENTS, PermissionName.EDIT_OWN_ASSIGNMENTS, PermissionName.EDIT_ANY_ASSIGNMENTS),
 		INSERT_ITEM_BOOKMARK: or(PermissionName.CREATE_BOOKMARKS),
 		INSERT_COLLECTION_BOOKMARK: or(PermissionName.CREATE_BOOKMARKS),
 		REMOVE_ITEM_BOOKMARK: or(PermissionName.CREATE_BOOKMARKS),
@@ -698,7 +725,9 @@ export const QUERY_PERMISSIONS: {
 			}
 			if (
 				assetInfo.content_asset_type_id === 'ASSIGNMENT_DESCRIPTION_IMAGE' &&
-				AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS)
+				(AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) || 
+					AuthService.hasPermission(user, PermissionName.EDIT_OWN_ASSIGNMENTS) ||
+					AuthService.hasPermission(user, PermissionName.EDIT_ANY_ASSIGNMENTS))
 			) {
 				return true;
 			}
