@@ -19,7 +19,7 @@ export default class NotFoundRoute {
 		if (!this.notFoundHtml) {
 			this.notFoundHtml = (
 				await fs.readFile(path.resolve('src/modules/not-found/404.html'))
-			).toString('utf-8');
+			).toString('utf8');
 			this.notFoundHtml = replaceAll(
 				this.notFoundHtml,
 				'{{client-url}}',
@@ -27,7 +27,7 @@ export default class NotFoundRoute {
 			);
 		}
 		this.context.response.status(404);
-		this.context.response.setHeader('Content-Type', 'text/html');
+		this.context.response.setHeader('Content-Type', 'text/html; charset=utf-8');
 		this.context.response.send(
 			this.notFoundHtml.replace(
 				'{{message}}',
