@@ -213,6 +213,7 @@ export class AuthService {
 			delete updatedUser.profile;
 			delete updatedUser.idpmaps;
 			delete updatedUser.role;
+			delete updatedUser.temp_access;
 			delete (updatedUser as any).idpmapObjects;
 			updatedUser.updated_at = new Date().toISOString();
 

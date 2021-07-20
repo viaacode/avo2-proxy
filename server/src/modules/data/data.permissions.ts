@@ -362,6 +362,8 @@ export const QUERY_PERMISSIONS: {
 		UPDATE_USER_GROUP: or(PermissionName.EDIT_USER_GROUPS),
 		DELETE_USER_GROUP: or(PermissionName.EDIT_USER_GROUPS),
 		GET_USER_BY_ID: or(PermissionName.EDIT_ANY_USER),
+		GET_USER_TEMP_ACCESS_BY_ID: or(PermissionName.EDIT_ANY_USER),
+		UPDATE_USER_TEMP_ACCESS_BY_ID: or(PermissionName.EDIT_ANY_USER),
 		GET_USERS: or(PermissionName.EDIT_ANY_USER, PermissionName.EDIT_ANY_COLLECTIONS),
 		GET_PROFILE_IDS: or(PermissionName.EDIT_ANY_USER),
 		GET_PROFILE_NAMES: or(
@@ -726,7 +728,7 @@ export const QUERY_PERMISSIONS: {
 			}
 			if (
 				assetInfo.content_asset_type_id === 'ASSIGNMENT_DESCRIPTION_IMAGE' &&
-				(AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) || 
+				(AuthService.hasPermission(user, PermissionName.EDIT_ASSIGNMENTS) ||
 					AuthService.hasPermission(user, PermissionName.EDIT_OWN_ASSIGNMENTS) ||
 					AuthService.hasPermission(user, PermissionName.EDIT_ANY_ASSIGNMENTS))
 			) {

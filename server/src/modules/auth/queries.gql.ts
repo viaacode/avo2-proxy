@@ -4,6 +4,10 @@ export const GET_USER_INFO_BY_USER_EMAIL = `
 			first_name
 			last_name
 			is_blocked
+			temp_access {
+				from
+				until
+			}
 			profile {
 				id
 				alias
@@ -72,6 +76,10 @@ export const GET_USER_INFO_BY_ID = `
 			first_name
 			last_name
 			is_blocked
+			temp_access {
+				from
+				until
+			}
 			profile {
 				id
 				alias
@@ -141,6 +149,10 @@ export const GET_USER_BY_LDAP_UUID = `
 				first_name
 				last_name
 				is_blocked
+				temp_access {
+					from
+					until
+				}
 				profile {
 					id
 					alias
